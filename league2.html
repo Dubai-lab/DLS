@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLS League 2</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DLS League">
+<link rel="apple-touch-icon" href="dls_logo.jpeg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#0f2027,#0d1117);border-bottom:3px solid #4fc3f7;padding:20px;text-align:center;position:relative}
+.header h1{font-size:2.2rem;color:#4fc3f7;text-shadow:0 0 24px rgba(79,195,247,.3);letter-spacing:4px;text-transform:uppercase}
+.header p{color:#8b949e;margin-top:5px;font-size:.82rem;letter-spacing:2px;text-transform:uppercase}
+.back-link{position:absolute;top:50%;left:20px;transform:translateY(-50%);background:#161b22;border:1px solid #30363d;border-radius:6px;padding:7px 14px;color:#8b949e;font-size:.8rem;cursor:pointer;text-decoration:none;transition:all .2s}
+.back-link:hover{border-color:#4fc3f7;color:#4fc3f7}
+
+/* ── Nav ── */
+.nav{display:flex;justify-content:center;background:#161b22;border-bottom:1px solid #21262d}
+.nav-btn{padding:14px 42px;background:none;border:none;color:#8b949e;font-size:.9rem;cursor:pointer;transition:all .25s;border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.nav-btn.active,.nav-btn:hover{color:#4fc3f7;border-bottom-color:#4fc3f7;background:rgba(79,195,247,.04)}
+
+/* ── Sections ── */
+.section{display:none;padding:28px;max-width:1200px;margin:0 auto}
+.section.active{display:block}
+
+/* ── Buttons ── */
+.btn{display:inline-block;padding:11px 32px;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .25s;text-transform:uppercase;letter-spacing:1.5px}
+.btn-green{background:linear-gradient(135deg,#0288d1,#0277bd);color:#fff}
+.btn-green:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(79,195,247,.4)}
+.btn-gold{background:linear-gradient(135deg,#FFD700,#FFA500);color:#0d1117}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,215,0,.4)}
+.btn-red{background:linear-gradient(135deg,#dc3545,#c82333);color:#fff}
+.btn-red:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(220,53,69,.35)}
+.btn-sm{padding:6px 14px;font-size:.75rem;letter-spacing:1px}
+.btn-ghost{background:#21262d;border:1px solid #30363d;color:#e6edf3}
+.btn-ghost:hover{border-color:#4fc3f7;color:#4fc3f7}
+
+/* ── Section headers ── */
+.sec-title{margin-bottom:22px}
+.sec-title h2{font-size:1.5rem;color:#4fc3f7;margin-bottom:6px}
+.sec-title p{color:#8b949e;font-size:.85rem}
+
+/* ── Stats row ── */
+.stats-row{display:flex;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.stat-box{flex:1;min-width:120px;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center}
+.stat-val{font-size:1.7rem;font-weight:800;color:#4fc3f7}
+.stat-lbl{font-size:.68rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+
+/* ── Progress ── */
+.progress-bar{background:#21262d;border-radius:4px;height:5px;margin:8px 0 4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#81d4fa);border-radius:4px;transition:width .5s}
+.progress-txt{font-size:.7rem;color:#8b949e;text-align:right}
+
+/* ── Teams Tab ── */
+.add-team-row{display:flex;gap:10px;margin-bottom:20px}
+.add-team-row input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px 14px;color:#e6edf3;font-size:.95rem;outline:none;transition:border-color .25s}
+.add-team-row input:focus{border-color:#4fc3f7}
+.team-count-badge{display:inline-block;background:rgba(79,195,247,.1);border:1px solid #4fc3f7;border-radius:20px;padding:4px 14px;font-size:.78rem;color:#4fc3f7;font-weight:700;margin-bottom:14px}
+.teams-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:22px}
+.team-item{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s}
+.team-item:hover{border-color:#30363d}
+.team-item-left{display:flex;align-items:center;gap:10px}
+.team-pos{width:24px;height:24px;background:#21262d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#8b949e;flex-shrink:0}
+.team-name{font-size:.9rem;font-weight:600}
+.team-remove{background:none;border:none;color:#4a5568;cursor:pointer;font-size:1.1rem;padding:2px 6px;border-radius:4px;transition:all .2s;line-height:1}
+.team-remove:hover{background:rgba(220,53,69,.15);color:#dc3545}
+.empty-teams{text-align:center;padding:40px 20px;color:#8b949e}
+.empty-teams .empty-icon{font-size:3rem;margin-bottom:12px}
+.generate-section{border-top:1px solid #21262d;padding-top:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap}
+.generate-info{font-size:.82rem;color:#8b949e;line-height:1.5}
+.generate-info strong{color:#e6edf3}
+.fixture-warning{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.3);border-radius:8px;padding:10px 14px;font-size:.82rem;color:#FFD700;margin-bottom:14px;display:none}
+.fixture-warning.show{display:block}
+
+/* ── Danger zone ── */
+.danger-zone{margin-top:32px;padding:16px;border:1px solid #dc3545;border-radius:8px;background:rgba(220,53,69,.04)}
+.danger-zone h3{color:#dc3545;margin-bottom:6px;font-size:.95rem}
+.danger-zone p{color:#8b949e;font-size:.8rem;margin-bottom:10px}
+
+/* ── Fixtures Tab ── */
+.matchday-nav{display:flex;align-items:center;justify-content:space-between;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px 18px;margin-bottom:18px}
+.md-title{text-align:center;flex:1}
+.md-title h3{font-size:1.15rem;font-weight:800;color:#e6edf3;letter-spacing:1px}
+.md-title p{font-size:.75rem;color:#8b949e;margin-top:3px}
+.nav-arrow{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:8px 16px;color:#e6edf3;font-size:1rem;cursor:pointer;transition:all .2s;font-weight:700}
+.nav-arrow:hover{background:#4fc3f7;color:#0d1117;border-color:#4fc3f7}
+.nav-arrow:disabled{opacity:.3;cursor:not-allowed}
+.nav-arrow:disabled:hover{background:#21262d;color:#e6edf3;border-color:#30363d}
+
+/* Day jump select */
+.day-jump{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:7px 10px;color:#e6edf3;font-size:.82rem;outline:none;cursor:pointer}
+.day-jump:focus{border-color:#4fc3f7}
+
+/* Match cards */
+.matches-grid{display:flex;flex-direction:column;gap:8px}
+.match-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;transition:border-color .25s}
+.match-card:hover{border-color:#30363d}
+.match-card.played{border-color:rgba(79,195,247,.35)}
+.match-card.editing{border-color:#FFD700}
+.mc-team{flex:1;font-size:.9rem;font-weight:700}
+.mc-team.home{text-align:right}
+.mc-team.away{text-align:left}
+.mc-score-area{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.mc-result{font-size:1.15rem;font-weight:800;color:#4fc3f7;min-width:54px;text-align:center}
+.sc-inp{width:40px;text-align:center;background:#0d1117;border:1px solid #30363d;border-radius:5px;padding:6px 4px;color:#e6edf3;font-size:1rem;font-weight:700;outline:none}
+.sc-inp:focus{border-color:#4fc3f7}
+.sc-sep{color:#8b949e;font-weight:700}
+.mc-save-btn{padding:6px 14px;background:#21262d;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:.78rem;cursor:pointer;transition:all .2s;flex-shrink:0;font-weight:700}
+.mc-save-btn:hover{background:#4fc3f7;color:#0d1117;border-color:#4fc3f7}
+.mc-edit-btn{padding:5px 10px;background:#1a2332;border:1px solid #30363d;border-radius:5px;color:#8b949e;font-size:.78rem;cursor:pointer;transition:all .2s;flex-shrink:0}
+.mc-edit-btn:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
+.mc-cancel-btn{padding:5px 8px;background:#21262d;border:1px solid #30363d;border-radius:5px;color:#8b949e;font-size:.8rem;cursor:pointer;flex-shrink:0}
+.mc-ok{color:#4fc3f7;font-size:.95rem;flex-shrink:0}
+.bye-card{background:rgba(255,255,255,.02);border:1px dashed #21262d;border-radius:10px;padding:10px 16px;text-align:center;font-size:.8rem;color:#4a5568;font-style:italic}
+
+/* Matchday summary bar */
+.md-summary{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.md-stat{background:#161b22;border:1px solid #21262d;border-radius:6px;padding:8px 14px;font-size:.78rem;color:#8b949e}
+.md-stat strong{color:#e6edf3}
+
+/* ── Table Tab ── */
+.table-wrap{overflow-x:auto}
+.league-table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:560px}
+.league-table th{background:#0d1117;color:#8b949e;padding:9px 8px;text-align:center;font-size:.72rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #21262d;white-space:nowrap}
+.league-table th:nth-child(2){text-align:left;padding-left:10px}
+.league-table td{padding:9px 8px;text-align:center;border-bottom:1px solid #161b22;transition:background .15s}
+.league-table td:nth-child(2){text-align:left;padding-left:10px;font-weight:600}
+.league-table tr:hover td{background:rgba(255,255,255,.03)}
+.pos-cell{font-weight:700;color:#8b949e;font-size:.8rem}
+.pts-cell{font-weight:800;color:#4fc3f7}
+.gd-pos{color:#4ade80}
+.gd-neg{color:#f87171}
+.gd-zero{color:#8b949e}
+
+/* Position colours */
+.rank-1 td:first-child{border-left:3px solid #FFD700}
+.rank-top td:first-child{border-left:3px solid #4fc3f7}
+.rank-bot td:first-child{border-left:3px solid #dc3545}
+
+/* Zone separator lines */
+tr.cut-cl td{border-top:2px solid rgba(255,215,0,.35)!important}
+tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
+
+/* Form badges */
+.form-badges{display:flex;gap:3px;justify-content:center}
+.fb{width:18px;height:18px;border-radius:3px;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.fb-w{background:#28a745;color:#fff}
+.fb-d{background:#6c757d;color:#fff}
+.fb-l{background:#dc3545;color:#fff}
+
+/* Legend */
+.table-legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#8b949e}
+.legend-line{width:3px;height:14px;border-radius:2px}
+
+/* Season complete banner */
+.season-banner{background:linear-gradient(135deg,#1a2d1a,#0f2027);border:2px solid #FFD700;border-radius:12px;padding:22px;text-align:center;margin-bottom:24px;display:none}
+.season-banner.show{display:block}
+.season-trophy{font-size:3.2rem;margin-bottom:10px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.season-champ{font-size:1.8rem;font-weight:800;color:#FFD700;letter-spacing:3px;text-transform:uppercase}
+.season-lbl{color:#8b949e;font-size:.82rem;text-transform:uppercase;letter-spacing:2px;margin-top:4px}
+
+/* ── No-fixtures notice ── */
+.notice-card{background:linear-gradient(135deg,#1a2332,#161b22);border:1px solid #30363d;border-radius:10px;padding:28px;text-align:center}
+.notice-card h3{color:#4fc3f7;font-size:1.15rem;margin-bottom:8px}
+.notice-card p{color:#8b949e;font-size:.85rem}
+
+/* ── Toast ── */
+.toast{position:fixed;top:20px;right:20px;background:#161b22;border:1px solid #4fc3f7;border-radius:8px;padding:13px 18px;color:#e6edf3;font-size:.85rem;z-index:9999;transform:translateX(340px);transition:transform .3s;max-width:280px;line-height:1.5}
+.toast.show{transform:translateX(0)}
+.toast.error{border-color:#dc3545}
+.toast.info{border-color:#FFD700}
+
+@media(max-width:700px){
+  .teams-list{grid-template-columns:1fr 1fr}
+  .match-card{flex-wrap:wrap;gap:8px}
+  .mc-team{flex:unset;width:calc(50% - 40px)}
+  .stats-row .stat-box{min-width:100px}
+  .nav-btn{padding:12px 18px;font-size:.82rem}
+  .header h1{font-size:1.6rem}
+  .back-link{display:none}
+}
+@media(max-width:460px){
+  .teams-list{grid-template-columns:1fr}
+}
+/* ── SEASON END MODAL ── */
+.season-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px}
+.season-modal.hidden{display:none}
+.season-modal-box{background:#161b22;border:1px solid #30363d;border-radius:16px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:28px 24px}
+.season-modal-box h2{font-size:1.15rem;color:#e6edf3;margin-bottom:4px}
+.season-modal-sub{color:#8b949e;font-size:.82rem;margin-bottom:20px}
+.season-sect{margin-bottom:16px;padding:16px;background:#0d1117;border:1px solid #30363d;border-radius:10px}
+.season-sect h4{font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;color:#8b949e;margin-bottom:12px}
+.season-count-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.season-count-row label{color:#c9d1d9;font-size:.88rem;flex:1}
+.season-count-input{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:7px 12px;color:#e6edf3;font-size:.95rem;width:70px;text-align:center;outline:none}
+.season-count-input:focus{border-color:#4fc3f7}
+.season-team-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;margin-bottom:3px;background:#161b22}
+.season-team-row img{width:26px;height:26px;border-radius:50%;object-fit:cover;background:#0d1117;border:1px solid #30363d}
+.season-team-row .stname{flex:1;font-size:.88rem;color:#e6edf3}
+.season-team-row .stpts{font-size:.8rem;color:#8b949e}
+.promo-badge{background:#1a3a2a;color:#00c853;border-radius:4px;padding:2px 8px;font-size:.72rem;font-weight:700;letter-spacing:.5px}
+.relegate-badge{background:#3a1a1a;color:#dc3545;border-radius:4px;padding:2px 8px;font-size:.72rem;font-weight:700;letter-spacing:.5px}
+.sm-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:6px}
+.sm-table th{color:#8b949e;text-align:left;padding:4px 8px;border-bottom:1px solid #30363d;font-weight:500}
+.sm-table td{padding:5px 8px;color:#c9d1d9;border-bottom:1px solid #21262d}
+.season-end-zone{background:#1a1f26;border:1px dashed #30363d;border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.season-end-zone h3{font-size:1rem;color:#e6edf3;margin-bottom:4px}
+.season-end-zone p{font-size:.83rem;color:#8b949e;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<!-- ── LOCK OVERLAY ── -->
+<div id="lock-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:99999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%">
+    <div style="font-size:3rem;margin-bottom:14px">&#128274;</div>
+    <h2 style="color:#4fc3f7;font-size:1.2rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Admin Only</h2>
+    <p style="color:#8b949e;font-size:.82rem;margin-bottom:22px">Enter the admin passcode to access the DLS League 2 panel</p>
+    <input type="password" id="lock-input" placeholder="Enter passcode..."
+      style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 14px;color:#e6edf3;font-size:.95rem;outline:none;margin-bottom:8px;text-align:center;letter-spacing:3px;transition:border-color .2s"
+      onkeydown="if(event.key==='Enter')checkLock()">
+    <div id="lock-error" style="color:#dc3545;font-size:.75rem;min-height:18px;margin-bottom:10px"></div>
+    <button onclick="checkLock()" style="width:100%;background:linear-gradient(135deg,#0288d1,#0277bd);color:#fff;border:none;border-radius:8px;padding:12px;font-size:.92rem;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:2px">&#128275; Unlock</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('dls_auth')==='true')
+    document.getElementById('lock-overlay').style.display='none';
+})();
+function checkLock(){
+  const inp=document.getElementById('lock-input');
+  const err=document.getElementById('lock-error');
+  if(inp.value==='dlsadmin@123'){
+    sessionStorage.setItem('dls_auth','true');
+    document.getElementById('lock-overlay').style.display='none';
+  } else {
+    err.textContent='Wrong passcode. Try again.';
+    inp.style.borderColor='#dc3545';
+    inp.value=''; inp.focus();
+    setTimeout(()=>{ inp.style.borderColor='#30363d'; err.textContent=''; },2000);
+  }
+}
+</script>
+
+<header class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <h1>&#9917; DLS League 2</h1>
+  <p>Division 2 &nbsp;|&nbsp; Full Round-Robin &nbsp;|&nbsp; Auto Table</p>
+</header>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="switchTab('teams')">&#9881; Teams</button>
+  <button class="nav-btn" onclick="switchTab('fixtures')">&#128197; Matchdays</button>
+  <button class="nav-btn" onclick="switchTab('table')">&#128202; Table</button>
+</nav>
+<div style="text-align:right;padding:5px 16px;font-size:.72rem;background:#0d1117;border-bottom:1px solid #21262d">
+  <span id="cloud-status" style="color:#4a5568">☁️ Cloud Backup Active</span>
+</div>
+
+<!-- ═══════════════════ TEAMS ═══════════════════ -->
+<section id="teams" class="section active">
+  <div class="sec-title">
+    <h2>&#9881; Manage Teams</h2>
+    <p>Add all teams that will compete in Division 2, then generate the full season fixture list.</p>
+  </div>
+
+  <div class="add-team-row">
+    <input type="text" id="new-team-input" placeholder="Team name..." maxlength="32"
+           onkeydown="if(event.key==='Enter') addTeam()">
+    <input type="tel" id="new-phone-input" placeholder="&#128242; WhatsApp number (optional)"
+           onkeydown="if(event.key==='Enter') addTeam()">
+    <button class="btn btn-green" onclick="addTeam()">&#43; Add</button>
+  </div>
+
+  <div id="team-count-badge" class="team-count-badge">0 teams</div>
+
+  <div class="teams-list" id="teams-list">
+    <div class="empty-teams" style="grid-column:1/-1">
+      <div class="empty-icon">&#9917;</div>
+      <p>No teams yet. Add teams above to get started.</p>
+    </div>
+  </div>
+
+  <div class="fixture-warning" id="fixture-warning">
+    &#9888;&nbsp; Fixtures are already generated. Regenerating will <strong>clear all existing scores</strong>.
+  </div>
+
+  <div class="generate-section">
+    <div class="generate-info" id="generate-info">
+      Add at least <strong>2 teams</strong> to generate fixtures.
+    </div>
+    <button class="btn btn-gold" id="gen-btn" onclick="generateFixtures()" disabled>&#9654; Generate Fixtures</button>
+  </div>
+
+  <div class="season-end-zone">
+    <h3>&#127942; End Season</h3>
+    <p>Promote top teams to League 1, relegate bottom teams to League 3, and reset all affected leagues for a new season.</p>
+    <button class="btn btn-gold btn-sm" onclick="openSeasonEndModal()">End Season &amp; Transfer Teams</button>
+  </div>
+
+  <div style="margin-bottom:16px;padding:14px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <h3 style="font-size:.88rem;font-weight:800;color:#e6edf3;margin-bottom:4px">&#128273; Player Access Code</h3>
+    <p style="font-size:.75rem;color:#8b949e;margin-bottom:10px">Players enter this code to access League 2 in the viewer app.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="access-code-input" placeholder="e.g. L2@2026" style="flex:1;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 12px;color:#e6edf3;font-size:.85rem;font-weight:700;letter-spacing:1px;outline:none">
+      <button onclick="saveAccessCode()" class="btn btn-primary btn-sm">Save</button>
+    </div>
+    <div id="access-code-status" style="font-size:.7rem;color:#8b949e;margin-top:6px"></div>
+  </div>
+
+  <div class="danger-zone">
+    <h3>&#9654; Start New Season</h3>
+    <p>Archives all current data, keeps all teams, and clears fixtures for a fresh start.</p>
+    <button class="btn btn-gold btn-sm" onclick="startNewSeason()">&#127942; Start New Season</button>
+    &nbsp;
+    <button class="btn btn-ghost btn-sm" onclick="cloudRestore()">&#9729; Restore from Cloud</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #3a1a1a">
+      <p style="font-size:.75rem;color:#8b949e;margin-bottom:8px">Hard Reset permanently deletes ALL teams, fixtures, and every season's history. Cannot be undone.</p>
+      <button class="btn btn-red btn-sm" onclick="hardResetLeague()">&#9760; Hard Reset Everything</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FIXTURES ═══════════════════ -->
+<section id="fixtures" class="section">
+  <div id="fixtures-content">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- ═══════════════════ TABLE ═══════════════════ -->
+<section id="table" class="section">
+  <div id="table-content">
+    <!-- rendered by JS -->
+  </div>
+</section>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let LS = loadLS();
+// ═══════════════════════════════════════════
+const FIREBASE_URL = 'https://dls-hub-62226-default-rtdb.firebaseio.com';
+// ═══════════════════════════════════════════
+
+const editingFix = new Set();
+let editingTeam = null;
+
+function defaultLS(){
+  return { teams:[], phones:{}, logos:{}, matchdays:[], generated:false, currentDay:0, currentSeason:1, seasons:[] };
+}
+function loadLS(){
+  try{
+    const r=localStorage.getItem('dls_league2');
+    const s = r ? JSON.parse(r) : defaultLS();
+    if(!s.phones) s.phones = {};
+    if(!s.logos) s.logos = {};
+    if(!s.seasons) s.seasons = [];
+    if(!s.currentSeason) s.currentSeason = 1;
+    return s;
+  }catch(e){ return defaultLS(); }
+}
+function saveLS(){
+  LS.savedAt = Date.now();
+  localStorage.setItem('dls_league2', JSON.stringify(LS));
+  scheduleCloudSave();
+}
+let _cloudTimer = null;
+function scheduleCloudSave(){
+  setCloudStatus('saving');
+  clearTimeout(_cloudTimer);
+  _cloudTimer = setTimeout(async()=>{
+    try{
+      await fetch(FIREBASE_URL+'/dls_admin_league2.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(LS)});
+      setCloudStatus('saved');
+    } catch(e){ setCloudStatus('error'); }
+  }, 2500);
+}
+function setCloudStatus(state){
+  const el = document.getElementById('cloud-status'); if(!el) return;
+  const s = { saving:['☁️ Saving...','#8b949e'], saved:['☁️ Cloud Synced','#4fc3f7'], error:['☁️ Sync Failed','#dc3545'] };
+  el.textContent = s[state][0]; el.style.color = s[state][1];
+}
+async function cloudRestore(){
+  if(!confirm('Replace all local data with the cloud backup?')) return;
+  try{
+    toast('Loading from cloud...','info');
+    const res = await fetch(FIREBASE_URL+'/dls_admin_league2.json');
+    const data = res.ok ? await res.json() : null;
+    if(data && data.teams && data.teams.length){
+      LS = data; if(!LS.phones) LS.phones = {};
+      localStorage.setItem('dls_league2', JSON.stringify(LS));
+      editingFix.clear(); renderTeams();
+      if(LS.generated) switchTab('fixtures');
+      toast('Restored from cloud backup! ☁️');
+    } else { toast('No cloud backup found yet.','info'); }
+  } catch(e){ toast('Restore failed: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════
+function switchTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx={teams:0,fixtures:1,table:2}[id];
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  if(id==='teams')    renderTeams();
+  if(id==='fixtures') renderFixtures();
+  if(id==='table')    renderTable();
+}
+
+// ═══════════════════════════════════════════
+//  TEAMS
+// ═══════════════════════════════════════════
+function renderTeams(){
+  const list = document.getElementById('teams-list');
+  const badge = document.getElementById('team-count-badge');
+  const genBtn = document.getElementById('gen-btn');
+  const genInfo = document.getElementById('generate-info');
+  const warn = document.getElementById('fixture-warning');
+
+  badge.textContent = `${LS.teams.length} team${LS.teams.length !== 1 ? 's' : ''}`;
+
+  if(!LS.teams.length){
+    list.innerHTML=`<div class="empty-teams" style="grid-column:1/-1">
+      <div class="empty-icon">&#9917;</div>
+      <p>No teams yet. Add teams above to get started.</p>
+    </div>`;
+  } else {
+    list.innerHTML = LS.teams.map((t,i)=>{
+      if(editingTeam === i){
+        return `<div class="team-item" style="flex-direction:column;align-items:stretch;gap:8px;border-color:#4fc3f7">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="team-pos">${i+1}</span>
+            <input id="edit-name-${i}" value="${esc(t)}" maxlength="32" placeholder="Team name"
+              style="flex:1;background:#0d1117;border:1px solid #4fc3f7;border-radius:6px;padding:7px 10px;color:#e6edf3;font-size:.88rem;outline:none">
+          </div>
+          <input id="edit-phone-${i}" value="${esc(LS.phones[t]||'')}" placeholder="&#128242; WhatsApp number"
+            style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:7px 10px;color:#8b949e;font-size:.78rem;outline:none">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:#21262d;border:2px solid #30363d;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+              <img id="logo-preview-${i}" src="${LS.logos[t]||''}" style="width:100%;height:100%;object-fit:cover;display:${LS.logos[t]?'block':'none'}">
+              <span style="font-size:.55rem;color:#4a5568;display:${LS.logos[t]?'none':'block'}">IMG</span>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.62rem;color:#8b949e;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Team Logo</div>
+              <div style="display:flex;gap:6px">
+                <input type="file" id="edit-logo-file-${i}" accept="image/*" style="display:none" onchange="previewLogo(${i})">
+                <button type="button" onclick="document.getElementById('edit-logo-file-${i}').click()" style="background:#21262d;border:1px solid #30363d;border-radius:5px;padding:5px 9px;color:#8b949e;font-size:.68rem;cursor:pointer;white-space:nowrap">&#128247; Upload</button>
+                <input id="edit-logo-url-${i}" placeholder="or paste image URL..." value="${LS.logos[t]&&LS.logos[t].startsWith('http')?LS.logos[t].replace(/"/g,'&quot;'):''}" style="flex:1;background:#0d1117;border:1px solid #30363d;border-radius:5px;padding:5px 8px;color:#8b949e;font-size:.68rem;outline:none;min-width:0">
+              </div>
+            </div>
+          </div>
+          <input type="hidden" id="edit-logo-b64-${i}" value="">
+          <div style="display:flex;gap:6px">
+            <button onclick="saveTeamEdit(${i})" style="flex:1;background:linear-gradient(135deg,#4fc3f7,#0288d1);border:none;border-radius:6px;padding:7px;color:#fff;font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:1px">&#10003; Save</button>
+            <button onclick="cancelTeamEdit()" style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:7px 12px;color:#8b949e;font-size:.78rem;cursor:pointer">&#10005;</button>
+          </div>
+        </div>`;
+      }
+      return `<div class="team-item">
+        <div class="team-item-left">
+          <span class="team-pos">${i+1}</span>
+          ${LS.logos[t]?`<img src="${LS.logos[t]}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #30363d;flex-shrink:0">`:`<div style="width:32px;height:32px;border-radius:50%;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#4a5568;flex-shrink:0">${(t[0]||'?').toUpperCase()}</div>`}
+          <div>
+            <div class="team-name">${esc(t)}</div>
+            ${LS.phones[t]?`<div style="font-size:.7rem;color:#8b949e;margin-top:2px">&#128242; ${esc(LS.phones[t])}</div>`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button onclick="editTeam(${i})" title="Edit team" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:.9rem;padding:2px 6px;border-radius:4px;transition:all .2s" onmouseover="this.style.background='rgba(79,195,247,.15)';this.style.color='#4fc3f7'" onmouseout="this.style.background='none';this.style.color='#4a5568'">&#9998;</button>
+          <button class="team-remove" onclick="removeTeam(${i})" title="Remove team">&#10005;</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const n = LS.teams.length;
+  genBtn.disabled = n < 2;
+
+  if(n < 2){
+    genInfo.innerHTML = `Add at least <strong>2 teams</strong> to generate fixtures.`;
+  } else {
+    const days = n % 2 === 0 ? n - 1 : n;
+    const gamesPerDay = Math.floor(n / 2);
+    const total = n*(n-1)/2;
+    genInfo.innerHTML = `<strong>${n} teams</strong> → <strong>${days} matchdays</strong>, ${gamesPerDay} games/day, ${total} total matches.`;
+  }
+
+  warn.classList.toggle('show', LS.generated && n >= 2);
+}
+
+function editTeam(idx){ editingTeam = idx; renderTeams(); }
+function cancelTeamEdit(){ editingTeam = null; renderTeams(); }
+
+function saveTeamEdit(idx){
+  const nameEl = document.getElementById('edit-name-'+idx);
+  const phoneEl = document.getElementById('edit-phone-'+idx);
+  const newName = nameEl?.value.trim();
+  const newPhone = (phoneEl?.value||'').replace(/[^\d+]/g,'').trim();
+  if(!newName){ toast('Team name cannot be empty!','error'); return; }
+  if(LS.teams.some((t,i)=> i !== idx && t === newName)){ toast('That name is already taken!','error'); return; }
+  const oldName = LS.teams[idx];
+  LS.teams[idx] = newName;
+  delete LS.phones[oldName];
+  if(newPhone) LS.phones[newName] = newPhone;
+  const b64Logo = document.getElementById('edit-logo-b64-'+idx)?.value||'';
+  const urlLogo = (document.getElementById('edit-logo-url-'+idx)?.value||'').trim();
+  if(oldName !== newName){ if(LS.logos[oldName]) LS.logos[newName]=LS.logos[oldName]; delete LS.logos[oldName]; }
+  if(b64Logo||urlLogo) LS.logos[newName]=b64Logo||urlLogo;
+  if(oldName !== newName){
+    LS.matchdays.forEach(md=>{
+      md.matches.forEach(m=>{ if(m.home===oldName) m.home=newName; if(m.away===oldName) m.away=newName; });
+      if(md.byeTeam===oldName) md.byeTeam=newName;
+    });
+  }
+  editingTeam = null;
+  saveLS(); renderTeams(); renderFixtures(); renderTable();
+  toast(oldName!==newName?`Renamed to ${esc(newName)}!`:'Contact updated!');
+}
+
+function addTeam(){
+  const inp = document.getElementById('new-team-input');
+  const phoneInp = document.getElementById('new-phone-input');
+  const name = inp.value.trim();
+  if(!name){ toast('Enter a team name first.','error'); return; }
+  if(LS.teams.includes(name)){ toast(`"${name}" is already in the league.`,'error'); return; }
+  const phone = phoneInp ? phoneInp.value.trim() : '';
+  LS.teams.push(name);
+  if(phone) LS.phones[name] = phone;
+  inp.value = '';
+  if(phoneInp) phoneInp.value = '';
+  inp.focus();
+  saveLS();
+  renderTeams();
+  toast(`${esc(name)} added to the league!`);
+}
+
+function removeTeam(idx){
+  const name = LS.teams[idx];
+  LS.teams.splice(idx, 1);
+  delete LS.phones[name];
+  delete LS.logos[name];
+  saveLS();
+  renderTeams();
+  toast(`${esc(name)} removed.`,'info');
+}
+
+// ═══════════════════════════════════════════
+//  FIXTURE GENERATION — CIRCLE METHOD
+// ═══════════════════════════════════════════
+function generateFixtures(){
+  const n = LS.teams.length;
+  if(n < 2){ toast('Need at least 2 teams.','error'); return; }
+  if(LS.generated){
+    if(!confirm('This will clear ALL existing scores and regenerate fixtures. Continue?')) return;
+  }
+
+  const shuffled = [...LS.teams];
+  for(let i = shuffled.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const isOdd = n % 2 !== 0;
+  const list = isOdd ? [...shuffled, null] : [...shuffled];
+  const size = list.length;
+  const rounds = size - 1;
+  const matchdays = [];
+  const arr = [...list];
+  let matchId = 0;
+
+  for(let r = 0; r < rounds; r++){
+    const matches = [];
+    for(let i = 0; i < size / 2; i++){
+      const t1 = arr[i];
+      const t2 = arr[size - 1 - i];
+      if(t1 !== null && t2 !== null){
+        const [home, away] = Math.random() < 0.5 ? [t1,t2] : [t2,t1];
+        matches.push({ id: matchId++, home, away, hs: null, as: null, played: false });
+      }
+    }
+    const byeTeam = isOdd ? arr.find(t => t === null ? false : !matches.some(m => m.home === t || m.away === t)) : null;
+    matchdays.push({ day: r + 1, matches, byeTeam });
+
+    const last = arr[size - 1];
+    for(let i = size - 1; i > 1; i--) arr[i] = arr[i - 1];
+    arr[1] = last;
+  }
+
+  LS.matchdays = matchdays;
+  LS.generated = true;
+  LS.currentDay = 0;
+  editingFix.clear();
+  saveLS();
+  renderTeams();
+  switchTab('fixtures');
+  toast(`Fixtures generated! ${matchdays.length} matchdays ready.`);
+}
+
+// ═══════════════════════════════════════════
+//  FIXTURES
+// ═══════════════════════════════════════════
+function renderFixtures(){
+  const wrap = document.getElementById('fixtures-content');
+
+  if(!LS.generated || !LS.matchdays.length){
+    wrap.innerHTML = `<div class="notice-card">
+      <h3>&#128197; No Fixtures Yet</h3>
+      <p>Go to the Teams tab, add your teams, and click <strong>Generate Fixtures</strong>.</p>
+    </div>`;
+    return;
+  }
+
+  let totalPlayed = 0, totalGoals = 0;
+  LS.matchdays.forEach(md => md.matches.forEach(m => {
+    if(m.played){ totalPlayed++; totalGoals += m.hs + m.as; }
+  }));
+  const totalMatches = LS.matchdays.reduce((s,md)=>s+md.matches.length, 0);
+  const pct = totalMatches ? Math.round(totalPlayed / totalMatches * 100) : 0;
+
+  const day = LS.matchdays[LS.currentDay];
+  const dayPlayed = day.matches.filter(m=>m.played).length;
+  const dayTotal = day.matches.length;
+
+  const jumpOpts = LS.matchdays.map((md,i) => {
+    const p = md.matches.filter(m=>m.played).length;
+    const t = md.matches.length;
+    const label = p === t ? '✓' : p > 0 ? `${p}/${t}` : '·';
+    return `<option value="${i}" ${i===LS.currentDay?'selected':''}>[MD${md.day}] ${label}</option>`;
+  }).join('');
+
+  let matchesHTML = '';
+  day.matches.forEach((m, idx) => {
+    const key = `${LS.currentDay}-${idx}`;
+    const isEditing = editingFix.has(key);
+
+    if(m.played && !isEditing){
+      const homeWin = m.hs > m.as, awayWin = m.as > m.hs;
+      const hStyle = homeWin ? 'style="color:#4ade80"' : awayWin ? 'style="color:#f87171"' : '';
+      const aStyle = awayWin ? 'style="color:#4ade80"' : homeWin ? 'style="color:#f87171"' : '';
+      matchesHTML += `<div class="match-card played">
+        <div class="mc-team home" ${hStyle}>${esc(m.home)}</div>
+        <div class="mc-result">${m.hs} &ndash; ${m.as}</div>
+        <div class="mc-team away" ${aStyle}>${esc(m.away)}</div>
+        <span class="mc-ok">&#10003;</span>
+        <button class="mc-edit-btn" onclick="editScore(${LS.currentDay},${idx})">&#9998;</button>
+      </div>`;
+    } else {
+      const ph = isEditing && m.hs !== null ? m.hs : '';
+      const pa = isEditing && m.as !== null ? m.as : '';
+      matchesHTML += `<div class="match-card${isEditing?' editing':''}">
+        <div class="mc-team home">${esc(m.home)}</div>
+        <div class="mc-score-area">
+          <input class="sc-inp" id="sc-h-${LS.currentDay}-${idx}" type="number" min="0" max="99" placeholder="0" value="${ph}">
+          <span class="sc-sep">&ndash;</span>
+          <input class="sc-inp" id="sc-a-${LS.currentDay}-${idx}" type="number" min="0" max="99" placeholder="0" value="${pa}">
+        </div>
+        <div class="mc-team away">${esc(m.away)}</div>
+        <button class="mc-save-btn" onclick="saveScore(${LS.currentDay},${idx})">Save</button>
+        ${isEditing ? `<button class="mc-cancel-btn" onclick="cancelEdit(${LS.currentDay},${idx})">&#10005;</button>` : ''}
+      </div>`;
+    }
+  });
+
+  if(day.byeTeam){
+    matchesHTML += `<div class="bye-card">&#128683; ${esc(day.byeTeam)} has a bye this matchday</div>`;
+  }
+
+  const prevDisabled = LS.currentDay === 0 ? 'disabled' : '';
+  const nextDisabled = LS.currentDay === LS.matchdays.length - 1 ? 'disabled' : '';
+
+  wrap.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val">${LS.teams.length}</div><div class="stat-lbl">Teams</div></div>
+      <div class="stat-box"><div class="stat-val">${LS.matchdays.length}</div><div class="stat-lbl">Matchdays</div></div>
+      <div class="stat-box"><div class="stat-val">${totalPlayed}/${totalMatches}</div><div class="stat-lbl">Matches</div></div>
+      <div class="stat-box"><div class="stat-val">${totalGoals}</div><div class="stat-lbl">Goals</div></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="progress-txt">${pct}% of the season complete</div>
+
+    <br>
+    <div class="matchday-nav">
+      <button class="nav-arrow" onclick="goDay(${LS.currentDay-1})" ${prevDisabled}>&#8592;</button>
+      <div class="md-title">
+        <h3>Matchday ${day.day} <span style="font-size:.75rem;color:#8b949e;font-weight:400">of ${LS.matchdays.length}</span></h3>
+        <p>${dayPlayed}/${dayTotal} matches played this day</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select class="day-jump" onchange="goDay(parseInt(this.value))">${jumpOpts}</select>
+        <button class="nav-arrow" onclick="goDay(${LS.currentDay+1})" ${nextDisabled}>&#8594;</button>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:10px 16px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:.85rem">&#9201;</span>
+      <span style="font-size:.78rem;color:#8b949e;white-space:nowrap;font-weight:700">24H DEADLINE:</span>
+      <input type="datetime-local" id="md-deadline" value="${day.deadline||''}"
+        onchange="saveDeadline(this.value)"
+        style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:6px 10px;color:#e6edf3;font-size:.8rem;outline:none;flex:1;min-width:180px;transition:border-color .2s"
+        onfocus="this.style.borderColor='#4fc3f7'" onblur="this.style.borderColor='#30363d'">
+      <span style="font-size:.7rem;color:${day.deadline?'#4fc3f7':'#4a5568'}">${day.deadline?'Set &#10003;':'Not set'}</span>
+    </div>
+
+    <div class="matches-grid">${matchesHTML}</div>
+
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-sm btn-ghost" onclick="saveAllDay(${LS.currentDay})">Save All Entered Scores</button>
+      <button class="btn btn-sm btn-ghost" onclick="switchTab('table')">&#128202; View Table</button>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:700;letter-spacing:1px;padding:6px 14px;font-size:.75rem" onclick="publishLeague()">&#128228; Publish to Viewers</button>
+    </div>`;
+}
+
+function goDay(idx){
+  if(idx < 0 || idx >= LS.matchdays.length) return;
+  LS.currentDay = idx;
+  saveLS();
+  renderFixtures();
+}
+
+function saveDeadline(val){
+  LS.matchdays[LS.currentDay].deadline = val || null;
+  saveLS();
+  renderFixtures();
+  toast('Deadline saved!','info');
+}
+
+function saveScore(dayIdx, matchIdx){
+  const hEl = document.getElementById(`sc-h-${dayIdx}-${matchIdx}`);
+  const aEl = document.getElementById(`sc-a-${dayIdx}-${matchIdx}`);
+  const hs = parseInt(hEl?.value);
+  const as = parseInt(aEl?.value);
+  if(isNaN(hs)||isNaN(as)||hs<0||as<0){ toast('Enter valid scores (0 or more) for both teams!','error'); return; }
+
+  const m = LS.matchdays[dayIdx].matches[matchIdx];
+  m.hs = hs; m.as = as; m.played = true;
+  editingFix.delete(`${dayIdx}-${matchIdx}`);
+  saveLS();
+  renderFixtures();
+  toast(`${esc(m.home)} ${hs}–${as} ${esc(m.away)} saved!`);
+}
+
+function editScore(dayIdx, matchIdx){
+  editingFix.add(`${dayIdx}-${matchIdx}`);
+  renderFixtures();
+}
+
+function cancelEdit(dayIdx, matchIdx){
+  editingFix.delete(`${dayIdx}-${matchIdx}`);
+  renderFixtures();
+}
+
+async function publishLeague(){
+  if(!LS.generated || !LS.matchdays.length){ toast('Generate fixtures first.','error'); return; }
+
+  const table = calcTable().map(r => ({ ...r, form: getForm(r.team) }));
+  const totalPlayed = LS.matchdays.reduce((s,md)=>s+md.matches.filter(m=>m.played).length,0);
+  const totalMatches = LS.matchdays.reduce((s,md)=>s+md.matches.length,0);
+  const totalGoals   = LS.matchdays.reduce((s,md)=>s+md.matches.reduce((s2,m)=>s2+(m.played?m.hs+m.as:0),0),0);
+
+  const pub = {
+    publishedAt: Date.now(),
+    totalTeams: LS.teams.length,
+    totalMatchdays: LS.matchdays.length,
+    currentMatchday: LS.currentDay + 1,
+    matchday: LS.matchdays[LS.currentDay],
+    allMatchdays: LS.matchdays,
+    table,
+    season: { totalPlayed, totalMatches, totalGoals },
+    phones: LS.phones,
+    logos: LS.logos,
+    seasons: LS.seasons || [],
+    currentSeason: LS.currentSeason || 1
+  };
+
+  if(!FIREBASE_URL || FIREBASE_URL === 'YOUR_FIREBASE_URL'){
+    toast('Set your FIREBASE_URL in the code first!','error'); return;
+  }
+  try {
+    toast('Publishing...','info');
+    const res = await fetch(FIREBASE_URL + '/dls_pub_league2.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(pub)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    toast('Published! Players can now see Matchday ' + pub.currentMatchday);
+    notifyFixture('league2', 'Division 2', pub.currentMatchday);
+  } catch(e) {
+    toast('Publish failed: ' + e.message, 'error');
+  }
+}
+
+function saveAllDay(dayIdx){
+  const md = LS.matchdays[dayIdx];
+  let saved = 0;
+  md.matches.forEach((m, idx) => {
+    if(m.played && !editingFix.has(`${dayIdx}-${idx}`)) return;
+    const hEl = document.getElementById(`sc-h-${dayIdx}-${idx}`);
+    const aEl = document.getElementById(`sc-a-${dayIdx}-${idx}`);
+    if(!hEl || !aEl) return;
+    const hs = parseInt(hEl.value), as = parseInt(aEl.value);
+    if(isNaN(hs)||isNaN(as)||hs<0||as<0) return;
+    m.hs = hs; m.as = as; m.played = true;
+    editingFix.delete(`${dayIdx}-${idx}`);
+    saved++;
+  });
+  if(saved === 0){ toast('No new scores to save.','info'); return; }
+  saveLS();
+  renderFixtures();
+  toast(`${saved} score${saved>1?'s':''} saved!`);
+}
+
+// ═══════════════════════════════════════════
+//  TABLE
+// ═══════════════════════════════════════════
+function calcTable(){
+  const stats = {};
+  LS.teams.forEach(t => stats[t] = { team:t, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 });
+
+  LS.matchdays.forEach(md => {
+    md.matches.forEach(m => {
+      if(!m.played || !stats[m.home] || !stats[m.away]) return;
+      const h = stats[m.home], a = stats[m.away];
+      h.p++; a.p++;
+      h.gf += m.hs; h.ga += m.as;
+      a.gf += m.as; a.ga += m.hs;
+      if(m.hs > m.as){ h.w++; h.pts += 3; a.l++; }
+      else if(m.hs === m.as){ h.d++; h.pts++; a.d++; a.pts++; }
+      else{ a.w++; a.pts += 3; h.l++; }
+    });
+  });
+
+  return Object.values(stats).sort((a,b) =>
+    b.pts-a.pts || (b.gf-b.ga)-(a.gf-a.ga) || b.gf-a.gf || a.team.localeCompare(b.team)
+  ).map((t,i) => ({ pos:i+1, ...t, gd:t.gf-t.ga }));
+}
+
+function getForm(team){
+  const results = [];
+  for(const md of LS.matchdays){
+    for(const m of md.matches){
+      if(!m.played) continue;
+      if(m.home === team) results.push(m.hs > m.as ? 'W' : m.hs === m.as ? 'D' : 'L');
+      else if(m.away === team) results.push(m.as > m.hs ? 'W' : m.as === m.hs ? 'D' : 'L');
+    }
+  }
+  return results.slice(-5);
+}
+
+function renderTable(){
+  const wrap = document.getElementById('table-content');
+
+  if(!LS.generated || !LS.teams.length){
+    wrap.innerHTML = `<div class="notice-card">
+      <h3>&#128202; No Data Yet</h3>
+      <p>Generate fixtures and enter some scores to see the league table.</p>
+    </div>`;
+    return;
+  }
+
+  const rows = calcTable();
+  const n = rows.length;
+  const CL_SPOTS  = n >= 9 ? 8 : Math.max(1, n - 3);
+  const REL_SPOTS = n >= 4 ? 3 : 0;
+
+  const totalMatches = LS.matchdays.reduce((s,md)=>s+md.matches.length,0);
+  const totalPlayed = LS.matchdays.reduce((s,md)=>s+md.matches.filter(m=>m.played).length,0);
+  const seasonDone = totalPlayed === totalMatches && totalMatches > 0;
+
+  let bannerHTML = '';
+  if(seasonDone){
+    bannerHTML = `<div class="season-banner show">
+      <div class="season-trophy">&#127942;</div>
+      <div class="season-champ">${esc(rows[0].team)}</div>
+      <div class="season-lbl">DLS League 2 Champion &#9917;</div>
+    </div>`;
+  }
+
+  let tableRows = '';
+  rows.forEach((r,i) => {
+    let rowClass = '';
+    if(i === 0) rowClass = 'rank-1';
+    else if(i < CL_SPOTS) rowClass = 'rank-top';
+    if(REL_SPOTS > 0 && i >= n - REL_SPOTS) rowClass = 'rank-bot';
+
+    if(i === CL_SPOTS) rowClass += ' cut-cl';
+    if(REL_SPOTS > 0 && i === n - REL_SPOTS) rowClass += ' cut-rel';
+
+    const gdClass = r.gd > 0 ? 'gd-pos' : r.gd < 0 ? 'gd-neg' : 'gd-zero';
+    const form = getForm(r.team);
+    const formHTML = form.map(f => `<div class="fb fb-${f.toLowerCase()}">${f}</div>`).join('');
+
+    let badge = '';
+    if(i < CL_SPOTS) badge = `<span style="font-size:.6rem;background:rgba(255,215,0,.15);color:#FFD700;border:1px solid rgba(255,215,0,.3);border-radius:4px;padding:1px 5px;margin-left:5px;vertical-align:middle">${i===0?'CHAMP':'CL'}</span>`;
+    else if(REL_SPOTS > 0 && i >= n - REL_SPOTS) badge = `<span style="font-size:.6rem;background:rgba(220,53,69,.15);color:#f87171;border:1px solid rgba(220,53,69,.3);border-radius:4px;padding:1px 5px;margin-left:5px;vertical-align:middle">REL</span>`;
+
+    const tLogoEl = LS.logos[r.team]?`<img src="${LS.logos[r.team]}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px">`:'';
+    tableRows += `<tr class="${rowClass}">
+      <td class="pos-cell">${r.pos}</td>
+      <td>${tLogoEl}${esc(r.team)}${badge}</td>
+      <td>${r.p}</td>
+      <td>${r.w}</td>
+      <td>${r.d}</td>
+      <td>${r.l}</td>
+      <td>${r.gf}</td>
+      <td>${r.ga}</td>
+      <td class="${gdClass}">${r.gd > 0 ? '+' : ''}${r.gd}</td>
+      <td class="pts-cell">${r.pts}</td>
+      <td><div class="form-badges">${formHTML}</div></td>
+    </tr>`;
+  });
+
+  const totalGoals = LS.matchdays.reduce((s,md)=>s+md.matches.reduce((s2,m)=>s2+(m.played?m.hs+m.as:0),0),0);
+  const pct = totalMatches ? Math.round(totalPlayed/totalMatches*100) : 0;
+
+  let legendHTML = `
+    <div class="legend-item"><div class="legend-line" style="background:#FFD700"></div>Champion</div>
+    <div class="legend-item"><div class="legend-line" style="background:#4fc3f7"></div>Top ${CL_SPOTS} → Champions League</div>`;
+  if(REL_SPOTS > 0) legendHTML += `<div class="legend-item"><div class="legend-line" style="background:#dc3545"></div>Bottom ${REL_SPOTS} → Relegated</div>`;
+
+  wrap.innerHTML = `
+    ${bannerHTML}
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val">${n}</div><div class="stat-lbl">Teams</div></div>
+      <div class="stat-box"><div class="stat-val">${totalPlayed}</div><div class="stat-lbl">Played</div></div>
+      <div class="stat-box"><div class="stat-val">${totalMatches - totalPlayed}</div><div class="stat-lbl">Remaining</div></div>
+      <div class="stat-box"><div class="stat-val">${totalGoals}</div><div class="stat-lbl">Goals</div></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="progress-txt" style="margin-bottom:16px">${pct}% complete &mdash; ${totalPlayed}/${totalMatches} matches played</div>
+
+    <div class="table-wrap">
+      <table class="league-table">
+        <thead>
+          <tr>
+            <th>#</th><th style="text-align:left">Team</th>
+            <th>P</th><th>W</th><th>D</th><th>L</th>
+            <th>GF</th><th>GA</th><th>GD</th><th>Pts</th>
+            <th>Form</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+
+    <div class="table-legend">${legendHTML}</div>`;
+}
+
+// ═══════════════════════════════════════════
+//  SEASON ARCHIVE & RESET
+// ═══════════════════════════════════════════
+async function saveAccessCode(){
+  const input = document.getElementById('access-code-input');
+  const statusEl = document.getElementById('access-code-status');
+  const code = (input.value||'').trim();
+  if(!code){ statusEl.textContent='Enter a code first'; statusEl.style.color='#f87171'; return; }
+  try{
+    statusEl.textContent='Saving...'; statusEl.style.color='#8b949e';
+    await fetch(FIREBASE_URL+'/dls_codes.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({league2:code})});
+    statusEl.textContent='Code saved ✓'; statusEl.style.color='#00c853';
+  } catch(e){ statusEl.textContent='Failed: '+e.message; statusEl.style.color='#f87171'; }
+}
+async function recordTrophy(teamName, type){
+  try {
+    const url = FIREBASE_URL + '/dls_trophies.json';
+    const res = await fetch(url);
+    const data = (res.ok ? await res.json() : null) || {};
+    if(!data[teamName]) data[teamName] = {};
+    data[teamName][type] = (data[teamName][type] || 0) + 1;
+    await fetch(url, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+  } catch(e) {}
+}
+function archiveCurrentSeason(){
+  if(!LS.generated || !LS.matchdays.length) return;
+  if(!LS.seasons) LS.seasons = [];
+  const table = calcTable().map(r=>({...r, form:getForm(r.team)}));
+  LS.seasons.push({
+    season: LS.currentSeason || 1,
+    endedAt: Date.now(),
+    table,
+    matchdays: JSON.parse(JSON.stringify(LS.matchdays)),
+    teams: [...LS.teams]
+  });
+  const champion = table[0] && table[0].team;
+  if(champion) recordTrophy(champion, 'league2');
+}
+function startNewSeason(){
+  if(!confirm('Archive Season ' + (LS.currentSeason||1) + ' and start a new season?\n\nAll teams are kept. Fixtures and scores will be cleared.')) return;
+  archiveCurrentSeason();
+  LS.matchdays = []; LS.generated = false; LS.currentDay = 0;
+  LS.currentSeason = (LS.currentSeason || 1) + 1;
+  saveLS();
+  editingFix.clear();
+  renderTeams();
+  switchTab('teams');
+  toast('Season ' + (LS.currentSeason - 1) + ' archived. Season ' + LS.currentSeason + ' is ready.', 'info');
+}
+function hardResetLeague(){
+  const key = prompt('WARNING: This permanently deletes ALL teams, fixtures, scores, and every season\'s history.\n\nType  RESET  to confirm:');
+  if((key||'').trim() !== 'RESET'){ toast('Hard reset cancelled.','info'); return; }
+  LS = defaultLS();
+  saveLS();
+  editingFix.clear();
+  renderTeams();
+  switchTab('teams');
+  toast('Hard reset complete. All data deleted.','info');
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+const NOTIFY_SECRET = 'c68805dd4e0bd6a2025817c84db31527257c4e9a3b4ea0c618946a6bd42dd3b0';
+function notifyFixture(comp, compName, matchday){
+  const storeKey = 'dls_last_notif_' + comp;
+  const last = localStorage.getItem(storeKey);
+  if(last !== null && parseInt(last) >= matchday) return;
+  localStorage.setItem(storeKey, matchday);
+  fetch('/.netlify/functions/notify-fixture', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ comp, compName, matchday, secret: NOTIFY_SECRET })
+  }).catch(()=>{});
+}
+
+function esc(str){
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type='success'){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (type==='error'?'error':type==='info'?'info':'');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+// ── Logo helpers ──
+function resizeImageToBase64(file,size=48){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        c.width=size;c.height=size;
+        const ctx=c.getContext('2d');
+        const ratio=Math.min(size/img.width,size/img.height);
+        const w=img.width*ratio,h=img.height*ratio;
+        ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+        resolve(c.toDataURL('image/jpeg',.85));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function previewLogo(idx){
+  const file=document.getElementById('edit-logo-file-'+idx)?.files[0];
+  if(!file) return;
+  const b64=await resizeImageToBase64(file);
+  const hidden=document.getElementById('edit-logo-b64-'+idx);
+  if(hidden) hidden.value=b64;
+  const preview=document.getElementById('logo-preview-'+idx);
+  if(preview){ preview.src=b64; preview.style.display='block'; }
+  const span=preview?.parentElement?.querySelector('span');
+  if(span) span.style.display='none';
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+(async function init(){
+  if(FIREBASE_URL && FIREBASE_URL !== 'YOUR_FIREBASE_URL'){
+    try{
+      const res = await fetch(FIREBASE_URL+'/dls_admin_league2.json');
+      const cloud = res.ok ? await res.json() : null;
+      if(cloud && cloud.teams && cloud.teams.length && (cloud.savedAt||0) > (LS.savedAt||0)){
+        LS = cloud; if(!LS.phones) LS.phones={};
+        localStorage.setItem('dls_league2', JSON.stringify(LS));
+        toast('Data synced from cloud ☁️','info');
+      }
+    } catch(e){}
+  }
+  renderTeams();
+  if(LS.generated) switchTab('fixtures');
+  if(LS.teams.length) scheduleCloudSave();
+})();
+
+// ─── SEASON END / PROMOTION & RELEGATION ──────────────────────────
+function openSeasonEndModal(){
+  if(!LS.generated || !LS.matchdays.length){ toast('Generate fixtures first.','error'); return; }
+  const totalMatches = LS.matchdays.reduce((s,md)=>s+md.matches.length,0);
+  const playedMatches = LS.matchdays.reduce((s,md)=>s+md.matches.filter(m=>m.played).length,0);
+  const remaining = totalMatches - playedMatches;
+  if(remaining > 0){ toast(`Season not complete — ${remaining} fixture${remaining>1?'s':''} still unplayed.`,'error'); return; }
+  const tbl = calcTable();
+  if(!tbl.length){ toast('No teams in the league.','error'); return; }
+  document.getElementById('sm-table-body').innerHTML = tbl.map((r,i)=>`
+    <tr>
+      <td style="color:#8b949e">${i+1}</td>
+      <td>
+        ${LS.logos[r.team]?`<img src="${LS.logos[r.team]}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:6px;object-fit:cover" onerror="this.style.display='none'">`:''}
+        ${r.team}
+      </td>
+      <td style="color:#4fc3f7;font-weight:600">${r.pts}</td>
+      <td style="color:#8b949e">${r.p}</td>
+      <td style="color:#8b949e">${r.w}-${r.d}-${r.l}</td>
+    </tr>
+  `).join('');
+  updateSeasonPreview();
+  document.getElementById('season-modal').classList.remove('hidden');
+}
+function closeSeasonEndModal(){
+  document.getElementById('season-modal').classList.add('hidden');
+}
+function updateSeasonPreview(){
+  const tbl = calcTable();
+  const promoN = Math.min(Math.max(parseInt(document.getElementById('promo-count').value)||0,0), tbl.length);
+  const relN   = Math.min(Math.max(parseInt(document.getElementById('rel-count').value)||0,0), tbl.length - promoN);
+  const promoTeams = tbl.slice(0, promoN);
+  const relTeams   = tbl.slice(tbl.length - relN);
+  document.getElementById('promo-preview').innerHTML = promoTeams.length
+    ? promoTeams.map(r=>`<div class="season-team-row">
+        <img src="${LS.logos[r.team]||''}" onerror="this.style.display='none'">
+        <span class="stname">${r.team}</span>
+        <span class="stpts">${r.pts} pts</span>
+        <span class="promo-badge">&#8594; League 1</span>
+      </div>`).join('')
+    : '<div style="color:#8b949e;font-size:.82rem;padding:6px">No teams selected</div>';
+  document.getElementById('rel-preview').innerHTML = relTeams.length
+    ? relTeams.map(r=>`<div class="season-team-row">
+        <img src="${LS.logos[r.team]||''}" onerror="this.style.display='none'">
+        <span class="stname">${r.team}</span>
+        <span class="stpts">${r.pts} pts</span>
+        <span class="relegate-badge">&#8594; League 3</span>
+      </div>`).join('')
+    : '<div style="color:#8b949e;font-size:.82rem;padding:6px">No teams selected</div>';
+}
+function confirmSeasonEnd(){
+  const tbl = calcTable();
+  const promoN = Math.min(Math.max(parseInt(document.getElementById('promo-count').value)||0,0), tbl.length);
+  const relN   = Math.min(Math.max(parseInt(document.getElementById('rel-count').value)||0,0), tbl.length);
+  if(promoN===0 && relN===0){ toast('Set at least 1 team to promote or relegate.','error'); return; }
+  const promoTeams = tbl.slice(0, promoN).map(r=>r.team);
+  const relTeams   = tbl.slice(tbl.length - relN).map(r=>r.team);
+  if(promoTeams.some(t=>relTeams.includes(t))){ toast('Promoted and relegated teams overlap — reduce counts.','error'); return; }
+  if(!confirm(`Promote ${promoN} team(s) to League 1 and relegate ${relN} team(s) to League 3?\n\nAll affected leagues will be reset. This cannot be undone.`)) return;
+
+  let l1;
+  try{ l1=JSON.parse(localStorage.getItem('dls_league')); }catch(e){ l1=null; }
+  if(!l1||typeof l1!=='object') l1={teams:[],phones:{},logos:{},matchdays:[],generated:false,currentDay:0};
+  if(!l1.phones) l1.phones={}; if(!l1.logos) l1.logos={};
+  promoTeams.forEach(t=>{
+    if(!l1.teams.includes(t)) l1.teams.push(t);
+    if(LS.phones[t]) l1.phones[t]=LS.phones[t];
+    if(LS.logos[t]) l1.logos[t]=LS.logos[t];
+  });
+  l1.matchdays=[]; l1.generated=false; l1.currentDay=0;
+  localStorage.setItem('dls_league', JSON.stringify(l1));
+
+  let l3;
+  try{ l3=JSON.parse(localStorage.getItem('dls_league3')); }catch(e){ l3=null; }
+  if(!l3||typeof l3!=='object') l3={teams:[],phones:{},logos:{},matchdays:[],generated:false,currentDay:0};
+  if(!l3.phones) l3.phones={}; if(!l3.logos) l3.logos={};
+  relTeams.forEach(t=>{
+    if(!l3.teams.includes(t)) l3.teams.push(t);
+    if(LS.phones[t]) l3.phones[t]=LS.phones[t];
+    if(LS.logos[t]) l3.logos[t]=LS.logos[t];
+  });
+  l3.matchdays=[]; l3.generated=false; l3.currentDay=0;
+  localStorage.setItem('dls_league3', JSON.stringify(l3));
+
+  archiveCurrentSeason();
+  const moved = [...promoTeams, ...relTeams];
+  LS.teams = LS.teams.filter(t=>!moved.includes(t));
+  LS.matchdays=[]; LS.generated=false; LS.currentDay=0;
+  LS.currentSeason = (LS.currentSeason||1) + 1;
+  saveLS();
+  closeSeasonEndModal();
+  renderTeams();
+  toast(`Season archived. ${promoN} promoted to League 1, ${relN} relegated to League 3. Season ${LS.currentSeason} ready.`,'info');
+}
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+
+<!-- ── SEASON END MODAL ── -->
+<div id="season-modal" class="season-modal hidden">
+  <div class="season-modal-box">
+    <h2>&#127942; End Season &mdash; League 2</h2>
+    <p class="season-modal-sub">Promote top teams to League 1, relegate bottom teams to League 3. All affected leagues reset for new season.</p>
+
+    <div class="season-sect">
+      <h4>&#128202; Current Standings</h4>
+      <table class="sm-table">
+        <thead><tr><th>#</th><th>Team</th><th>Pts</th><th>P</th><th>W-D-L</th></tr></thead>
+        <tbody id="sm-table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="season-sect">
+      <h4>&#129001; Promote to League 1</h4>
+      <div class="season-count-row">
+        <label>Number of teams to promote:</label>
+        <input type="number" id="promo-count" class="season-count-input" value="3" min="0" oninput="updateSeasonPreview()">
+      </div>
+      <div id="promo-preview"></div>
+    </div>
+
+    <div class="season-sect">
+      <h4>&#128308; Relegate to League 3</h4>
+      <div class="season-count-row">
+        <label>Number of teams to relegate:</label>
+        <input type="number" id="rel-count" class="season-count-input" value="3" min="0" oninput="updateSeasonPreview()">
+      </div>
+      <div id="rel-preview"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeSeasonEndModal()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmSeasonEnd()">&#9889; Confirm &amp; End Season</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

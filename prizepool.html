@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prize Pool Manager</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DLS League">
+<link rel="apple-touch-icon" href="dls_logo.jpeg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;padding-bottom:60px}
+
+.header{background:linear-gradient(135deg,#0f2027,#0d1117);border-bottom:3px solid #FFD700;padding:20px;text-align:center;position:relative}
+.header h1{font-size:2rem;color:#FFD700;text-shadow:0 0 24px rgba(255,215,0,.3);letter-spacing:4px;text-transform:uppercase}
+.header p{color:#8b949e;margin-top:5px;font-size:.82rem;letter-spacing:2px;text-transform:uppercase}
+.back-link{position:absolute;top:50%;left:20px;transform:translateY(-50%);background:#161b22;border:1px solid #30363d;border-radius:6px;padding:7px 14px;color:#8b949e;font-size:.8rem;cursor:pointer;text-decoration:none;transition:all .2s}
+.back-link:hover{border-color:#FFD700;color:#FFD700}
+
+/* ── Tabs ── */
+.tabs{display:flex;justify-content:center;flex-wrap:wrap;background:#161b22;border-bottom:1px solid #21262d;gap:0}
+.tab-btn{padding:12px 20px;background:none;border:none;color:#8b949e;font-size:.78rem;cursor:pointer;transition:all .25s;border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:1px;font-weight:700;white-space:nowrap}
+.tab-btn.active{border-bottom-color:var(--tc);color:var(--tc);background:rgba(255,255,255,.03)}
+.tab-btn:hover{color:var(--tc)}
+.tab-btn.t-lg1{--tc:#00c853}
+.tab-btn.t-lg2{--tc:#4fc3f7}
+.tab-btn.t-lg3{--tc:#ab47bc}
+.tab-btn.t-cl {--tc:#FFD700}
+.tab-btn.t-eu {--tc:#ff7043}
+
+/* ── Content ── */
+.page{display:none;max-width:640px;margin:0 auto;padding:28px 20px}
+.page.active{display:block}
+
+/* Competition header */
+.comp-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding:16px;background:#161b22;border:1px solid #21262d;border-radius:10px}
+.comp-icon{font-size:2.2rem}
+.comp-title{font-size:1.2rem;font-weight:800;text-transform:uppercase;letter-spacing:2px}
+.comp-sub{font-size:.75rem;color:#8b949e;margin-top:3px}
+
+/* Prize list */
+.prize-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;min-height:40px}
+.prize-item{display:flex;align-items:center;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:12px 14px;transition:border-color .2s}
+.prize-item:hover{border-color:#30363d}
+.pi-medal{font-size:1.5rem;flex-shrink:0;width:32px;text-align:center}
+.pi-info{flex:1;min-width:0}
+.pi-rank{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.pi-desc{font-size:.92rem;font-weight:700;color:#e6edf3;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-amount{font-size:1.05rem;font-weight:800;color:#FFD700;flex-shrink:0;margin-right:8px}
+.pi-del{background:none;border:1px solid #30363d;border-radius:5px;color:#4a5568;font-size:.85rem;cursor:pointer;padding:4px 9px;transition:all .2s;flex-shrink:0}
+.pi-del:hover{background:rgba(220,53,69,.15);color:#dc3545;border-color:#dc3545}
+
+.empty-prizes{text-align:center;padding:28px;color:#4a5568;font-size:.85rem;border:1px dashed #21262d;border-radius:8px}
+
+/* Add prize form */
+.add-prize-box{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:18px;margin-bottom:20px}
+.add-prize-box h3{font-size:.78rem;color:#8b949e;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:14px}
+.add-row{display:flex;flex-direction:column;gap:10px}
+.add-row input,.add-row select{background:#0d1117;border:1px solid #30363d;border-radius:7px;padding:10px 12px;color:#e6edf3;font-size:.88rem;outline:none;transition:border-color .25s;width:100%}
+.add-row input:focus,.add-row select:focus{border-color:#FFD700}
+.add-row input::placeholder{color:#4a5568}
+.add-row-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:inline-block;padding:10px 28px;border:none;border-radius:7px;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .25s;text-transform:uppercase;letter-spacing:1.5px}
+.btn-gold{background:linear-gradient(135deg,#FFD700,#FFA500);color:#0d1117}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,215,0,.35)}
+.btn-blue{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff}
+.btn-blue:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(21,101,192,.35)}
+.btn-ghost{background:#21262d;border:1px solid #30363d;color:#e6edf3}
+.btn-ghost:hover{border-color:#FFD700;color:#FFD700}
+.btn-full{width:100%;padding:13px}
+
+/* Publish bar */
+.publish-bar{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.publish-info{font-size:.82rem;color:#8b949e;line-height:1.5}
+.publish-info strong{color:#e6edf3}
+
+/* Medal select */
+.medal-preview{font-size:1.4rem;text-align:center;padding:8px;background:#0d1117;border:1px solid #30363d;border-radius:7px;cursor:pointer;transition:border-color .2s}
+.medal-preview:hover{border-color:#FFD700}
+
+/* Toast */
+.toast{position:fixed;top:20px;right:20px;background:#161b22;border:1px solid #FFD700;border-radius:8px;padding:13px 18px;color:#e6edf3;font-size:.85rem;z-index:9999;transform:translateX(340px);transition:transform .3s;max-width:280px;line-height:1.5}
+.toast.show{transform:translateX(0)}
+.toast.error{border-color:#dc3545}
+.toast.info{border-color:#8b949e}
+
+@media(max-width:500px){
+  .tab-btn{padding:10px 12px;font-size:.72rem}
+  .add-row-cols{grid-template-columns:1fr}
+  .header h1{font-size:1.5rem}
+  .back-link{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOCK OVERLAY ── -->
+<div id="lock-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:99999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%">
+    <div style="font-size:3rem;margin-bottom:14px">&#128176;</div>
+    <h2 style="color:#FFD700;font-size:1.2rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Admin Only</h2>
+    <p style="color:#8b949e;font-size:.82rem;margin-bottom:22px">Enter the admin passcode to manage prize pools</p>
+    <input type="password" id="lock-input" placeholder="Enter passcode..."
+      style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 14px;color:#e6edf3;font-size:.95rem;outline:none;margin-bottom:8px;text-align:center;letter-spacing:3px;transition:border-color .2s"
+      onkeydown="if(event.key==='Enter')checkLock()">
+    <div id="lock-error" style="color:#dc3545;font-size:.75rem;min-height:18px;margin-bottom:10px"></div>
+    <button onclick="checkLock()" style="width:100%;background:linear-gradient(135deg,#FFD700,#FFA500);color:#0d1117;border:none;border-radius:8px;padding:12px;font-size:.92rem;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:2px">&#128275; Unlock</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('dls_auth')==='true')
+    document.getElementById('lock-overlay').style.display='none';
+})();
+function checkLock(){
+  const inp=document.getElementById('lock-input');
+  const err=document.getElementById('lock-error');
+  if(inp.value==='dlsadmin@123'){
+    sessionStorage.setItem('dls_auth','true');
+    document.getElementById('lock-overlay').style.display='none';
+  } else {
+    err.textContent='Wrong passcode. Try again.';
+    inp.style.borderColor='#dc3545';
+    inp.value=''; inp.focus();
+    setTimeout(()=>{ inp.style.borderColor='#30363d'; err.textContent=''; },2000);
+  }
+}
+</script>
+
+<header class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <h1>&#128176; Prize Pool Manager</h1>
+  <p>Set &amp; publish prize money for all competitions</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn t-lg1 active" onclick="switchTab('lg1')">&#9917; League 1</button>
+  <button class="tab-btn t-lg2" onclick="switchTab('lg2')">&#9917; League 2</button>
+  <button class="tab-btn t-lg3" onclick="switchTab('lg3')">&#9917; League 3</button>
+  <button class="tab-btn t-cl"  onclick="switchTab('cl')">&#127942; CL</button>
+  <button class="tab-btn t-eu"  onclick="switchTab('eu')">&#11088; Europa</button>
+</div>
+
+<!-- ── LEAGUE 1 ── -->
+<div id="page-lg1" class="page active">
+  <div class="comp-header">
+    <span class="comp-icon">&#9917;</span>
+    <div><div class="comp-title" style="color:#00c853">DLS League</div><div class="comp-sub">Division 1 — top-flight prizes</div></div>
+  </div>
+  <div class="publish-bar">
+    <div class="publish-info">Changes are <strong>saved locally</strong>. Click <strong>Publish All</strong> to push all prize pools live to viewers at once.</div>
+    <button class="btn btn-blue" onclick="publishAll()">&#128228; Publish All</button>
+  </div>
+  <div id="list-lg1" class="prize-list"></div>
+  <div class="add-prize-box">
+    <h3>&#43; Add Prize Tier</h3>
+    <div class="add-row">
+      <div class="add-row-cols">
+        <input type="text" id="rank-lg1" placeholder="Position (e.g. 1st Place)" maxlength="30">
+        <input type="text" id="desc-lg1" placeholder="Label (e.g. League Winner)" maxlength="40">
+      </div>
+      <div class="add-row-cols">
+        <input type="text" id="amount-lg1" placeholder="Prize amount (e.g. 10,000 RWF)" maxlength="30">
+        <select id="medal-lg1">
+          <option value="&#129351;">🥇 Gold Medal</option>
+          <option value="&#129352;">🥈 Silver Medal</option>
+          <option value="&#129353;">🥉 Bronze Medal</option>
+          <option value="&#127942;">🏆 Trophy</option>
+          <option value="&#127885;">🎽 Jersey</option>
+          <option value="&#9917;">⚽ Ball</option>
+          <option value="&#11088;">⭐ Star</option>
+        </select>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="addPrize('lg1')">&#43; Add Prize Tier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEAGUE 2 ── -->
+<div id="page-lg2" class="page">
+  <div class="comp-header">
+    <span class="comp-icon">&#9917;</span>
+    <div><div class="comp-title" style="color:#4fc3f7">DLS League 2</div><div class="comp-sub">Division 2 prizes</div></div>
+  </div>
+  <div class="publish-bar">
+    <div class="publish-info">Changes are <strong>saved locally</strong>. Click <strong>Publish All</strong> to push all prize pools live.</div>
+    <button class="btn btn-blue" onclick="publishAll()">&#128228; Publish All</button>
+  </div>
+  <div id="list-lg2" class="prize-list"></div>
+  <div class="add-prize-box">
+    <h3>&#43; Add Prize Tier</h3>
+    <div class="add-row">
+      <div class="add-row-cols">
+        <input type="text" id="rank-lg2" placeholder="Position (e.g. 1st Place)" maxlength="30">
+        <input type="text" id="desc-lg2" placeholder="Label (e.g. Division 2 Winner)" maxlength="40">
+      </div>
+      <div class="add-row-cols">
+        <input type="text" id="amount-lg2" placeholder="Prize amount (e.g. 5,000 RWF)" maxlength="30">
+        <select id="medal-lg2">
+          <option value="&#129351;">🥇 Gold Medal</option>
+          <option value="&#129352;">🥈 Silver Medal</option>
+          <option value="&#129353;">🥉 Bronze Medal</option>
+          <option value="&#127942;">🏆 Trophy</option>
+          <option value="&#127885;">🎽 Jersey</option>
+          <option value="&#9917;">⚽ Ball</option>
+          <option value="&#11088;">⭐ Star</option>
+        </select>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="addPrize('lg2')">&#43; Add Prize Tier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEAGUE 3 ── -->
+<div id="page-lg3" class="page">
+  <div class="comp-header">
+    <span class="comp-icon">&#9917;</span>
+    <div><div class="comp-title" style="color:#ab47bc">DLS League 3</div><div class="comp-sub">Division 3 prizes</div></div>
+  </div>
+  <div class="publish-bar">
+    <div class="publish-info">Changes are <strong>saved locally</strong>. Click <strong>Publish All</strong> to push all prize pools live.</div>
+    <button class="btn btn-blue" onclick="publishAll()">&#128228; Publish All</button>
+  </div>
+  <div id="list-lg3" class="prize-list"></div>
+  <div class="add-prize-box">
+    <h3>&#43; Add Prize Tier</h3>
+    <div class="add-row">
+      <div class="add-row-cols">
+        <input type="text" id="rank-lg3" placeholder="Position (e.g. 1st Place)" maxlength="30">
+        <input type="text" id="desc-lg3" placeholder="Label (e.g. Division 3 Winner)" maxlength="40">
+      </div>
+      <div class="add-row-cols">
+        <input type="text" id="amount-lg3" placeholder="Prize amount (e.g. 3,000 RWF)" maxlength="30">
+        <select id="medal-lg3">
+          <option value="&#129351;">🥇 Gold Medal</option>
+          <option value="&#129352;">🥈 Silver Medal</option>
+          <option value="&#129353;">🥉 Bronze Medal</option>
+          <option value="&#127942;">🏆 Trophy</option>
+          <option value="&#127885;">🎽 Jersey</option>
+          <option value="&#9917;">⚽ Ball</option>
+          <option value="&#11088;">⭐ Star</option>
+        </select>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="addPrize('lg3')">&#43; Add Prize Tier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHAMPIONS LEAGUE ── -->
+<div id="page-cl" class="page">
+  <div class="comp-header">
+    <span class="comp-icon">&#127942;</span>
+    <div><div class="comp-title" style="color:#FFD700">Champions League</div><div class="comp-sub">Div 1 &amp; 2 Top 8 each</div></div>
+  </div>
+  <div class="publish-bar">
+    <div class="publish-info">Changes are <strong>saved locally</strong>. Click <strong>Publish All</strong> to push all prize pools live.</div>
+    <button class="btn btn-blue" onclick="publishAll()">&#128228; Publish All</button>
+  </div>
+  <div id="list-cl" class="prize-list"></div>
+  <div class="add-prize-box">
+    <h3>&#43; Add Prize Tier</h3>
+    <div class="add-row">
+      <div class="add-row-cols">
+        <input type="text" id="rank-cl" placeholder="Position (e.g. Winner)" maxlength="30">
+        <input type="text" id="desc-cl" placeholder="Label (e.g. CL Champion)" maxlength="40">
+      </div>
+      <div class="add-row-cols">
+        <input type="text" id="amount-cl" placeholder="Prize amount (e.g. 10,000 RWF)" maxlength="30">
+        <select id="medal-cl">
+          <option value="&#127942;">🏆 Trophy</option>
+          <option value="&#129351;">🥇 Gold Medal</option>
+          <option value="&#129352;">🥈 Silver Medal</option>
+          <option value="&#129353;">🥉 Bronze Medal</option>
+          <option value="&#127885;">🎽 Jersey</option>
+          <option value="&#9917;">⚽ Ball</option>
+          <option value="&#11088;">⭐ Star</option>
+        </select>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="addPrize('cl')">&#43; Add Prize Tier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EUROPA LEAGUE ── -->
+<div id="page-eu" class="page">
+  <div class="comp-header">
+    <span class="comp-icon">&#11088;</span>
+    <div><div class="comp-title" style="color:#ff7043">Europa League</div><div class="comp-sub">Division 3 Top 16</div></div>
+  </div>
+  <div class="publish-bar">
+    <div class="publish-info">Changes are <strong>saved locally</strong>. Click <strong>Publish All</strong> to push all prize pools live.</div>
+    <button class="btn btn-blue" onclick="publishAll()">&#128228; Publish All</button>
+  </div>
+  <div id="list-eu" class="prize-list"></div>
+  <div class="add-prize-box">
+    <h3>&#43; Add Prize Tier</h3>
+    <div class="add-row">
+      <div class="add-row-cols">
+        <input type="text" id="rank-eu" placeholder="Position (e.g. Winner)" maxlength="30">
+        <input type="text" id="desc-eu" placeholder="Label (e.g. Europa Winner)" maxlength="40">
+      </div>
+      <div class="add-row-cols">
+        <input type="text" id="amount-eu" placeholder="Prize amount (e.g. 8,000 RWF)" maxlength="30">
+        <select id="medal-eu">
+          <option value="&#11088;">⭐ Star</option>
+          <option value="&#127942;">🏆 Trophy</option>
+          <option value="&#129351;">🥇 Gold Medal</option>
+          <option value="&#129352;">🥈 Silver Medal</option>
+          <option value="&#129353;">🥉 Bronze Medal</option>
+          <option value="&#127885;">🎽 Jersey</option>
+          <option value="&#9917;">⚽ Ball</option>
+        </select>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="addPrize('eu')">&#43; Add Prize Tier</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FIREBASE_URL = 'https://dls-hub-62226-default-rtdb.firebaseio.com';
+
+// ── State: prizes per competition ──
+const COMPS = ['lg1','lg2','lg3','cl','eu'];
+let prizes = loadPrizes();
+
+function defaultPrizes(){
+  return {
+    lg1: [
+      { medal:'&#129351;', rank:'1st Place', desc:'League Winner',    amount:'10,000 RWF' },
+      { medal:'&#129352;', rank:'2nd Place', desc:'League Runner-Up', amount:'5,000 RWF'  }
+    ],
+    lg2: [],
+    lg3: [],
+    cl:  [
+      { medal:'&#127942;', rank:'Winner', desc:'Champions League Champion', amount:'10,000 RWF' }
+    ],
+    eu:  []
+  };
+}
+
+function loadPrizes(){
+  try {
+    const raw = localStorage.getItem('dls_prizes');
+    return raw ? JSON.parse(raw) : defaultPrizes();
+  } catch(e){ return defaultPrizes(); }
+}
+
+function savePrizes(){
+  localStorage.setItem('dls_prizes', JSON.stringify(prizes));
+}
+
+// ── Tabs ──
+function switchTab(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelector(`.tab-btn.t-${id}`).classList.add('active');
+  renderList(id);
+}
+
+// ── Render prize list for a competition ──
+function renderList(comp){
+  const list = document.getElementById('list-'+comp);
+  const items = prizes[comp] || [];
+  if(!items.length){
+    list.innerHTML = `<div class="empty-prizes">No prizes set yet. Add a tier below.</div>`;
+    return;
+  }
+  list.innerHTML = items.map((p,i)=>`
+    <div class="prize-item">
+      <span class="pi-medal">${p.medal}</span>
+      <div class="pi-info">
+        <div class="pi-rank">${esc(p.rank)}</div>
+        <div class="pi-desc">${esc(p.desc)}</div>
+      </div>
+      <span class="pi-amount">${esc(p.amount)}</span>
+      <button class="pi-del" onclick="deletePrize('${comp}',${i})" title="Remove">&#10005;</button>
+    </div>`).join('');
+}
+
+function renderAll(){
+  COMPS.forEach(renderList);
+}
+
+// ── Add prize ──
+function addPrize(comp){
+  const rank   = document.getElementById('rank-'+comp).value.trim();
+  const desc   = document.getElementById('desc-'+comp).value.trim();
+  const amount = document.getElementById('amount-'+comp).value.trim();
+  const medal  = document.getElementById('medal-'+comp).value;
+
+  if(!rank)  { toast('Enter a position (e.g. 1st Place)','error'); return; }
+  if(!desc)  { toast('Enter a label (e.g. League Winner)','error'); return; }
+  if(!amount){ toast('Enter a prize amount (e.g. 10,000 RWF)','error'); return; }
+
+  prizes[comp].push({ medal, rank, desc, amount });
+  savePrizes();
+  renderList(comp);
+
+  // Clear inputs
+  document.getElementById('rank-'+comp).value   = '';
+  document.getElementById('desc-'+comp).value   = '';
+  document.getElementById('amount-'+comp).value = '';
+  document.getElementById('rank-'+comp).focus();
+
+  toast(`Prize tier added!`);
+}
+
+// ── Delete prize ──
+function deletePrize(comp, idx){
+  prizes[comp].splice(idx, 1);
+  savePrizes();
+  renderList(comp);
+  toast('Prize tier removed.','info');
+}
+
+// ── Publish all to Firebase ──
+async function publishAll(){
+  if(!FIREBASE_URL || FIREBASE_URL === 'YOUR_FIREBASE_URL'){
+    toast('Set your FIREBASE_URL first!','error'); return;
+  }
+  try {
+    toast('Publishing...','info');
+    const res = await fetch(FIREBASE_URL + '/dls_pub_prizes.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ...prizes, publishedAt: Date.now() })
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    toast('All prize pools published! Viewers will see them now. &#127942;');
+  } catch(e) {
+    toast('Publish failed: ' + e.message, 'error');
+  }
+}
+
+// ── Helpers ──
+function esc(str){
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toast(msg, type='success'){
+  const el = document.getElementById('toast');
+  el.innerHTML = msg;
+  el.className = 'toast ' + (type==='error'?'error':type==='info'?'info':'');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+// ── Init ──
+renderAll();
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

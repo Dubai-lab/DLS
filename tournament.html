@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLS Champions League</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DLS League">
+<link rel="apple-touch-icon" href="dls_logo.jpeg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#1a2332,#0d1117);border-bottom:3px solid #FFD700;padding:22px 20px;text-align:center}
+.header h1{font-size:2.4rem;color:#FFD700;text-shadow:0 0 24px rgba(255,215,0,.35);letter-spacing:4px;text-transform:uppercase}
+.header p{color:#8b949e;margin-top:6px;font-size:.85rem;letter-spacing:2px;text-transform:uppercase}
+
+/* ── Nav ── */
+.nav{display:flex;justify-content:center;background:#161b22;border-bottom:1px solid #21262d}
+.nav-btn{padding:16px 44px;background:none;border:none;color:#8b949e;font-size:.95rem;cursor:pointer;transition:all .25s;border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.nav-btn.active,.nav-btn:hover{color:#FFD700;border-bottom-color:#FFD700;background:rgba(255,215,0,.04)}
+
+/* ── Sections ── */
+.section{display:none;padding:30px;max-width:1400px;margin:0 auto}
+.section.active{display:block}
+
+/* ── Buttons ── */
+.btn{display:inline-block;padding:13px 36px;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;text-transform:uppercase;letter-spacing:2px}
+.btn-gold{background:linear-gradient(135deg,#FFD700,#FFA500);color:#0d1117}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(255,215,0,.4)}
+.btn-green{background:linear-gradient(135deg,#28a745,#1e9e38);color:#fff}
+.btn-green:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(40,167,69,.4)}
+.btn-red{background:linear-gradient(135deg,#dc3545,#c82333);color:#fff}
+.btn-red:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(220,53,69,.3)}
+.btn-sm{padding:6px 16px;font-size:.78rem;letter-spacing:1px}
+.btn-center{text-align:center;margin:24px 0}
+
+/* ── Setup ── */
+.setup-header{text-align:center;margin-bottom:28px}
+.setup-header h2{font-size:1.7rem;color:#FFD700;margin-bottom:8px}
+.setup-header p{color:#8b949e;font-size:.9rem}
+.teams-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.team-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px;transition:border-color .25s}
+.team-card:hover{border-color:#FFD700}
+.team-card label{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:#8b949e;margin-bottom:7px;text-transform:uppercase;letter-spacing:1px}
+.team-card label span.edit-hint{font-size:.65rem;color:#30363d;letter-spacing:0;text-transform:none;font-style:italic;transition:color .2s}
+.team-card:hover label span.edit-hint{color:#8b949e}
+.team-card input{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:9px 10px;color:#e6edf3;font-size:.9rem;outline:none;transition:border-color .25s}
+.team-card input:focus{border-color:#FFD700;background:#111827}
+
+/* Draw result */
+.draw-result{display:none;margin-top:28px}
+.draw-result.show{display:block}
+.draw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+.draw-card{background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden}
+.draw-card-head{background:#FFD700;color:#0d1117;padding:10px;text-align:center;font-weight:800;font-size:1.05rem;letter-spacing:3px}
+.draw-card-body{padding:8px}
+.draw-team{padding:8px 10px;border-bottom:1px solid #21262d;font-size:.88rem;display:flex;align-items:center;gap:8px}
+.draw-team:last-child{border-bottom:none}
+.seed-num{width:22px;height:22px;background:#21262d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#8b949e;flex-shrink:0}
+
+/* ── Groups section ── */
+.groups-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.group-card{background:#161b22;border:1px solid #21262d;border-radius:12px;overflow:hidden}
+.group-head{background:linear-gradient(135deg,#1a2332,#21262d);border-bottom:2px solid #FFD700;padding:13px 18px;display:flex;align-items:center;justify-content:space-between}
+.group-title{font-size:1.25rem;font-weight:800;color:#FFD700;letter-spacing:3px}
+.group-complete-badge{display:none;background:rgba(40,167,69,.2);color:#28a745;border:1px solid #28a745;border-radius:12px;padding:2px 10px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.group-complete-badge.show{display:inline-block}
+.group-body{padding:14px}
+
+/* Standings table */
+.standings-wrap{margin-bottom:14px}
+.qualify-legend{display:flex;align-items:center;gap:6px;font-size:.72rem;color:#8b949e;margin-bottom:6px}
+.q-line{width:3px;height:13px;background:#28a745;border-radius:2px}
+table.standings{width:100%;border-collapse:collapse;font-size:.83rem}
+table.standings th{background:#0d1117;color:#8b949e;padding:7px 5px;text-align:center;font-size:.72rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #21262d}
+table.standings th:first-child{text-align:left;padding-left:8px;width:40%}
+table.standings td{padding:7px 5px;text-align:center;border-bottom:1px solid #1a1f27;transition:background .2s}
+table.standings td:first-child{text-align:left;padding-left:8px}
+table.standings tr:last-child td{border-bottom:none}
+table.standings tr.qualify td:first-child{border-left:3px solid #28a745}
+table.standings tr.eliminated td:first-child{border-left:3px solid #dc3545}
+.pts{font-weight:800;color:#FFD700}
+
+/* Fixtures */
+.fixtures-label{font-size:.72rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid #21262d}
+.fixture{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:9px 11px;margin-bottom:7px;display:flex;align-items:center;gap:8px;transition:border-color .25s}
+.fixture:hover{border-color:#30363d}
+.fixture.played{border-color:rgba(40,167,69,.4)}
+.fix-team{flex:1;font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fix-team.home{text-align:right}
+.fix-team.away{text-align:left}
+.fix-score{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.s-input{width:38px;text-align:center;background:#161b22;border:1px solid #30363d;border-radius:5px;padding:5px 3px;color:#e6edf3;font-size:.95rem;font-weight:700;outline:none}
+.s-input:focus{border-color:#FFD700}
+.s-sep{color:#8b949e;font-weight:700;font-size:.9rem}
+.fix-result{font-size:1.05rem;font-weight:800;color:#FFD700;min-width:46px;text-align:center}
+.fix-btn{padding:5px 11px;background:#21262d;border:1px solid #30363d;border-radius:5px;color:#e6edf3;font-size:.75rem;cursor:pointer;transition:all .2s;flex-shrink:0}
+.fix-btn:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
+.fix-check{color:#28a745;font-size:.9rem;flex-shrink:0}
+.fix-edit{padding:5px 9px;background:#1a2332;border:1px solid #30363d;border-radius:5px;color:#8b949e;font-size:.78rem;cursor:pointer;transition:all .2s;flex-shrink:0}
+.fix-edit:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
+.fix-cancel{padding:5px 9px;background:#21262d;border:1px solid #30363d;border-radius:5px;color:#8b949e;font-size:.78rem;cursor:pointer;flex-shrink:0}
+.fix-cancel:hover{color:#e6edf3}
+
+/* ── MD control panel ── */
+.md-control{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:15px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.md-pills{display:flex;gap:6px}
+.md-pill{padding:5px 13px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:1px;border:1px solid #30363d;color:#8b949e;background:#0d1117}
+.md-pill.md-active{background:#FFD700;color:#0d1117;border-color:#FFD700}
+.md-pill.md-done{background:rgba(40,167,69,.15);color:#28a745;border-color:rgba(40,167,69,.4)}
+.md-sec-head{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:9px 2px 4px;display:flex;align-items:center;gap:6px}
+.md-sec-head.md-open{color:#FFD700}
+.md-sec-head.md-done{color:#28a745}
+.md-sec-head.md-locked{color:#4a5568}
+.md-sec-badge{font-size:.6rem;padding:1px 7px;border-radius:8px;border:1px solid currentColor;letter-spacing:1px;font-weight:600}
+
+/* ── Stats bar ── */
+.stats-row{display:flex;gap:14px;margin-bottom:22px}
+.stat-box{flex:1;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center}
+.stat-val{font-size:1.8rem;font-weight:800;color:#FFD700}
+.stat-lbl{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+/* ── Knockout bracket ── */
+.ko-header{text-align:center;margin-bottom:28px}
+.ko-header h2{font-size:1.7rem;color:#FFD700;letter-spacing:3px}
+.ko-header p{color:#8b949e;font-size:.85rem;margin-top:6px}
+.bracket-scroll{overflow-x:auto;padding-bottom:20px}
+
+/* Round labels row */
+.bracket-labels{display:flex;align-items:center;margin-bottom:10px;min-width:900px}
+.bl-spacer{flex-shrink:0}
+.bl-label{text-align:center;font-size:.72rem;color:#8b949e;text-transform:uppercase;letter-spacing:2px;font-weight:700;padding:6px 0}
+
+/* Main bracket */
+.bracket{display:flex;align-items:stretch;min-width:900px;height:640px}
+
+/* Round columns */
+.r-col{display:flex;flex-direction:column;justify-content:space-around;flex-shrink:0}
+.r-col.qf-col{width:230px;justify-content:space-around}
+.r-col.sf-col{width:230px;justify-content:space-around}
+.r-col.final-col{width:230px;justify-content:center}
+.r-col.champ-col{width:180px;justify-content:center}
+
+/* Connector columns */
+.c-col{display:flex;flex-direction:column;flex-shrink:0;width:44px}
+.c-half{flex:1;display:flex;flex-direction:column}
+.c-top{flex:1;border-right:2px solid #30363d;border-bottom:2px solid #30363d;border-bottom-right-radius:5px}
+.c-bot{flex:1;border-right:2px solid #30363d;border-top:2px solid #30363d;border-top-right-radius:5px}
+.c-arrow{width:100%;height:2px;background:#30363d;align-self:center}
+
+/* Bracket match card */
+.b-match{background:#161b22;border:1px solid #21262d;border-radius:9px;overflow:hidden;margin:6px 4px;transition:border-color .25s;flex-shrink:0}
+.b-match:hover{border-color:#FFD700}
+.b-team{padding:9px 13px;display:flex;align-items:center;justify-content:space-between;min-height:42px;border-bottom:1px solid #21262d;transition:background .2s}
+.b-team:last-of-type{border-bottom:none}
+.b-team.tbd{color:#4a5568;font-style:italic}
+.b-team.winner{background:rgba(40,167,69,.12);font-weight:800}
+.b-team.winner .b-name{color:#4ade80}
+.b-name{font-size:.88rem;font-weight:600;flex:1}
+.b-score{font-size:1.1rem;font-weight:800;color:#FFD700;min-width:22px;text-align:right}
+.b-form{padding:7px 10px;background:#0d1117;border-top:1px solid #21262d;display:flex;align-items:center;justify-content:center;gap:5px}
+.b-inp{width:34px;text-align:center;background:#161b22;border:1px solid #30363d;border-radius:4px;padding:4px 3px;color:#e6edf3;font-size:.9rem;font-weight:700;outline:none}
+.b-inp:focus{border-color:#FFD700}
+.b-sep{color:#8b949e;font-weight:700}
+.b-sub{padding:4px 10px;background:#21262d;border:1px solid #30363d;border-radius:4px;color:#e6edf3;font-size:.72rem;cursor:pointer;transition:all .2s}
+.b-sub:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
+
+/* Champion display */
+.champ-card{background:linear-gradient(135deg,#1a2332,#21262d);border:2px solid #FFD700;border-radius:12px;padding:20px 14px;text-align:center;display:none}
+.champ-card.show{display:block}
+.champ-trophy{font-size:2.8rem;margin-bottom:8px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.champ-name{font-size:1.1rem;font-weight:800;color:#FFD700;letter-spacing:2px;text-transform:uppercase;word-break:break-word}
+.champ-lbl{font-size:.68rem;color:#8b949e;text-transform:uppercase;letter-spacing:2px;margin-top:4px}
+
+/* ── Edit KO button ── */
+.b-edit{padding:4px 10px;background:#1a2332;border:1px solid #30363d;border-radius:4px;color:#8b949e;font-size:.72rem;cursor:pointer;transition:all .2s;width:100%;text-align:center}
+.b-edit:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
+.b-edit-wrap{padding:6px 10px;background:#0d1117;border-top:1px solid #21262d}
+
+/* ── Toast notification ── */
+.toast{position:fixed;top:20px;right:20px;background:#161b22;border:1px solid #28a745;border-radius:8px;padding:14px 18px;color:#e6edf3;font-size:.88rem;z-index:9999;transform:translateX(340px);transition:transform .3s;max-width:280px;line-height:1.4}
+.toast.show{transform:translateX(0)}
+.toast.error{border-color:#dc3545}
+.toast.info{border-color:#FFD700}
+
+/* ── Danger zone ── */
+.danger-zone{margin-top:36px;padding:18px;border:1px solid #dc3545;border-radius:8px;background:rgba(220,53,69,.05)}
+.danger-zone h3{color:#dc3545;margin-bottom:8px;font-size:1rem}
+.danger-zone p{color:#8b949e;font-size:.82rem;margin-bottom:12px}
+
+/* ── Phase notice ── */
+.phase-notice{background:linear-gradient(135deg,#1a2332,#21262d);border:1px solid #FFD700;border-radius:10px;padding:20px;text-align:center;margin-bottom:24px}
+.phase-notice h3{color:#FFD700;font-size:1.2rem;margin-bottom:6px}
+.phase-notice p{color:#8b949e;font-size:.85rem}
+
+/* ── Progress ── */
+.progress-bar{background:#21262d;border-radius:4px;height:5px;margin:10px 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#FFD700,#FFA500);border-radius:4px;transition:width .5s}
+
+@media(max-width:900px){
+  .teams-grid{grid-template-columns:repeat(2,1fr)}
+  .draw-grid{grid-template-columns:repeat(2,1fr)}
+  .groups-grid{grid-template-columns:1fr}
+  .stats-row{flex-wrap:wrap}
+  .nav-btn{padding:12px 18px;font-size:.82rem;letter-spacing:.5px}
+  .header h1{font-size:1.7rem}
+}
+@media(max-width:500px){
+  .teams-grid{grid-template-columns:1fr}
+  .header h1{font-size:1.4rem;letter-spacing:2px}
+  .btn{padding:11px 24px;font-size:.85rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOCK OVERLAY ── -->
+<div id="lock-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:99999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%">
+    <div style="font-size:3rem;margin-bottom:14px">&#128274;</div>
+    <h2 style="color:#FFD700;font-size:1.2rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Admin Only</h2>
+    <p style="color:#8b949e;font-size:.82rem;margin-bottom:22px">Enter the admin passcode to access the Champions League panel</p>
+    <input type="password" id="lock-input" placeholder="Enter passcode..."
+      style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 14px;color:#e6edf3;font-size:.95rem;outline:none;margin-bottom:8px;text-align:center;letter-spacing:3px;transition:border-color .2s"
+      onkeydown="if(event.key==='Enter')checkLock()">
+    <div id="lock-error" style="color:#dc3545;font-size:.75rem;min-height:18px;margin-bottom:10px"></div>
+    <button onclick="checkLock()" style="width:100%;background:linear-gradient(135deg,#FFD700,#FFA500);color:#0d1117;border:none;border-radius:8px;padding:12px;font-size:.92rem;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:2px">&#128275; Unlock</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('dls_auth')==='true')
+    document.getElementById('lock-overlay').style.display='none';
+})();
+function checkLock(){
+  const inp=document.getElementById('lock-input');
+  const err=document.getElementById('lock-error');
+  if(inp.value==='dlsadmin@123'){
+    sessionStorage.setItem('dls_auth','true');
+    document.getElementById('lock-overlay').style.display='none';
+  } else {
+    err.textContent='Wrong passcode. Try again.';
+    inp.style.borderColor='#dc3545';
+    inp.value=''; inp.focus();
+    setTimeout(()=>{ inp.style.borderColor='#30363d'; err.textContent=''; },2000);
+  }
+}
+</script>
+
+<header class="header" style="position:relative">
+  <a href="index.html" style="position:absolute;top:50%;left:20px;transform:translateY(-50%);background:#161b22;border:1px solid #30363d;border-radius:6px;padding:7px 14px;color:#8b949e;font-size:.8rem;cursor:pointer;text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='#FFD700';this.style.color='#FFD700'" onmouseout="this.style.borderColor='#30363d';this.style.color='#8b949e'">&#8592; Home</a>
+  <h1 id="tourney-title">&#9917; DLS Champions League</h1>
+  <p id="tourney-sub">16 Teams &nbsp;|&nbsp; Group Stage &rarr; Quarter Finals &rarr; Semi Finals &rarr; Final</p>
+</header>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="switchTab('setup')">&#9881; Setup</button>
+  <button class="nav-btn" onclick="switchTab('groups')">&#9646; Group Stage</button>
+  <button class="nav-btn" onclick="switchTab('knockout')">&#127942; Knockout</button>
+</nav>
+<div style="text-align:right;padding:5px 16px;font-size:.72rem;background:#0d1117;border-bottom:1px solid #21262d">
+  <span id="cloud-status" style="color:#4a5568">☁️ Cloud Backup Active</span>
+</div>
+
+<!-- ═══════════════════ SETUP ═══════════════════ -->
+<section id="setup" class="section active">
+  <div class="setup-header">
+    <h2>&#127936; Tournament Setup</h2>
+    <p>Enter all 16 team names then draw the groups randomly</p>
+  </div>
+
+  <div class="teams-grid" id="teams-grid">
+    <!-- rendered by JS -->
+  </div>
+
+  <div style="background:#1a2332;border:1px solid #30363d;border-radius:8px;padding:11px 16px;margin-bottom:18px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:1.1rem">&#9998;</span>
+    <span style="font-size:.82rem;color:#8b949e;flex:1">Click any team name above to edit it, then click <strong style="color:#28a745">Update Names</strong> to save. Works at any stage — names update everywhere including fixtures and the bracket.</span>
+  </div>
+  <div class="btn-center">
+    <button class="btn btn-green" onclick="updateTeamNames()">&#9998; Update Names</button>
+    &nbsp;
+    <button class="btn btn-gold" onclick="drawGroups()">&#127922; Draw Groups</button>
+    &nbsp;
+    <button class="btn btn-sm" style="background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:13px 22px;border-radius:8px;font-weight:700;font-size:.85rem;letter-spacing:1px;cursor:pointer" onclick="resetTeams()">Reset Names</button>
+  </div>
+  <div style="text-align:center;margin-top:10px">
+    <button onclick="openImportModal()" style="background:linear-gradient(135deg,#1a2d1a,#0f2027);border:1px solid rgba(0,200,83,.4);border-radius:8px;padding:10px 22px;color:#00c853;font-size:.82rem;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='#00c853'" onmouseout="this.style.borderColor='rgba(0,200,83,.4)'">&#128229; Import Qualifying Teams from League</button>
+  </div>
+
+  <div class="draw-result" id="draw-result">
+    <div style="text-align:center;margin-bottom:18px">
+      <h3 style="color:#FFD700;font-size:1.25rem;letter-spacing:2px">&#127922; GROUP DRAW RESULT</h3>
+      <p style="color:#8b949e;font-size:.82rem;margin-top:4px">Teams have been randomly assigned to groups</p>
+    </div>
+    <div class="draw-grid" id="draw-grid"></div>
+    <div class="btn-center">
+      <button class="btn btn-green" onclick="startGroupStage()">&#9654; Start Group Stage</button>
+    </div>
+  </div>
+
+  <div style="margin-bottom:16px;padding:14px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <h3 style="font-size:.88rem;font-weight:800;color:#e6edf3;margin-bottom:4px">&#128273; Player Access Code</h3>
+    <p style="font-size:.75rem;color:#8b949e;margin-bottom:10px">Players enter this code to access Champions League in the viewer app.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="access-code-input" placeholder="e.g. CL@2026" style="flex:1;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 12px;color:#e6edf3;font-size:.85rem;font-weight:700;letter-spacing:1px;outline:none">
+      <button onclick="saveAccessCode()" class="btn btn-primary btn-sm">Save</button>
+    </div>
+    <div id="access-code-status" style="font-size:.7rem;color:#8b949e;margin-top:6px"></div>
+  </div>
+
+  <div class="danger-zone">
+    <h3>&#9888; Reset Tournament</h3>
+    <p>This will clear all scores, fixtures, and standings. Cannot be undone.</p>
+    <button class="btn btn-red btn-sm" onclick="resetAll()">Reset Everything</button>
+    &nbsp;
+    <button class="btn btn-sm" style="background:#21262d;border:1px solid #30363d;color:#e6edf3;cursor:pointer;font-weight:700;border-radius:6px;padding:6px 14px;font-size:.75rem" onclick="cloudRestore()">&#9729; Restore from Cloud</button>
+  </div>
+</section>
+
+<!-- ═══════════════════ GROUPS ═══════════════════ -->
+<section id="groups" class="section">
+  <div id="groups-notice-wrap"></div>
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-box"><div class="stat-val" id="st-played">0</div><div class="stat-lbl">Matches Played</div></div>
+    <div class="stat-box"><div class="stat-val" id="st-remaining">24</div><div class="stat-lbl">Remaining</div></div>
+    <div class="stat-box"><div class="stat-val" id="st-goals">0</div><div class="stat-lbl">Total Goals</div></div>
+    <div class="stat-box"><div class="stat-val" id="st-qualified">0</div><div class="stat-lbl">Qualified</div></div>
+  </div>
+
+  <div style="margin-bottom:14px">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div style="font-size:.72rem;color:#8b949e;text-align:right;margin-top:2px" id="progress-lbl">0 / 24 matches played</div>
+  </div>
+
+  <div class="groups-grid" id="groups-grid">
+    <!-- rendered by JS -->
+  </div>
+
+  <div class="btn-center" id="advance-ko-btn" style="display:none">
+    <button class="btn btn-gold" onclick="advanceToKnockout()">&#127942; Advance to Knockout Stage</button>
+  </div>
+  <div class="btn-center">
+    <button class="btn" style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;cursor:pointer" onclick="publishCL()">&#128228; Publish to Viewers</button>
+  </div>
+</section>
+
+<!-- ═══════════════════ KNOCKOUT ═══════════════════ -->
+<section id="knockout" class="section">
+  <div class="ko-header">
+    <h2>&#127942; Knockout Stage</h2>
+    <p id="ko-sub">Complete the group stage to populate the bracket</p>
+  </div>
+
+  <div id="ko-notice-wrap"></div>
+
+  <div style="text-align:center;margin-bottom:16px">
+    <button class="btn" style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;cursor:pointer" onclick="publishCL()">&#128228; Publish to Viewers</button>
+  </div>
+
+  <div class="bracket-scroll">
+    <!-- Labels -->
+    <div class="bracket-labels">
+      <div class="bl-label bl-spacer" style="width:238px">Quarter Finals</div>
+      <div class="bl-spacer" style="width:44px"></div>
+      <div class="bl-label bl-spacer" style="width:238px">Semi Finals</div>
+      <div class="bl-spacer" style="width:44px"></div>
+      <div class="bl-label bl-spacer" style="width:238px">Final</div>
+      <div class="bl-spacer" style="width:44px"></div>
+      <div class="bl-label bl-spacer" style="width:180px">Champion</div>
+    </div>
+
+    <!-- Bracket -->
+    <div class="bracket">
+      <!-- QF column -->
+      <div class="r-col qf-col" id="qf-col">
+        <div class="b-match" id="m-qf0"></div>
+        <div class="b-match" id="m-qf1"></div>
+        <div class="b-match" id="m-qf2"></div>
+        <div class="b-match" id="m-qf3"></div>
+      </div>
+
+      <!-- QF→SF connectors -->
+      <div class="c-col">
+        <div class="c-half"><div class="c-top"></div><div class="c-bot"></div></div>
+        <div class="c-half"><div class="c-top"></div><div class="c-bot"></div></div>
+      </div>
+
+      <!-- SF column -->
+      <div class="r-col sf-col" id="sf-col">
+        <div class="b-match" id="m-sf0"></div>
+        <div class="b-match" id="m-sf1"></div>
+      </div>
+
+      <!-- SF→Final connectors -->
+      <div class="c-col">
+        <div class="c-half"><div class="c-top"></div><div class="c-bot"></div></div>
+      </div>
+
+      <!-- Final column -->
+      <div class="r-col final-col" id="final-col">
+        <div class="b-match" id="m-final"></div>
+      </div>
+
+      <!-- Final→Champion arrow -->
+      <div class="c-col" style="justify-content:center;display:flex;flex-direction:column">
+        <div class="c-arrow"></div>
+      </div>
+
+      <!-- Champion column -->
+      <div class="r-col champ-col">
+        <div class="champ-card" id="champ-card">
+          <div class="champ-trophy">&#127942;</div>
+          <div class="champ-name" id="champ-name">TBD</div>
+          <div class="champ-lbl">DLS Champion</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  FIREBASE CONFIG
+//  1. Go to https://console.firebase.google.com
+//  2. Create project → Realtime Database → Start in test mode
+//  3. Paste your Database URL below (replace the placeholder)
+const FIREBASE_URL = 'https://dls-hub-62226-default-rtdb.firebaseio.com';
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+const DEFAULT_TEAMS = [
+  "Real Madrid","Barcelona","Man City","Liverpool",
+  "Chelsea","Arsenal","Bayern Munich","PSG",
+  "Juventus","AC Milan","Inter Milan","Dortmund",
+  "Atletico Madrid","Ajax","Porto","Benfica"
+];
+
+let S = loadState();
+const editingFix = new Set(); // tracks "G-id" fixtures in edit mode
+
+function defaultState(){
+  return {
+    phase:'setup',
+    teams:[...DEFAULT_TEAMS],
+    phones:{},
+    logos:{},
+    groups:{A:[],B:[],C:[],D:[]},
+    fixtures:{A:[],B:[],C:[],D:[]},
+    ko:{
+      qf:[null,null,null,null].map(()=>({home:null,away:null,hs:null,as:null,winner:null})),
+      sf:[null,null].map(()=>({home:null,away:null,hs:null,as:null,winner:null})),
+      final:{home:null,away:null,hs:null,as:null,winner:null}
+    },
+    activeMD: 1
+  };
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem('dls_tourney');
+    const s = raw ? JSON.parse(raw) : defaultState();
+    if(!s.phones) s.phones = {};
+    if(!s.logos) s.logos = {};
+    if(!('activeMD' in s)) s.activeMD = 1;
+    return s;
+  }catch(e){return defaultState();}
+}
+
+function saveState(){
+  S.savedAt = Date.now();
+  localStorage.setItem('dls_tourney',JSON.stringify(S));
+  scheduleCloudSave();
+}
+let _cloudTimer = null;
+function scheduleCloudSave(){
+  setCloudStatus('saving');
+  clearTimeout(_cloudTimer);
+  _cloudTimer = setTimeout(async()=>{
+    try{
+      await fetch(FIREBASE_URL+'/dls_admin_tourney.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(S)});
+      setCloudStatus('saved');
+    } catch(e){ setCloudStatus('error'); }
+  }, 2500);
+}
+function setCloudStatus(state){
+  const el = document.getElementById('cloud-status'); if(!el) return;
+  const s = { saving:['☁️ Saving...','#8b949e'], saved:['☁️ Cloud Synced','#FFD700'], error:['☁️ Sync Failed','#dc3545'] };
+  el.textContent = s[state][0]; el.style.color = s[state][1];
+}
+async function cloudRestore(){
+  if(!confirm('Replace all local data with the cloud backup?')) return;
+  try{
+    toast('Loading from cloud...','info');
+    const res = await fetch(FIREBASE_URL+'/dls_admin_tourney.json');
+    const data = res.ok ? await res.json() : null;
+    if(data && data.teams && data.teams.length){
+      S = data; if(!S.phones) S.phones = {};
+      localStorage.setItem('dls_tourney', JSON.stringify(S));
+      renderSetup();
+      if(S.phase==='group') switchTab('groups');
+      else if(S.phase==='knockout') switchTab('knockout');
+      toast('Restored from cloud backup! ☁️');
+    } else { toast('No cloud backup found yet.','info'); }
+  } catch(e){ toast('Restore failed: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════
+//  TAB NAVIGATION
+// ═══════════════════════════════════════════
+function switchTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx={setup:0,groups:1,knockout:2}[id];
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  if(id==='setup')    renderSetup();
+  if(id==='groups')   renderGroups();
+  if(id==='knockout') renderKnockout();
+}
+
+// ═══════════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════════
+function renderSetup(){
+  const g=document.getElementById('teams-grid');
+  g.innerHTML='';
+  S.teams.forEach((t,i)=>{
+    const existingLogo=S.logos[t]||'';
+    g.innerHTML+=`
+    <div class="team-card">
+      <label>Team ${i+1} <span class="edit-hint">&#9998; click to edit</span></label>
+      <input type="text" id="team-${i}" value="${esc(t)}" placeholder="Team name" maxlength="28">
+      <input type="tel" id="phone-${i}" value="${esc(S.phones[t]||'')}" placeholder="&#128242; WhatsApp number"
+        style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:7px 10px;color:#8b949e;font-size:.78rem;outline:none;margin-top:5px;transition:border-color .25s"
+        onfocus="this.style.borderColor='#FFD700'" onblur="this.style.borderColor='#30363d'">
+      <div style="display:flex;align-items:center;gap:8px;margin-top:7px">
+        <div id="logo-circle-${i}" style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#21262d;border:1px solid #30363d;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+          ${existingLogo?`<img src="${existingLogo}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:.6rem;font-weight:700;color:#4a5568">${(t[0]||'?').toUpperCase()}</span>`}
+        </div>
+        <input type="file" id="logo-file-${i}" accept="image/*" style="display:none" onchange="previewTeamLogo(${i})">
+        <button type="button" onclick="document.getElementById('logo-file-${i}').click()" style="background:#21262d;border:1px solid #30363d;border-radius:5px;padding:4px 8px;color:#8b949e;font-size:.65rem;cursor:pointer;white-space:nowrap">&#128247; Logo</button>
+        <input id="logo-url-${i}" placeholder="or paste URL..." value="${existingLogo.startsWith('http')?existingLogo.replace(/"/g,'&quot;'):''}" style="flex:1;min-width:0;background:#0d1117;border:1px solid #30363d;border-radius:5px;padding:4px 7px;color:#8b949e;font-size:.65rem;outline:none">
+        <input type="hidden" id="logo-b64-${i}" value="">
+      </div>
+    </div>`;
+  });
+  if(S.groups.A.length > 0) showDrawResult();
+}
+
+function resetTeams(){
+  S.teams=[...DEFAULT_TEAMS];
+  saveState();
+  renderSetup();
+  document.getElementById('draw-result').classList.remove('show');
+  toast('Team names reset to defaults.','info');
+}
+
+function updateTeamNames(){
+  const newTeams = readTeamInputs();
+  const unique = new Set(newTeams);
+  if(unique.size < 16){ toast('All 16 team names must be unique!','error'); return; }
+
+  // Build rename map: oldName → newName (position-based, only changed names)
+  const renameMap = {};
+  for(let i = 0; i < 16; i++){
+    if(S.teams[i] !== newTeams[i]) renameMap[S.teams[i]] = newTeams[i];
+  }
+  const count = Object.keys(renameMap).length;
+  if(count === 0){ toast('No name changes detected.','info'); return; }
+
+  // Safe rename: uses hasOwnProperty so falsy-named teams never cause issues
+  function ren(name){ return (name && renameMap.hasOwnProperty(name)) ? renameMap[name] : name; }
+
+  // 1. Update master team list + phones + logos
+  // Transfer logos (applying renames) then overlay any newly uploaded ones
+  const newLogos={};
+  for(const [oldN,logo] of Object.entries(S.logos)) newLogos[ren(oldN)]=logo;
+  for(let i=0;i<16;i++){
+    const b64=(document.getElementById('logo-b64-'+i)?.value||'').trim();
+    const url=(document.getElementById('logo-url-'+i)?.value||'').trim();
+    if(b64||url) newLogos[newTeams[i]]=b64||url;
+  }
+  S.logos=newLogos;
+  S.teams = [...newTeams];
+  S.phones = readPhoneInputs(newTeams);
+
+  // 2. Update groups + fixtures
+  for(const g of ['A','B','C','D']){
+    S.groups[g] = S.groups[g].map(ren);
+    for(const f of S.fixtures[g]){
+      f.home = ren(f.home);
+      f.away = ren(f.away);
+    }
+  }
+
+  // 3. Update knockout bracket (all slots, null-safe)
+  for(const m of S.ko.qf){
+    m.home   = ren(m.home);
+    m.away   = ren(m.away);
+    m.winner = ren(m.winner);
+  }
+  for(const m of S.ko.sf){
+    m.home   = ren(m.home);
+    m.away   = ren(m.away);
+    m.winner = ren(m.winner);
+  }
+  S.ko.final.home   = ren(S.ko.final.home);
+  S.ko.final.away   = ren(S.ko.final.away);
+  S.ko.final.winner = ren(S.ko.final.winner);
+
+  // 4. Save and refresh ALL three sections immediately
+  saveState();
+  renderSetup();
+  renderGroups();
+  renderKnockout();
+  toast(`${count} team name${count > 1 ? 's' : ''} updated everywhere!`);
+}
+
+function readTeamInputs(){
+  const teams=[];
+  for(let i=0;i<16;i++){
+    const v=(document.getElementById(`team-${i}`)?.value||'').trim();
+    teams.push(v||`Team ${i+1}`);
+  }
+  return teams;
+}
+
+function readPhoneInputs(teamNames){
+  const phones={};
+  for(let i=0;i<16;i++){
+    const phone=(document.getElementById(`phone-${i}`)?.value||'').trim();
+    if(phone) phones[teamNames[i]]=phone;
+  }
+  return phones;
+}
+
+function readLogoInputs(teamNames){
+  const logos={...S.logos};
+  for(let i=0;i<16;i++){
+    const b64=(document.getElementById('logo-b64-'+i)?.value||'').trim();
+    const url=(document.getElementById('logo-url-'+i)?.value||'').trim();
+    if(b64||url) logos[teamNames[i]]=b64||url;
+  }
+  return logos;
+}
+
+function drawGroups(){
+  S.teams=readTeamInputs();
+  // Check duplicates
+  const unique=new Set(S.teams);
+  if(unique.size<16){toast('All team names must be unique!','error');return;}
+
+  S.phones=readPhoneInputs(S.teams);
+  S.logos=readLogoInputs(S.teams);
+
+  // Shuffle
+  const arr=[...S.teams];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  S.groups={A:arr.slice(0,4),B:arr.slice(4,8),C:arr.slice(8,12),D:arr.slice(12,16)};
+  S.fixtures={A:[],B:[],C:[],D:[]};
+  S.ko={
+    qf:[null,null,null,null].map(()=>({home:null,away:null,hs:null,as:null,winner:null})),
+    sf:[null,null].map(()=>({home:null,away:null,hs:null,as:null,winner:null})),
+    final:{home:null,away:null,hs:null,as:null,winner:null}
+  };
+  generateAllFixtures();
+  saveState();
+  showDrawResult();
+  toast('Groups drawn successfully! ','info');
+}
+
+function showDrawResult(){
+  const el=document.getElementById('draw-result');
+  el.classList.add('show');
+  const g=document.getElementById('draw-grid');
+  g.innerHTML='';
+  ['A','B','C','D'].forEach(grp=>{
+    const teams=S.groups[grp];
+    g.innerHTML+=`
+    <div class="draw-card">
+      <div class="draw-card-head">GROUP ${grp}</div>
+      <div class="draw-card-body">
+        ${teams.map((t,i)=>`<div class="draw-team"><span class="seed-num">${i+1}</span>${esc(t)}</div>`).join('')}
+      </div>
+    </div>`;
+  });
+}
+
+function generateAllFixtures(){
+  // Round-robin schedule for 4 teams: each team plays exactly once per matchday
+  // MD1: t0vt3, t1vt2 | MD2: t0vt2, t3vt1 | MD3: t0vt1, t2vt3
+  ['A','B','C','D'].forEach(g=>{
+    const t=S.groups[g];
+    S.fixtures[g]=[
+      {id:0,home:t[0],away:t[3],hs:null,as:null,played:false,md:1},
+      {id:1,home:t[1],away:t[2],hs:null,as:null,played:false,md:1},
+      {id:2,home:t[0],away:t[2],hs:null,as:null,played:false,md:2},
+      {id:3,home:t[3],away:t[1],hs:null,as:null,played:false,md:2},
+      {id:4,home:t[0],away:t[1],hs:null,as:null,played:false,md:3},
+      {id:5,home:t[2],away:t[3],hs:null,as:null,played:false,md:3},
+    ];
+  });
+  S.activeMD = 1;
+}
+
+function startGroupStage(){
+  if(!S.groups.A.length){toast('Draw the groups first!','error');return;}
+  S.phase='group';
+  saveState();
+  switchTab('groups');
+  toast('Group stage has started! Enter match scores below.');
+}
+
+// ═══════════════════════════════════════════
+//  GROUP STAGE
+// ═══════════════════════════════════════════
+function renderGroups(){
+  updateStats();
+  const grid=document.getElementById('groups-grid');
+  grid.innerHTML='';
+
+  const noticeWrap=document.getElementById('groups-notice-wrap');
+  if(S.phase==='setup'||!S.groups.A.length){
+    noticeWrap.innerHTML=`<div class="phase-notice">
+      <h3>&#9881; Setup Required</h3>
+      <p>Go to Setup, enter team names and draw the groups first.</p>
+    </div>`;
+    document.getElementById('advance-ko-btn').style.display='none';
+    return;
+  }
+
+  const mdDone=[1,2,3].map(n=>['A','B','C','D'].every(g=>S.fixtures[g].filter(f=>f.md===n).every(f=>f.played)));
+  const canUnlock=S.activeMD<3&&mdDone[S.activeMD-1];
+  const pills=[1,2,3].map(n=>{
+    const cls=n<S.activeMD?'md-done':n===S.activeMD?'md-active':'';
+    return `<div class="md-pill ${cls}">MD${n}</div>`;
+  }).join('');
+  const unlockMsg=S.activeMD===3&&mdDone[2]?'All matchdays complete &#10003;':`Complete all MD${S.activeMD} matches to unlock next`;
+  noticeWrap.innerHTML=`<div class="md-control">
+    <div>
+      <div style="font-size:.68rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Group Stage — Matchdays</div>
+      <div class="md-pills">${pills}</div>
+    </div>
+    ${canUnlock
+      ?`<button class="btn btn-sm" style="background:linear-gradient(135deg,#28a745,#1e7e34);color:#fff;border:none;cursor:pointer;border-radius:8px;padding:9px 18px;font-weight:700;font-size:.8rem;letter-spacing:1px" onclick="unlockNextMD()">&#128275; Unlock Matchday ${S.activeMD+1}</button>`
+      :`<span style="font-size:.75rem;color:#4a5568">${unlockMsg}</span>`}
+  </div>`;
+
+  ['A','B','C','D'].forEach(g=>grid.innerHTML+=buildGroupCard(g));
+
+  const all=allFixturesPlayed();
+  document.getElementById('advance-ko-btn').style.display=all?'block':'none';
+}
+
+function buildGroupCard(g){
+  const standings=calcStandings(g);
+  const fixtures=S.fixtures[g];
+  const complete=fixtures.every(f=>f.played);
+
+  const lgos=S.logos||{};
+  const aLogo=(team,sz=16)=>{const s=lgos[team];return s?`<img src="${s}" style="width:${sz}px;height:${sz}px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<span style="width:${sz}px;height:${sz}px;border-radius:50%;background:#21262d;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#4a5568;flex-shrink:0">${(team[0]||'?').toUpperCase()}</span>`;};
+
+  let standRows='';
+  standings.forEach((row,i)=>{
+    const cls=i<2?'qualify':'eliminated';
+    standRows+=`<tr class="${cls}">
+      <td><div style="display:flex;align-items:center;gap:5px">${aLogo(row.team)}${esc(row.team)}</div></td>
+      <td>${row.p}</td><td>${row.w}</td><td>${row.d}</td><td>${row.l}</td>
+      <td>${row.gf}</td><td>${row.ga}</td><td>${row.gd>=0?'+':''}${row.gd}</td>
+      <td class="pts">${row.pts}</td>
+    </tr>`;
+  });
+
+  // Group fixtures by matchday (supports legacy fixtures without md field)
+  const hasMD = fixtures.some(f=>f.md);
+  let fixHTML='';
+  if(!hasMD){
+    // Legacy: flat list
+    fixtures.forEach(f=>{
+      fixHTML+=buildFixRow(g,f,aLogo);
+    });
+    fixHTML=`<div class="md-sec-head md-open">&#128197; Fixtures</div>`+fixHTML;
+  } else {
+    for(let md=1;md<=3;md++){
+      const mdFx=fixtures.filter(f=>f.md===md);
+      const locked=md>S.activeMD;
+      const mdAllDone=mdFx.every(f=>f.played);
+      const headCls=locked?'md-locked':mdAllDone?'md-done':'md-open';
+      const badge=locked?`<span class="md-sec-badge">&#128274; Locked</span>`
+                 :mdAllDone?`<span class="md-sec-badge">&#10003; Complete</span>`:'';
+      fixHTML+=`<div class="md-sec-head ${headCls}">&#128197; Matchday ${md} ${badge}</div>`;
+      mdFx.forEach(f=>{
+        if(locked){
+          fixHTML+=`<div class="fixture" style="opacity:.35;pointer-events:none">
+            <div class="fix-team home" style="display:flex;align-items:center;justify-content:flex-end;gap:5px">${esc(f.home)}${aLogo(f.home)}</div>
+            <div class="fix-score"><span style="color:#4a5568;font-size:.85rem">vs</span></div>
+            <div class="fix-team away" style="display:flex;align-items:center;justify-content:flex-start;gap:5px">${aLogo(f.away)}${esc(f.away)}</div>
+          </div>`;
+        } else {
+          fixHTML+=buildFixRow(g,f,aLogo);
+        }
+      });
+    }
+  }
+
+  return `<div class="group-card">
+    <div class="group-head">
+      <span class="group-title">GROUP ${g}</span>
+      <span class="group-complete-badge ${complete?'show':''}">&#10003; Complete</span>
+    </div>
+    <div class="group-body">
+      <div class="standings-wrap">
+        <div class="qualify-legend"><div class="q-line"></div><span>Green border = qualifies</span></div>
+        <table class="standings">
+          <thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead>
+          <tbody>${standRows}</tbody>
+        </table>
+      </div>
+      ${fixHTML}
+    </div>
+  </div>`;
+}
+
+function buildFixRow(g,f,aLogo){
+  const isEditing=editingFix.has(`${g}-${f.id}`);
+  if(f.played&&!isEditing){
+    return `<div class="fixture played">
+      <div class="fix-team home" style="display:flex;align-items:center;justify-content:flex-end;gap:5px">${esc(f.home)}${aLogo(f.home)}</div>
+      <div class="fix-result">${f.hs} – ${f.as}</div>
+      <div class="fix-team away" style="display:flex;align-items:center;justify-content:flex-start;gap:5px">${aLogo(f.away)}${esc(f.away)}</div>
+      <span class="fix-check">&#10003;</span>
+      <button class="fix-edit" title="Edit score" onclick="editGroupScore('${g}',${f.id})">&#9998;</button>
+    </div>`;
+  }
+  const prefillH=(isEditing&&f.hs!==null)?f.hs:'';
+  const prefillA=(isEditing&&f.as!==null)?f.as:'';
+  return `<div class="fixture${isEditing?' editing':''}" id="fx-${g}-${f.id}">
+    <div class="fix-team home" style="display:flex;align-items:center;justify-content:flex-end;gap:5px">${esc(f.home)}${aLogo(f.home)}</div>
+    <div class="fix-score">
+      <input class="s-input" id="hs-${g}-${f.id}" type="number" min="0" max="99" placeholder="0" value="${prefillH}">
+      <span class="s-sep">–</span>
+      <input class="s-input" id="as-${g}-${f.id}" type="number" min="0" max="99" placeholder="0" value="${prefillA}">
+    </div>
+    <div class="fix-team away" style="display:flex;align-items:center;justify-content:flex-start;gap:5px">${aLogo(f.away)}${esc(f.away)}</div>
+    <button class="fix-btn" onclick="submitScore('${g}',${f.id})">Save</button>
+    ${isEditing?`<button class="fix-cancel" onclick="cancelGroupEdit('${g}',${f.id})">&#10005;</button>`:''}
+  </div>`;
+}
+
+function submitScore(g,id){
+  const hsEl=document.getElementById(`hs-${g}-${id}`);
+  const asEl=document.getElementById(`as-${g}-${id}`);
+  const hs=parseInt(hsEl?.value);
+  const as=parseInt(asEl?.value);
+  if(isNaN(hs)||isNaN(as)||hs<0||as<0){
+    toast('Enter valid scores (0 or more) for both teams!','error');
+    return;
+  }
+  const fx=S.fixtures[g].find(f=>f.id===id);
+  if(!fx) return;
+  fx.hs=hs; fx.as=as; fx.played=true;
+  editingFix.delete(`${g}-${id}`);
+  saveState();
+  renderGroups();
+  const res=`${esc(fx.home)} ${hs}–${as} ${esc(fx.away)}`;
+  toast(`Result saved: ${res}`);
+}
+
+function editGroupScore(g,id){
+  editingFix.add(`${g}-${id}`);
+  renderGroups();
+}
+
+function cancelGroupEdit(g,id){
+  editingFix.delete(`${g}-${id}`);
+  renderGroups();
+}
+
+function calcStandings(g){
+  const teams=S.groups[g];
+  const fixtures=S.fixtures[g];
+  return teams.map(team=>{
+    let p=0,w=0,d=0,l=0,gf=0,ga=0;
+    fixtures.filter(f=>f.played&&(f.home===team||f.away===team)).forEach(f=>{
+      p++;
+      const [ts,os]=f.home===team?[f.hs,f.as]:[f.as,f.hs];
+      gf+=ts; ga+=os;
+      if(ts>os) w++; else if(ts===os) d++; else l++;
+    });
+    return {team,p,w,d,l,gf,ga,gd:gf-ga,pts:w*3+d};
+  }).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.team.localeCompare(b.team));
+}
+
+function allFixturesPlayed(){
+  return ['A','B','C','D'].every(g=>S.fixtures[g].every(f=>f.played));
+}
+
+function unlockNextMD(){
+  if(S.activeMD>=3){toast('All matchdays are already unlocked!','info');return;}
+  const allDone=['A','B','C','D'].every(g=>S.fixtures[g].filter(f=>f.md===S.activeMD).every(f=>f.played));
+  if(!allDone){toast('Complete all Matchday '+S.activeMD+' matches first!','error');return;}
+  S.activeMD++;
+  saveState();
+  renderGroups();
+  toast('Matchday '+S.activeMD+' is now unlocked! &#128275;');
+}
+
+function updateStats(){
+  let played=0,remaining=0,goals=0,qualified=0;
+  ['A','B','C','D'].forEach(g=>{
+    S.fixtures[g].forEach(f=>{
+      if(f.played){played++;goals+=f.hs+f.as;}
+      else remaining++;
+    });
+    if(S.fixtures[g].every(f=>f.played)) qualified+=2;
+  });
+  document.getElementById('st-played').textContent=played;
+  document.getElementById('st-remaining').textContent=remaining;
+  document.getElementById('st-goals').textContent=goals;
+  document.getElementById('st-qualified').textContent=qualified;
+  const pct=Math.round(played/24*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-lbl').textContent=`${played} / 24 matches played`;
+}
+
+function advanceToKnockout(){
+  if(!allFixturesPlayed()){toast('All group matches must be played first!','error');return;}
+  setupKnockoutBracket();
+  S.phase='knockout';
+  saveState();
+  switchTab('knockout');
+  toast('Knockout stage is ready! QF draw complete.');
+}
+
+function setupKnockoutBracket(){
+  const qual={};
+  ['A','B','C','D'].forEach(g=>{
+    const st=calcStandings(g);
+    qual[g]={first:st[0].team,second:st[1].team};
+  });
+  // QF pairings: A1 vs B2, C1 vs D2, B1 vs A2, D1 vs C2
+  S.ko.qf[0]={home:qual.A.first, away:qual.B.second, hs:null,as:null,winner:null};
+  S.ko.qf[1]={home:qual.C.first, away:qual.D.second, hs:null,as:null,winner:null};
+  S.ko.qf[2]={home:qual.B.first, away:qual.A.second, hs:null,as:null,winner:null};
+  S.ko.qf[3]={home:qual.D.first, away:qual.C.second, hs:null,as:null,winner:null};
+}
+
+// ═══════════════════════════════════════════
+//  KNOCKOUT
+// ═══════════════════════════════════════════
+function renderKnockout(){
+  const notice=document.getElementById('ko-notice-wrap');
+  if(S.phase!=='knockout'||!S.ko.qf[0].home){
+    notice.innerHTML=`<div class="phase-notice">
+      <h3>&#127942; Group Stage Incomplete</h3>
+      <p>Complete all group stage matches then click "Advance to Knockout Stage".</p>
+    </div>`;
+    renderBracketMatch('qf',0,null);
+    renderBracketMatch('qf',1,null);
+    renderBracketMatch('qf',2,null);
+    renderBracketMatch('qf',3,null);
+    renderBracketMatch('sf',0,null);
+    renderBracketMatch('sf',1,null);
+    renderBracketMatch('final',0,null);
+    return;
+  }
+  notice.innerHTML='';
+
+  // QF
+  S.ko.qf.forEach((m,i)=>renderBracketMatch('qf',i,m));
+  // SF
+  S.ko.sf.forEach((m,i)=>renderBracketMatch('sf',i,m));
+  // Final
+  renderBracketMatch('final',0,S.ko.final);
+
+  // Champion
+  if(S.ko.final.winner){
+    document.getElementById('champ-card').classList.add('show');
+    document.getElementById('champ-name').textContent=S.ko.final.winner;
+    document.getElementById('ko-sub').textContent='We have a champion!';
+  } else {
+    document.getElementById('champ-card').classList.remove('show');
+  }
+}
+
+function renderBracketMatch(round,idx,m){
+  const elId=round==='final'?'m-final':`m-${round}${idx}`;
+  const el=document.getElementById(elId);
+  if(!el) return;
+
+  const lgos=S.logos||{};
+  const bLogo=(team,sz=16)=>{if(!team)return'';const s=lgos[team];return s?`<img src="${s}" style="width:${sz}px;height:${sz}px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-right:4px">`:`<span style="width:${sz}px;height:${sz}px;border-radius:50%;background:#21262d;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#4a5568;flex-shrink:0;margin-right:4px">${(team[0]||'?').toUpperCase()}</span>`;};
+
+  if(!m||!m.home){
+    el.innerHTML=`
+      <div class="b-team tbd"><span class="b-name">TBD</span></div>
+      <div class="b-team tbd"><span class="b-name">TBD</span></div>`;
+    return;
+  }
+
+  const homeWin=m.winner&&m.winner===m.home;
+  const awayWin=m.winner&&m.winner===m.away;
+
+  let formHTML='';
+  if(!m.winner){
+    formHTML=`<div class="b-form">
+      <input class="b-inp" id="ko-hs-${round}-${idx}" type="number" min="0" max="99" placeholder="0">
+      <span class="b-sep">–</span>
+      <input class="b-inp" id="ko-as-${round}-${idx}" type="number" min="0" max="99" placeholder="0">
+      <button class="b-sub" onclick="submitKOScore('${round}',${idx})">Save</button>
+    </div>`;
+  } else {
+    formHTML=`<div class="b-edit-wrap"><button class="b-edit" onclick="editKOScore('${round}',${idx})">&#9998; Edit Score</button></div>`;
+  }
+
+  el.innerHTML=`
+    <div class="b-team ${homeWin?'winner':''}">
+      <span class="b-name" style="display:flex;align-items:center">${bLogo(m.home)}${esc(m.home||'TBD')}</span>
+      <span class="b-score">${m.hs!==null?m.hs:''}</span>
+    </div>
+    <div class="b-team ${awayWin?'winner':''}">
+      <span class="b-name" style="display:flex;align-items:center">${bLogo(m.away)}${esc(m.away||'TBD')}</span>
+      <span class="b-score">${m.as!==null?m.as:''}</span>
+    </div>
+    ${formHTML}`;
+}
+
+function editKOScore(round,idx){
+  const match=round==='final'?S.ko.final:S.ko[round][idx];
+  if(!match) return;
+  const oldWinner=match.winner;
+  match.hs=null; match.as=null; match.winner=null;
+
+  // Cascade: clear downstream slots that depended on this match's winner
+  if(round==='qf'){
+    const sfIdx=idx<2?0:1;
+    const slot=idx%2===0?'home':'away';
+    if(S.ko.sf[sfIdx][slot]===oldWinner){
+      S.ko.sf[sfIdx][slot]=null;
+      if(S.ko.sf[sfIdx].winner){
+        const sfOld=S.ko.sf[sfIdx].winner;
+        S.ko.sf[sfIdx].hs=null; S.ko.sf[sfIdx].as=null; S.ko.sf[sfIdx].winner=null;
+        const fSlot=sfIdx===0?'home':'away';
+        if(S.ko.final[fSlot]===sfOld){
+          S.ko.final[fSlot]=null;
+          S.ko.final.hs=null; S.ko.final.as=null; S.ko.final.winner=null;
+        }
+      }
+    }
+  } else if(round==='sf'){
+    const fSlot=idx===0?'home':'away';
+    if(S.ko.final[fSlot]===oldWinner){
+      S.ko.final[fSlot]=null;
+      S.ko.final.hs=null; S.ko.final.as=null; S.ko.final.winner=null;
+    }
+  }
+
+  saveState();
+  renderKnockout();
+  toast('Score cleared — enter the correct result.','info');
+}
+
+function submitKOScore(round,idx){
+  const hsEl=document.getElementById(`ko-hs-${round}-${idx}`);
+  const asEl=document.getElementById(`ko-as-${round}-${idx}`);
+  const hs=parseInt(hsEl?.value);
+  const as=parseInt(asEl?.value);
+  if(isNaN(hs)||isNaN(as)||hs<0||as<0){
+    toast('Enter valid scores for both teams!','error');return;
+  }
+  if(hs===as){
+    toast('No draws in knockout! One team must win.','error');return;
+  }
+
+  const match=round==='final'?S.ko.final:S.ko[round][idx];
+  if(!match||!match.home){toast('Match not ready yet.','error');return;}
+
+  match.hs=hs; match.as=as;
+  match.winner=hs>as?match.home:match.away;
+
+  // Advance winner
+  if(round==='qf'){
+    // QF0 winner → SF0 home, QF1 winner → SF0 away
+    // QF2 winner → SF1 home, QF3 winner → SF1 away
+    if(idx===0) S.ko.sf[0].home=match.winner;
+    if(idx===1) S.ko.sf[0].away=match.winner;
+    if(idx===2) S.ko.sf[1].home=match.winner;
+    if(idx===3) S.ko.sf[1].away=match.winner;
+  } else if(round==='sf'){
+    if(idx===0) S.ko.final.home=match.winner;
+    if(idx===1) S.ko.final.away=match.winner;
+  }
+
+  saveState();
+  renderKnockout();
+  toast(`${esc(match.winner)} advances! &#9654;`);
+}
+
+// ═══════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════
+async function publishCL(){
+  if(!S.groups.A || !S.groups.A.length){ toast('Draw groups first before publishing.','error'); return; }
+
+  // Capture any logos set/changed in setup inputs since last draw
+  S.logos = readLogoInputs(S.teams);
+
+  const standings = {};
+  ['A','B','C','D'].forEach(g => standings[g] = calcStandings(g));
+
+  // Only publish fixtures up to the active matchday
+  const pubFixtures = {};
+  ['A','B','C','D'].forEach(g => {
+    pubFixtures[g] = S.fixtures[g].filter(f => (f.md||1) <= S.activeMD);
+  });
+
+  const pub = {
+    publishedAt: Date.now(),
+    phase: S.phase,
+    groups: S.groups,
+    fixtures: pubFixtures,
+    standings,
+    ko: S.ko,
+    phones: S.phones,
+    logos: S.logos,
+    activeMD: S.activeMD
+  };
+
+  if(!FIREBASE_URL || FIREBASE_URL === 'YOUR_FIREBASE_URL'){
+    toast('Set your FIREBASE_URL in the code first!','error'); return;
+  }
+  try {
+    toast('Publishing...','info');
+    const res = await fetch(FIREBASE_URL + '/dls_pub_cl.json', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(pub)
+    });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    toast('Champions League published! Players can now view it.');
+    notifyFixture('cl', 'Champions League', buildFixtureKey(pub));
+  } catch(e) {
+    toast('Publish failed: ' + e.message, 'error');
+  }
+}
+
+async function saveAccessCode(){
+  const input = document.getElementById('access-code-input');
+  const statusEl = document.getElementById('access-code-status');
+  const code = (input.value||'').trim();
+  if(!code){ statusEl.textContent='Enter a code first'; statusEl.style.color='#f87171'; return; }
+  try{
+    statusEl.textContent='Saving...'; statusEl.style.color='#8b949e';
+    await fetch(FIREBASE_URL+'/dls_codes.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({cl:code})});
+    statusEl.textContent='Code saved ✓'; statusEl.style.color='#00c853';
+  } catch(e){ statusEl.textContent='Failed: '+e.message; statusEl.style.color='#f87171'; }
+}
+async function recordTrophy(teamName, type){
+  try {
+    const url = FIREBASE_URL + '/dls_trophies.json';
+    const res = await fetch(url);
+    const data = (res.ok ? await res.json() : null) || {};
+    if(!data[teamName]) data[teamName] = {};
+    data[teamName][type] = (data[teamName][type] || 0) + 1;
+    await fetch(url, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+  } catch(e) {}
+}
+async function resetAll(){
+  if(!confirm('This will RESET the entire tournament. All scores and fixtures will be lost. Are you sure?')) return;
+  const winner = S.ko && S.ko.final && S.ko.final.winner;
+  if(winner) await recordTrophy(winner, 'cl');
+  S=defaultState();
+  saveState();
+  renderSetup();
+  document.getElementById('draw-result').classList.remove('show');
+  switchTab('setup');
+  toast('Tournament has been reset.','info');
+}
+
+// ═══════════════════════════════════════════
+//  WHATSAPP COPY
+// ═══════════════════════════════════════════
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    toast('Copied! Paste into your WhatsApp group. &#128242;');
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('Copied! Paste into your WhatsApp group. &#128242;');
+  });
+}
+
+function copyGroupAnnouncement(){
+  if(!S.groups.A.length){ toast('Draw groups first!','error'); return; }
+  const viewerURL = window.location.origin + '/viewer.html';
+  let text = '⚽ *DLS Champions League — Group Stage Fixtures*\n\n';
+  let hasAny = false;
+  ['A','B','C','D'].forEach(g=>{
+    const pending = S.fixtures[g].filter(f=>!f.played);
+    if(!pending.length) return;
+    hasAny = true;
+    text += `📌 *Group ${g}*\n`;
+    pending.forEach(f=>{
+      const hP = S.phones[f.home], aP = S.phones[f.away];
+      text += `⚔️ ${f.home} vs ${f.away}\n`;
+      if(hP) text += `   📱 ${f.home}: ${hP}\n`;
+      if(aP) text += `   📱 ${f.away}: ${aP}\n`;
+      text += '\n';
+    });
+  });
+  if(!hasAny){ toast('No pending fixtures to announce.','info'); return; }
+  text += `📊 Live results: ${viewerURL}`;
+  copyToClipboard(text);
+}
+
+function copyKOAnnouncement(){
+  if(S.phase !== 'knockout'){ toast('Advance to Knockout first!','error'); return; }
+  const viewerURL = window.location.origin + '/viewer.html';
+  const rounds = [
+    {label:'Quarter Finals', matches: S.ko.qf},
+    {label:'Semi Finals',    matches: S.ko.sf},
+    {label:'Final',          matches: [S.ko.final]}
+  ];
+  let text = '🏆 *DLS Champions League — Knockout Stage*\n\n';
+  let hasAny = false;
+  rounds.forEach(r=>{
+    const pending = r.matches.filter(m=>m&&m.home&&!m.winner);
+    if(!pending.length) return;
+    hasAny = true;
+    text += `🎯 *${r.label}*\n`;
+    pending.forEach(m=>{
+      const hP = S.phones[m.home], aP = S.phones[m.away];
+      text += `⚔️ ${m.home} vs ${m.away}\n`;
+      if(hP) text += `   📱 ${m.home}: ${hP}\n`;
+      if(aP) text += `   📱 ${m.away}: ${aP}\n`;
+      text += '\n';
+    });
+  });
+  if(!hasAny){ toast('No pending knockout matches.','info'); return; }
+  text += `📊 Live results: ${viewerURL}`;
+  copyToClipboard(text);
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+const NOTIFY_SECRET = 'c68805dd4e0bd6a2025817c84db31527257c4e9a3b4ea0c618946a6bd42dd3b0';
+function buildFixtureKey(pub){
+  const pairs = [];
+  if(pub.phase === 'group' && pub.fixtures){
+    ['A','B','C','D'].forEach(g => (pub.fixtures[g]||[]).forEach(m => pairs.push(m.home+'|'+m.away)));
+  } else if(pub.phase === 'knockout' && pub.ko){
+    [...(pub.ko.qf||[]),...(pub.ko.sf||[])].forEach(m => { if(m&&m.home) pairs.push(m.home+'|'+m.away); });
+    if(pub.ko.final&&pub.ko.final.home) pairs.push(pub.ko.final.home+'|'+pub.ko.final.away);
+  }
+  return pairs.join(',') || pub.phase || 'unknown';
+}
+function notifyFixture(comp, compName, fixtureKey){
+  const storeKey = 'dls_last_notif_' + comp;
+  const last = localStorage.getItem(storeKey);
+  if(last === fixtureKey) return;
+  localStorage.setItem(storeKey, fixtureKey);
+  fetch('/.netlify/functions/notify-fixture', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ comp, compName, matchday: null, secret: NOTIFY_SECRET })
+  }).catch(()=>{});
+}
+
+// ── Logo helpers ──
+function resizeImageToBase64(file,size=48){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        c.width=size; c.height=size;
+        const ctx=c.getContext('2d');
+        const ratio=Math.min(size/img.width,size/img.height);
+        const w=img.width*ratio,h=img.height*ratio;
+        ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+        resolve(c.toDataURL('image/jpeg',.85));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function previewTeamLogo(idx){
+  const file=document.getElementById('logo-file-'+idx)?.files[0];
+  if(!file) return;
+  const b64=await resizeImageToBase64(file);
+  const hidden=document.getElementById('logo-b64-'+idx);
+  if(hidden) hidden.value=b64;
+  const circle=document.getElementById('logo-circle-'+idx);
+  if(circle) circle.innerHTML=`<img src="${b64}" style="width:100%;height:100%;object-fit:cover">`;
+}
+
+// ── Import Qualifying Teams ──
+async function openImportModal(){
+  const modal=document.getElementById('import-modal');
+  modal.style.display='block';
+  document.body.style.overflow='hidden';
+  document.getElementById('import-content').innerHTML='<div style="text-align:center;padding:30px;color:#8b949e">&#9203; Loading league data from cloud...</div>';
+
+  try{
+    const [r1,r2]=await Promise.all([
+      fetch(FIREBASE_URL+'/dls_pub_league.json').then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch(FIREBASE_URL+'/dls_pub_league2.json').then(r=>r.ok?r.json():null).catch(()=>null)
+    ]);
+
+    const l1Table=r1?.table||[];
+    const l2Table=r2?.table||[];
+    const l1Phones=r1?.phones||{};
+    const l2Phones=r2?.phones||{};
+    const l1Logos=r1?.logos||{};
+    const l2Logos=r2?.logos||{};
+
+    let sources=[];
+    let isFallback=false;
+
+    if(l2Table.length>=8){
+      sources=[
+        {label:'League 1 — Top 8 Qualifiers',teams:l1Table.slice(0,8),phones:l1Phones,logos:l1Logos,accent:'#00c853'},
+        {label:'League 2 — Top 8 Qualifiers',teams:l2Table.slice(0,8),phones:l2Phones,logos:l2Logos,accent:'#4fc3f7'}
+      ];
+    } else if(l1Table.length>=8){
+      isFallback=true;
+      sources=[
+        {label:'League 1 — Top 16 (League 2 not available)',teams:l1Table.slice(0,16),phones:l1Phones,logos:l1Logos,accent:'#00c853'}
+      ];
+    } else {
+      document.getElementById('import-content').innerHTML='<div style="text-align:center;padding:30px;color:#f87171">&#9888; No published league data found.<br><small style="color:#8b949e">Publish League 1 and/or League 2 first, then try again.</small></div>';
+      return;
+    }
+
+    let html=isFallback?'<div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#FFD700">&#9888; League 2 not found — importing all 16 from League 1 only</div>':'';
+    html+='<div style="font-size:.72rem;color:#8b949e;margin-bottom:12px">All qualifying teams are pre-selected. Uncheck any you want to skip.</div>';
+
+    sources.forEach(src=>{
+      html+=`<div style="margin-bottom:16px">
+        <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:${src.accent};margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #21262d">${esc(src.label)}</div>`;
+      src.teams.forEach((row,i)=>{
+        const logo=src.logos[row.team]||'';
+        const phone=src.phones[row.team]||'';
+        const logoEl=logo?`<img src="${logo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">`:`<div style="width:28px;height:28px;border-radius:50%;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#4a5568;flex-shrink:0">${(row.team[0]||'?').toUpperCase()}</div>`;
+        html+=`<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#161b22;border:1px solid #21262d;border-radius:7px;margin-bottom:5px;cursor:pointer">
+          <input type="checkbox" class="import-chk" data-team="${esc(row.team)}" data-phone="${esc(phone)}" data-logo="${esc(logo)}" checked style="accent-color:${src.accent};width:16px;height:16px;flex-shrink:0">
+          <span style="width:20px;text-align:center;font-size:.7rem;font-weight:700;color:#8b949e;flex-shrink:0">${row.pos}</span>
+          ${logoEl}
+          <span style="flex:1;font-size:.82rem;font-weight:700;color:#e6edf3">${esc(row.team)}</span>
+          ${phone?`<span style="font-size:.68rem;color:#8b949e">&#128242; ${esc(phone)}</span>`:''}
+          <span style="font-size:.7rem;font-weight:800;color:${src.accent}">${row.pts}pts</span>
+        </label>`;
+      });
+      html+='</div>';
+    });
+
+    document.getElementById('import-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('import-content').innerHTML=`<div style="text-align:center;padding:30px;color:#f87171">&#9888; Error loading data: ${esc(e.message)}</div>`;
+  }
+}
+
+function closeImportModal(){
+  document.getElementById('import-modal').style.display='none';
+  document.body.style.overflow='';
+}
+
+function confirmImport(){
+  const checks=document.querySelectorAll('.import-chk:checked');
+  if(!checks.length){ toast('No teams selected!','error'); return; }
+  const selected=Array.from(checks).map(c=>({team:c.dataset.team,phone:c.dataset.phone,logo:c.dataset.logo}));
+  if(selected.length>16){ toast('Too many teams selected (max 16)!','error'); return; }
+
+  const newTeams=[...selected.map(s=>s.team)];
+  while(newTeams.length<16) newTeams.push(`Team ${newTeams.length+1}`);
+
+  const newPhones={},newLogos={};
+  selected.forEach(s=>{ if(s.phone) newPhones[s.team]=s.phone; if(s.logo) newLogos[s.team]=s.logo; });
+
+  S.teams=newTeams;
+  S.phones=newPhones;
+  S.logos=newLogos;
+  S.groups={A:[],B:[],C:[],D:[]};
+  S.fixtures={A:[],B:[],C:[],D:[]};
+  S.ko={qf:[0,1,2,3].map(()=>({home:null,away:null,hs:null,as:null,winner:null})),sf:[0,1].map(()=>({home:null,away:null,hs:null,as:null,winner:null})),final:{home:null,away:null,hs:null,as:null,winner:null}};
+  S.phase='setup';
+  saveState();
+  closeImportModal();
+  renderSetup();
+  document.getElementById('draw-result').classList.remove('show');
+  toast(`${selected.length} teams imported! Now draw the groups.`);
+}
+
+function esc(str){
+  if(!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast '+(type==='error'?'error':type==='info'?'info':'');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+(async function init(){
+  if(FIREBASE_URL && FIREBASE_URL !== 'YOUR_FIREBASE_URL'){
+    try{
+      const res = await fetch(FIREBASE_URL+'/dls_admin_tourney.json');
+      const cloud = res.ok ? await res.json() : null;
+      if(cloud && cloud.teams && cloud.teams.length && (cloud.savedAt||0) > (S.savedAt||0)){
+        S = cloud; if(!S.phones) S.phones={};
+        localStorage.setItem('dls_tourney', JSON.stringify(S));
+        toast('Data synced from cloud ☁️','info');
+      }
+    } catch(e){}
+  }
+  renderSetup();
+  if(S.phase==='group') switchTab('groups');
+  else if(S.phase==='knockout') switchTab('knockout');
+  if(S.teams.length) scheduleCloudSave();
+})();
+</script>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+
+<!-- ═══ IMPORT QUALIFYING TEAMS MODAL ═══ -->
+<div id="import-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.93);z-index:9999;overflow-y:auto;padding:20px 16px">
+  <div style="max-width:600px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #21262d">
+      <span style="font-size:1.4rem">&#128229;</span>
+      <div>
+        <div style="font-size:1rem;font-weight:800;color:#e6edf3;letter-spacing:1px">Import Qualifying Teams</div>
+        <div style="font-size:.72rem;color:#8b949e;margin-top:2px">Champions League — Top 8 from League 1 + Top 8 from League 2</div>
+      </div>
+    </div>
+    <div id="import-content" style="margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;position:sticky;bottom:0;background:rgba(13,17,23,.97);padding:12px 0">
+      <button onclick="confirmImport()" style="flex:1;background:linear-gradient(135deg,#00c853,#00a844);border:none;border-radius:8px;padding:12px;color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;letter-spacing:1px">&#10003; Import Selected Teams</button>
+      <button onclick="closeImportModal()" style="background:#21262d;border:1px solid #30363d;border-radius:8px;padding:12px 18px;color:#8b949e;font-size:.85rem;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

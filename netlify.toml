@@ -1,0 +1,11 @@
+[build]
+  functions = "netlify/functions"
+
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "NOTIFY_SECRET,VAPID_PUBLIC_KEY"
+
+[[plugins]]
+package = "@netlify/plugin-functions-install-core"
+
+[functions]
+  node_bundler = "esbuild"

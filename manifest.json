@@ -1,0 +1,24 @@
+{
+  "name": "DLS League",
+  "short_name": "DLS",
+  "description": "ADL Dream League Soccer – Live standings, fixtures and results",
+  "start_url": "./viewer.html",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "dls_logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "dls_logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

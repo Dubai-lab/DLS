@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLS Football Hub</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DLS League">
+<link rel="apple-touch-icon" href="dls_logo.jpeg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 20px 50px}
+.hub-header{text-align:center;margin-bottom:36px}
+.hub-header h1{font-size:2.6rem;font-weight:800;color:#e6edf3;letter-spacing:3px;text-transform:uppercase}
+.hub-header h1 span{color:#FFD700}
+.hub-header p{color:#8b949e;margin-top:8px;font-size:.9rem;letter-spacing:1px}
+
+/* Viewer banner */
+.viewer-banner{display:block;background:rgba(0,200,83,.06);border:1px solid rgba(0,200,83,.25);border-radius:12px;padding:14px 24px;text-align:center;text-decoration:none;margin-bottom:36px;max-width:600px;width:100%;transition:all .25s}
+.viewer-banner:hover{background:rgba(0,200,83,.1);border-color:rgba(0,200,83,.5)}
+
+/* Section labels */
+.section-label{font-size:.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:14px;text-align:center}
+
+/* Cards grid */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:900px;width:100%;margin-bottom:28px}
+.cards-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;max-width:600px;width:100%}
+
+.hub-card{background:#161b22;border:1px solid #21262d;border-radius:14px;padding:28px 22px;text-align:center;cursor:pointer;transition:all .3s;text-decoration:none;color:inherit;display:block}
+.hub-card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 12px 36px color-mix(in srgb,var(--accent) 12%,transparent)}
+.hub-card .card-icon{font-size:2.8rem;margin-bottom:14px;display:block}
+.hub-card h2{font-size:1.15rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.hub-card p{color:#8b949e;font-size:.8rem;line-height:1.6}
+.hub-card .card-tag{display:inline-block;margin-top:14px;padding:4px 14px;border:1px solid var(--accent);border-radius:20px;font-size:.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;transition:all .3s}
+.hub-card:hover .card-tag{background:var(--accent);color:#0d1117}
+
+/* Accent colours */
+.lg1-card{--accent:#00c853}
+.lg2-card{--accent:#4fc3f7}
+.lg3-card{--accent:#ab47bc}
+.cl-card{--accent:#FFD700}
+.eu-card{--accent:#ff7043}
+
+/* Divider */
+.divider{width:100%;max-width:900px;height:1px;background:#21262d;margin:10px 0 28px}
+
+@media(max-width:700px){
+  .hub-header h1{font-size:1.8rem}
+  .cards{grid-template-columns:1fr}
+  .cards-2{grid-template-columns:1fr}
+}
+@media(min-width:701px) and (max-width:900px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="hub-header">
+  <h1>&#9917; DLS <span>Football</span> Hub</h1>
+  <p>Admin panel — choose a competition to manage</p>
+</div>
+
+<a href="viewer.html" class="viewer-banner">
+  <span style="color:#00c853;font-weight:800;font-size:.9rem;letter-spacing:2px;text-transform:uppercase">&#128228; Public Viewer — Share this link with players</span>
+  <div style="color:#8b949e;font-size:.78rem;margin-top:4px">Players see live fixtures &amp; tables (read-only)</div>
+</a>
+
+<!-- Prize Pool link -->
+<a href="prizepool.html" style="display:block;background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.2);border-radius:12px;padding:14px 24px;text-align:center;text-decoration:none;margin-bottom:32px;max-width:540px;width:100%;transition:all .25s" onmouseover="this.style.background='rgba(255,215,0,.1)';this.style.borderColor='rgba(255,215,0,.4)'" onmouseout="this.style.background='rgba(255,215,0,.05)';this.style.borderColor='rgba(255,215,0,.2)'">
+  <span style="color:#FFD700;font-weight:800;font-size:.9rem;letter-spacing:2px;text-transform:uppercase">&#128176; Prize Pool Manager</span>
+  <div style="color:#8b949e;font-size:.78rem;margin-top:4px">Set &amp; publish prize money for all competitions</div>
+</a>
+
+<!-- League Divisions -->
+<div class="section-label">&#9917; League Divisions</div>
+<div class="cards">
+  <a href="league.html" class="hub-card lg1-card">
+    <span class="card-icon">&#9917;</span>
+    <h2>DLS League</h2>
+    <p>Division 1 — top-flight round-robin. Top 8 qualify for Champions League, bottom 3 relegated.</p>
+    <span class="card-tag">Division 1</span>
+  </a>
+
+  <a href="league2.html" class="hub-card lg2-card">
+    <span class="card-icon">&#9917;</span>
+    <h2>DLS League 2</h2>
+    <p>Division 2 — full round-robin with auto table, promotion and relegation zones.</p>
+    <span class="card-tag">Division 2</span>
+  </a>
+
+  <a href="league3.html" class="hub-card lg3-card">
+    <span class="card-icon">&#9917;</span>
+    <h2>DLS League 3</h2>
+    <p>Division 3 — the foundation league. Top teams earn promotion to Division 2.</p>
+    <span class="card-tag">Division 3</span>
+  </a>
+</div>
+
+<div class="divider"></div>
+
+<!-- Cup Competitions -->
+<div class="section-label">&#127942; Cup Competitions</div>
+<div class="cards-2">
+  <a href="tournament.html" class="hub-card cl-card">
+    <span class="card-icon">&#127942;</span>
+    <h2>Champions League</h2>
+    <p>16-team tournament — group stage, quarter finals, semi finals and a grand final bracket.</p>
+    <span class="card-tag">Div 1 &amp; 2 Top 8</span>
+  </a>
+
+  <a href="europa.html" class="hub-card eu-card">
+    <span class="card-icon">&#11088;</span>
+    <h2>Europa League</h2>
+    <p>16-team tournament for Division 3 top teams — same format as Champions League.</p>
+    <span class="card-tag">Div 3 Top 16</span>
+  </a>
+</div>
+
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
+</body>
+</html>

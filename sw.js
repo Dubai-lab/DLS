@@ -1,4 +1,4 @@
-const CACHE = 'dls-v2';
+const CACHE = 'dls-v3';
 const STATIC_ASSETS = ['./manifest.json', './dls_logo.jpeg'];
 const HTML_FILES = ['.html'];
 

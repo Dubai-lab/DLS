@@ -52,6 +52,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .pi-amount{font-size:1.05rem;font-weight:800;color:#FFD700;flex-shrink:0;margin-right:8px}
 .pi-del{background:none;border:1px solid #30363d;border-radius:5px;color:#4a5568;font-size:.85rem;cursor:pointer;padding:4px 9px;transition:all .2s;flex-shrink:0}
 .pi-del:hover{background:rgba(220,53,69,.15);color:#dc3545;border-color:#dc3545}
+.pi-edit{background:none;border:1px solid #30363d;border-radius:5px;color:#4a5568;font-size:.85rem;cursor:pointer;padding:4px 9px;transition:all .2s;flex-shrink:0;margin-right:4px}
+.pi-edit:hover{background:rgba(255,215,0,.1);color:#FFD700;border-color:#FFD700}
+.edit-mode-bar{background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:.78rem;color:#FFD700;display:none;align-items:center;justify-content:space-between;gap:8px}
+.edit-mode-bar.show{display:flex}
 
 .empty-prizes{text-align:center;padding:28px;color:#4a5568;font-size:.85rem;border:1px dashed #21262d;border-radius:8px}
 
@@ -327,6 +331,7 @@ const FIREBASE_URL = 'https://dls-hub-62226-default-rtdb.firebaseio.com';
 // ── State: prizes per competition ──
 const COMPS = ['lg1','lg2','lg3','cl','eu'];
 let prizes = loadPrizes();
+let _editState = null;
 
 function defaultPrizes(){
   return {
@@ -379,6 +384,7 @@ function renderList(comp){
         <div class="pi-desc">${esc(p.desc)}</div>
       </div>
       <span class="pi-amount">${esc(p.amount)}</span>
+      <button class="pi-edit" onclick="editPrize('${comp}',${i})" title="Edit">&#9998;</button>
       <button class="pi-del" onclick="deletePrize('${comp}',${i})" title="Remove">&#10005;</button>
     </div>`).join('');
 }
@@ -387,7 +393,7 @@ function renderAll(){
   COMPS.forEach(renderList);
 }
 
-// ── Add prize ──
+// ── Add / Update prize ──
 function addPrize(comp){
   const rank   = document.getElementById('rank-'+comp).value.trim();
   const desc   = document.getElementById('desc-'+comp).value.trim();
@@ -398,17 +404,65 @@ function addPrize(comp){
   if(!desc)  { toast('Enter a label (e.g. League Winner)','error'); return; }
   if(!amount){ toast('Enter a prize amount (e.g. 10,000 RWF)','error'); return; }
 
-  prizes[comp].push({ medal, rank, desc, amount });
-  savePrizes();
-  renderList(comp);
+  if(_editState && _editState.comp === comp){
+    prizes[comp][_editState.idx] = { medal, rank, desc, amount };
+    savePrizes();
+    renderList(comp);
+    cancelEdit(comp);
+    toast('Prize tier updated! &#9998;');
+  } else {
+    prizes[comp].push({ medal, rank, desc, amount });
+    savePrizes();
+    renderList(comp);
+    document.getElementById('rank-'+comp).value   = '';
+    document.getElementById('desc-'+comp).value   = '';
+    document.getElementById('amount-'+comp).value = '';
+    document.getElementById('rank-'+comp).focus();
+    toast('Prize tier added!');
+  }
+}
 
-  // Clear inputs
+// ── Edit prize ──
+function editPrize(comp, idx){
+  const item = prizes[comp][idx];
+  if(!item) return;
+  _editState = { comp, idx };
+
+  document.getElementById('rank-'+comp).value   = item.rank;
+  document.getElementById('desc-'+comp).value   = item.desc;
+  document.getElementById('amount-'+comp).value = item.amount;
+  const sel = document.getElementById('medal-'+comp);
+  for(let i=0;i<sel.options.length;i++){
+    if(sel.options[i].value === item.medal){ sel.selectedIndex=i; break; }
+  }
+
+  let bar = document.getElementById('edit-bar-'+comp);
+  if(!bar){
+    bar = document.createElement('div');
+    bar.id = 'edit-bar-'+comp;
+    bar.className = 'edit-mode-bar';
+    const box = document.querySelector('#page-'+comp+' .add-prize-box');
+    box.insertBefore(bar, box.firstChild);
+  }
+  bar.innerHTML = `<span>&#9998; Editing: <strong>${esc(item.rank)}</strong></span><button class="btn btn-ghost" style="padding:4px 12px;font-size:.75rem" onclick="cancelEdit('${comp}')">&#10005; Cancel</button>`;
+  bar.classList.add('show');
+
+  const btn = document.querySelector('#page-'+comp+' .add-prize-box .btn-gold');
+  btn.innerHTML = '&#10003; Update Prize Tier';
+
+  document.querySelector('#page-'+comp+' .add-prize-box').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ── Cancel edit ──
+function cancelEdit(comp){
+  _editState = null;
+  const bar = document.getElementById('edit-bar-'+comp);
+  if(bar) bar.classList.remove('show');
   document.getElementById('rank-'+comp).value   = '';
   document.getElementById('desc-'+comp).value   = '';
   document.getElementById('amount-'+comp).value = '';
-  document.getElementById('rank-'+comp).focus();
-
-  toast(`Prize tier added!`);
+  const btn = document.querySelector('#page-'+comp+' .add-prize-box .btn-gold');
+  if(btn) btn.innerHTML = '&#43; Add Prize Tier';
 }
 
 // ── Delete prize ──
@@ -453,8 +507,22 @@ function toast(msg, type='success'){
   setTimeout(()=>el.classList.remove('show'), 3200);
 }
 
+// ── Load from Firebase on init (Firebase is authoritative) ──
+async function syncFromFirebase(){
+  try {
+    const res = await fetch(FIREBASE_URL + '/dls_pub_prizes.json');
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!data) return;
+    COMPS.forEach(c=>{ if(Array.isArray(data[c])) prizes[c] = data[c]; });
+    savePrizes();
+    renderAll();
+  } catch(e){ /* keep localStorage fallback */ }
+}
+
 // ── Init ──
 renderAll();
+syncFromFirebase();
 </script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');</script>
 </body>

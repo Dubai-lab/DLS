@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DLS Football Hub — Live</title>
+<title>DLS Africa Hub</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d1117">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="DLS League">
+<meta name="apple-mobile-web-app-title" content="DLS Africa Hub">
 <link rel="apple-touch-icon" href="dls_logo.jpeg">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -417,6 +417,12 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .hl-cmt-input{flex:1;background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 10px;color:#e6edf3;font-size:16px;outline:none;font-family:inherit;min-width:0}
 .hl-cmt-post{background:#ffc107;border:none;border-radius:8px;padding:8px 14px;color:#0d1117;font-size:.8rem;font-weight:800;cursor:pointer;flex-shrink:0}
 /* Video list */
+/* Search */
+.hl-search-wrap{padding:10px 14px;background:#0f1923;border-bottom:1px solid #21262d;position:relative}
+.hl-search-input{width:100%;background:#21262d;border:1px solid #30363d;border-radius:8px;padding:9px 12px 9px 34px;color:#e6edf3;font-size:16px;outline:none;font-family:inherit;box-sizing:border-box}
+.hl-search-ico{position:absolute;left:24px;top:50%;transform:translateY(-50%);color:#8b949e;font-size:.85rem;pointer-events:none}
+/* Share btn */
+.hl-share-btn{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:6px;padding:4px 10px;color:#25d366;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;margin-top:6px}
 .hl-list-hdr{padding:10px 16px 4px;font-size:.72rem;font-weight:700;color:#8b949e;letter-spacing:1px;text-transform:uppercase}
 .hl-card{display:flex;gap:10px;padding:10px 16px;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent}
 .hl-card:active{background:rgba(255,255,255,.04)}
@@ -502,6 +508,10 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
     <button class="hl-back-btn" onclick="showHomeScreen()">&#8592; Back</button>
     <span style="flex:1;font-size:.85rem;font-weight:800;color:#e6edf3;letter-spacing:2px;text-transform:uppercase;text-align:center">Highlights</span>
     <button class="hl-upload-btn" onclick="openUploadModal()">&#43; Upload</button>
+  </div>
+  <div class="hl-search-wrap">
+    <span class="hl-search-ico">&#128269;</span>
+    <input type="search" class="hl-search-input" id="hl-search" placeholder="Search by team name..." oninput="filterHighlights(this.value)" autocomplete="off">
   </div>
   <div class="hl-feed" id="hl-feed">
     <!-- Inline player (shown when a video is selected) -->
@@ -1702,7 +1712,8 @@ let _hlItems = [];
 let _hlActiveKey = null;
 
 async function loadHighlights(){
-  _hlActiveKey = null;
+  _hlActiveKey = null; _hlFilter = '';
+  const si = document.getElementById('hl-search'); if(si) si.value='';
   document.getElementById('hl-player-section').classList.remove('active');
   document.getElementById('hl-list-hdr').style.display = 'none';
   document.getElementById('hl-empty').style.display = 'none';
@@ -1717,27 +1728,45 @@ async function loadHighlights(){
   }
 }
 
+let _hlFilter = '';
+
+function filterHighlights(q){
+  _hlFilter = (q||'').toLowerCase().trim();
+  renderHlList();
+}
+
 function renderHlList(){
   const cards = document.getElementById('hl-cards');
   const empty = document.getElementById('hl-empty');
   const hdr   = document.getElementById('hl-list-hdr');
-  if(!_hlItems.length){
+  const items = _hlFilter
+    ? _hlItems.filter(h=>(h.team1||'').toLowerCase().includes(_hlFilter)||(h.team2||'').toLowerCase().includes(_hlFilter)||(h.title||'').toLowerCase().includes(_hlFilter))
+    : _hlItems;
+  if(!items.length){
     cards.innerHTML = ''; empty.style.display='block'; hdr.style.display='none'; return;
   }
   empty.style.display = 'none'; hdr.style.display = 'block';
-  cards.innerHTML = _hlItems.map(h=>{
+  cards.innerHTML = items.map(h=>{
     const thumb = h.thumbUrl
       ? `<img src="${h.thumbUrl}" alt="">`
       : `<div class="hl-thumb-ph">&#127909;</div>`;
+    const titleSafe = (h.title||'Match Highlight').replace(/'/g,"\\'");
+    const urlSafe = (h.videoUrl||'').replace(/'/g,"\\'");
     return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')">
       <div class="hl-thumb">${thumb}<div class="hl-play-ov"><span>&#9654;</span></div></div>
       <div class="hl-card-info">
         <div class="hl-card-vs">${h.title||'Match Highlight'}</div>
         <div class="hl-card-date">${h.date||''}</div>
         <div class="hl-card-lk">&#10084; ${h.likes||0}</div>
+        <button class="hl-share-btn" onclick="event.stopPropagation();shareHighlight('${urlSafe}','${titleSafe}')">&#128233; WhatsApp</button>
       </div>
     </div>`;
   }).join('');
+}
+
+function shareHighlight(videoUrl, title){
+  const text = encodeURIComponent(`⚽ *${title}*\n🎬 Watch the highlight:\n${videoUrl}`);
+  window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 
 async function selectHighlight(key){

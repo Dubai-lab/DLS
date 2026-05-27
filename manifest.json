@@ -1,7 +1,7 @@
 {
-  "name": "DLS League",
-  "short_name": "DLS",
-  "description": "ADL Dream League Soccer – Live standings, fixtures and results",
+  "name": "DLS Africa Hub",
+  "short_name": "DLS Africa",
+  "description": "DLS Africa Hub – Live standings, fixtures, results and highlights",
   "start_url": "./viewer.html",
   "display": "standalone",
   "background_color": "#0d1117",

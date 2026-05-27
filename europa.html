@@ -304,6 +304,13 @@ function checkLock(){
   </div>
 
   <div style="margin-bottom:16px;padding:14px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
+    <h3 style="font-size:.88rem;font-weight:800;color:#e6edf3;margin-bottom:6px">&#127909; Manage Highlights</h3>
+    <p style="font-size:.75rem;color:#8b949e;margin-bottom:10px">Delete highlight clips uploaded by players.</p>
+    <button onclick="loadAdminHighlights()" class="btn btn-sm" style="background:#21262d;border:1px solid #30363d;color:#e6edf3;margin-bottom:10px">&#8635; Load Highlights</button>
+    <div id="admin-hl-list"></div>
+  </div>
+
+  <div style="margin-bottom:16px;padding:14px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
     <h3 style="font-size:.88rem;font-weight:800;color:#e6edf3;margin-bottom:4px">&#128273; Player Access Code</h3>
     <p style="font-size:.75rem;color:#8b949e;margin-bottom:10px">Players enter this code to access Europa League in the viewer app.</p>
     <div style="display:flex;gap:8px;align-items:center">
@@ -963,6 +970,44 @@ async function publishEuropa(){
     toast('Europa League published! Players can now view it.');
     notifyFixture('europa', 'Europa League', buildFixtureKey(pub));
   } catch(e) { toast('Publish failed: ' + e.message, 'error'); }
+}
+
+// ── Highlights Management ──
+const HL_BUCKET = 'dls-hub-62226.firebasestorage.app';
+const HL_COMP   = 'europa';
+async function loadAdminHighlights(){
+  const el = document.getElementById('admin-hl-list');
+  el.innerHTML = '<p style="font-size:.78rem;color:#8b949e">Loading...</p>';
+  try{
+    const res = await fetch(`${FIREBASE_URL}/dls_highlights/${HL_COMP}.json`);
+    const data = res.ok ? await res.json() : null;
+    if(!data){ el.innerHTML='<p style="font-size:.78rem;color:#8b949e">No highlights yet.</p>'; return; }
+    const items = Object.entries(data).filter(([k,v])=>v&&v.videoUrl).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));
+    if(!items.length){ el.innerHTML='<p style="font-size:.78rem;color:#8b949e">No highlights yet.</p>'; return; }
+    el.innerHTML = items.map(([k,v])=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #21262d">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;font-weight:700;color:#e6edf3">${v.title||'Highlight'}</div>
+          <div style="font-size:.7rem;color:#8b949e">${v.date||''}</div>
+        </div>
+        <button onclick="deleteHighlight('${k}','${(v.videoUrl||'').replace(/'/g,"\\'")}','${(v.thumbUrl||'').replace(/'/g,"\\'")}',this)"
+          style="background:rgba(220,53,69,.15);border:1px solid rgba(220,53,69,.4);border-radius:6px;padding:5px 12px;color:#f87171;font-size:.75rem;font-weight:700;cursor:pointer;flex-shrink:0">
+          &#128465; Delete
+        </button>
+      </div>`).join('');
+  }catch(e){ el.innerHTML='<p style="font-size:.78rem;color:#f87171">Failed to load.</p>'; }
+}
+async function deleteHighlight(key, videoUrl, thumbUrl, btn){
+  if(!confirm('Delete this highlight? This cannot be undone.')) return;
+  btn.disabled=true; btn.textContent='Deleting...';
+  try{
+    await fetch(`${FIREBASE_URL}/dls_highlights/${HL_COMP}/${key}.json`,{method:'DELETE'});
+    const getPath=url=>{const m=url.match(/\/o\/(.+?)\?/);return m?decodeURIComponent(m[1]):null;};
+    const vPath=videoUrl?getPath(videoUrl):null; const tPath=thumbUrl?getPath(thumbUrl):null;
+    if(vPath) await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/${encodeURIComponent(vPath)}`,{method:'DELETE'}).catch(()=>{});
+    if(tPath) await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/${encodeURIComponent(tPath)}`,{method:'DELETE'}).catch(()=>{});
+    btn.closest('div[style]').remove();
+  }catch(e){ btn.disabled=false; btn.textContent='Delete'; alert('Delete failed.'); }
 }
 
 async function saveAccessCode(){

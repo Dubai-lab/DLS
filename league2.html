@@ -118,10 +118,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .mc-edit-btn:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
 .mc-cancel-btn{padding:5px 8px;background:#21262d;border:1px solid #30363d;border-radius:5px;color:#8b949e;font-size:.8rem;cursor:pointer;flex-shrink:0}
 .mc-ok{color:#4fc3f7;font-size:.95rem;flex-shrink:0}
-.match-card.editing{flex-wrap:wrap}
-.card-section{width:100%;border-top:1px solid #21262d;margin-top:8px;padding-top:10px}
-.card-team-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.card-team-lbl{font-size:.68rem;color:#8b949e;text-transform:uppercase;letter-spacing:.8px;font-weight:700;min-width:72px;flex-shrink:0}
+.mc-home-g{flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.mc-away-g{flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-start}
+.mc-home-g .mc-team,.mc-away-g .mc-team{flex:0 1 auto}
 .card-chips{display:flex;gap:4px;flex-wrap:wrap}
 .card-chip{display:inline-flex;align-items:center;gap:3px;border-radius:10px;padding:3px 8px 3px 5px;font-size:.72rem;font-weight:700}
 .card-chip.yellow{background:rgba(255,193,7,.18);border:1px solid rgba(255,193,7,.45);color:#ffc107}
@@ -688,37 +687,30 @@ function renderFixtures(){
     } else {
       const ph = isEditing && m.hs !== null ? m.hs : '';
       const pa = isEditing && m.as !== null ? m.as : '';
-      let cardSectionHTML = '';
+      let hBtns='', aBtns='';
       if(isEditing || !m.played){
         const pendingC = _pendingCards[key] || [];
         const hChips = pendingC.map((c,ci)=>c.team===m.home?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
         const aChips = pendingC.map((c,ci)=>c.team===m.away?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
-        cardSectionHTML = `<div class="card-section">
-          <div class="card-team-row">
-            <span class="card-team-lbl">${esc(m.home)}</span>
-            <button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'home','yellow')">&#127936; Yellow +150</button>
-            <button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'home','red')">&#127947; Red +300</button>
-            <div class="card-chips">${hChips}</div>
-          </div>
-          <div class="card-team-row">
-            <span class="card-team-lbl">${esc(m.away)}</span>
-            <button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'away','yellow')">&#127936; Yellow +150</button>
-            <button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'away','red')">&#127947; Red +300</button>
-            <div class="card-chips">${aChips}</div>
-          </div>
-        </div>`;
+        hBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'home','yellow')">&#127936; +150</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'home','red')">&#127947; +300</button>${hChips}`;
+        aBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'away','yellow')">&#127936; +150</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'away','red')">&#127947; +300</button>${aChips}`;
       }
       matchesHTML += `<div class="match-card${isEditing?' editing':''}">
-        <div class="mc-team home">${esc(m.home)}</div>
+        <div class="mc-home-g">
+          <span class="mc-team home">${esc(m.home)}</span>
+          ${hBtns}
+        </div>
         <div class="mc-score-area">
           <input class="sc-inp" id="sc-h-${LS.currentDay}-${idx}" type="number" min="0" max="99" placeholder="0" value="${ph}">
           <span class="sc-sep">&ndash;</span>
           <input class="sc-inp" id="sc-a-${LS.currentDay}-${idx}" type="number" min="0" max="99" placeholder="0" value="${pa}">
         </div>
-        <div class="mc-team away">${esc(m.away)}</div>
+        <div class="mc-away-g">
+          <span class="mc-team away">${esc(m.away)}</span>
+          ${aBtns}
+        </div>
         <button class="mc-save-btn" onclick="saveScore(${LS.currentDay},${idx})">Save</button>
         ${isEditing ? `<button class="mc-cancel-btn" onclick="cancelEdit(${LS.currentDay},${idx})">&#10005;</button>` : ''}
-        ${cardSectionHTML}
       </div>`;
     }
   });

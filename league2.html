@@ -127,6 +127,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .card-chip.red{background:rgba(220,53,69,.18);border:1px solid rgba(220,53,69,.45);color:#f87171}
 .card-chip-x{background:none;border:none;color:inherit;cursor:pointer;font-size:.78rem;line-height:1;padding:0 0 0 2px;opacity:.75}
 .card-chip-x:hover{opacity:1}
+.card-cnt{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;font-size:.65rem;font-weight:900;margin-left:4px;vertical-align:middle;cursor:pointer;line-height:1}
+.btn-card-y .card-cnt{background:rgba(255,193,7,.25);border:1px solid rgba(255,193,7,.6);color:#ffc107}
+.btn-card-r .card-cnt{background:rgba(220,53,69,.25);border:1px solid rgba(220,53,69,.6);color:#f87171}
+.card-cnt:hover{opacity:.7}
 .btn-card-y{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);border-radius:5px;color:#ffc107;font-size:.7rem;font-weight:700;cursor:pointer;padding:4px 8px;white-space:nowrap;flex-shrink:0}
 .btn-card-y:hover{background:rgba(255,193,7,.22)}
 .btn-card-r{background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);border-radius:5px;color:#f87171;font-size:.7rem;font-weight:700;cursor:pointer;padding:4px 8px;white-space:nowrap;flex-shrink:0}
@@ -689,11 +693,10 @@ function renderFixtures(){
       const pa = isEditing && m.as !== null ? m.as : '';
       let hBtns='', aBtns='';
       if(isEditing || !m.played){
-        const pendingC = _pendingCards[key] || [];
-        const hChips = pendingC.map((c,ci)=>c.team===m.home?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
-        const aChips = pendingC.map((c,ci)=>c.team===m.away?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
-        hBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'home','yellow')">&#127936; +150</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'home','red')">&#127947; +300</button>${hChips}`;
-        aBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'away','yellow')">&#127936; +150</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'away','red')">&#127947; +300</button>${aChips}`;
+        const cnt = _pendingCards[key] || {hY:0,hR:0,aY:0,aR:0};
+        const hYc=cnt.hY||0, hRc=cnt.hR||0, aYc=cnt.aY||0, aRc=cnt.aR||0;
+        hBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'home','yellow')">&#127936; +150${hYc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'home','yellow')">${hYc}</span>`:''}</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'home','red')">&#127947; +300${hRc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'home','red')">${hRc}</span>`:''}</button>`;
+        aBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'away','yellow')">&#127936; +150${aYc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'away','yellow')">${aYc}</span>`:''}</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'away','red')">&#127947; +300${aRc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'away','red')">${aRc}</span>`:''}</button>`;
       }
       matchesHTML += `<div class="match-card${isEditing?' editing':''}">
         <div class="mc-home-g">
@@ -788,7 +791,8 @@ function saveScore(dayIdx, matchIdx){
   const key = `${dayIdx}-${matchIdx}`;
   const m = LS.matchdays[dayIdx].matches[matchIdx];
   m.hs = hs; m.as = as; m.played = true;
-  m.cards = _pendingCards[key] || m.cards || [];
+  const _cnt = _pendingCards[key];
+  m.cards = _cnt ? countsToCards(_cnt, m.home, m.away) : (m.cards || []);
   delete _pendingCards[key];
   editingFix.delete(key);
   saveLS();
@@ -800,7 +804,7 @@ function saveScore(dayIdx, matchIdx){
 function editScore(dayIdx, matchIdx){
   const key = `${dayIdx}-${matchIdx}`;
   const m = LS.matchdays[dayIdx].matches[matchIdx];
-  _pendingCards[key] = m.cards ? JSON.parse(JSON.stringify(m.cards)) : [];
+  _pendingCards[key] = cardsToCounters(m.cards || [], m.home);
   editingFix.add(key);
   renderFixtures();
 }
@@ -865,7 +869,8 @@ function saveAllDay(dayIdx){
     if(isNaN(hs)||isNaN(as)||hs<0||as<0) return;
     const key = `${dayIdx}-${idx}`;
     m.hs = hs; m.as = as; m.played = true;
-    m.cards = _pendingCards[key] || m.cards || [];
+    const _c = _pendingCards[key];
+    m.cards = _c ? countsToCards(_c, m.home, m.away) : (m.cards || []);
     delete _pendingCards[key];
     editingFix.delete(key);
     saved++;
@@ -876,18 +881,34 @@ function saveAllDay(dayIdx){
   toast(`${saved} score${saved>1?'s':''} saved!`);
 }
 
+function countsToCards(cnt, home, away){
+  const cards = [];
+  for(let i=0;i<(cnt.hY||0);i++) cards.push({team:home,type:'yellow',fine:150});
+  for(let i=0;i<(cnt.hR||0);i++) cards.push({team:home,type:'red',fine:300});
+  for(let i=0;i<(cnt.aY||0);i++) cards.push({team:away,type:'yellow',fine:150});
+  for(let i=0;i<(cnt.aR||0);i++) cards.push({team:away,type:'red',fine:300});
+  return cards;
+}
+function cardsToCounters(cards, home){
+  const c={hY:0,hR:0,aY:0,aR:0};
+  (cards||[]).forEach(card=>{
+    if(card.team===home){ card.type==='yellow'?c.hY++:c.hR++; }
+    else { card.type==='yellow'?c.aY++:c.aR++; }
+  });
+  return c;
+}
 function addCard(dayIdx, matchIdx, side, type){
-  const m = LS.matchdays[dayIdx].matches[matchIdx];
-  const team = side === 'home' ? m.home : m.away;
   const key = `${dayIdx}-${matchIdx}`;
-  if(!_pendingCards[key]) _pendingCards[key] = [];
-  _pendingCards[key].push({ team, type, fine: type === 'yellow' ? 150 : 300 });
+  if(!_pendingCards[key]) _pendingCards[key] = {hY:0,hR:0,aY:0,aR:0};
+  const f = (side==='home'?'h':'a')+(type==='yellow'?'Y':'R');
+  _pendingCards[key][f]++;
   renderFixtures();
 }
-
-function removeCard(dayIdx, matchIdx, cardIdx){
+function decCard(dayIdx, matchIdx, side, type){
   const key = `${dayIdx}-${matchIdx}`;
-  if(_pendingCards[key]) _pendingCards[key].splice(cardIdx, 1);
+  if(!_pendingCards[key]) return;
+  const f = (side==='home'?'h':'a')+(type==='yellow'?'Y':'R');
+  if(_pendingCards[key][f]>0) _pendingCards[key][f]--;
   renderFixtures();
 }
 

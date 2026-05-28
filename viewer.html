@@ -1210,7 +1210,7 @@ function showTeamOverview(teamName){
         </div>
         <span style="font-size:.88rem;font-weight:800;color:${c.type==='yellow'?'#ffc107':'#f87171'}">${c.fine} RWF</span>
       </div>`).join('');
-    cardsHTML = `<div class="ov-section-title" style="margin-top:20px">&#127968; Cards &amp; Fines</div>
+    cardsHTML = `<div class="ov-section-title" style="margin-top:0">&#127968; Cards &amp; Fines</div>
     <div style="background:#161b22;border:1px solid ${totalFine>0?'rgba(220,53,69,.35)':'#21262d'};border-radius:10px;overflow:hidden">
       <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #21262d">
         <span style="font-size:.72rem;color:#8b949e;text-transform:uppercase;letter-spacing:1px;font-weight:700">Total Fine Owed</span>
@@ -1221,7 +1221,7 @@ function showTeamOverview(teamName){
   }
 
   document.getElementById('team-ov-name').textContent=teamName;
-  document.getElementById('team-ov-content').innerHTML=trophyHTML+formHTML+nextHTML+histHTML+cardsHTML+pastPerfHTML;
+  document.getElementById('team-ov-content').innerHTML=cardsHTML+trophyHTML+formHTML+nextHTML+histHTML+pastPerfHTML;
   const modal=document.getElementById('team-overview-modal');
   modal.style.display='block';
   modal.scrollTop=0;

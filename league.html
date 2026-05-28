@@ -118,6 +118,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .mc-edit-btn:hover{background:#FFD700;color:#0d1117;border-color:#FFD700}
 .mc-cancel-btn{padding:5px 8px;background:#21262d;border:1px solid #30363d;border-radius:5px;color:#8b949e;font-size:.8rem;cursor:pointer;flex-shrink:0}
 .mc-ok{color:#00c853;font-size:.95rem;flex-shrink:0}
+/* ── Card section inside editing match card ── */
+.match-card.editing{flex-wrap:wrap}
+.card-section{width:100%;border-top:1px solid #21262d;margin-top:8px;padding-top:10px}
+.card-team-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.card-team-lbl{font-size:.68rem;color:#8b949e;text-transform:uppercase;letter-spacing:.8px;font-weight:700;min-width:72px;flex-shrink:0}
+.card-chips{display:flex;gap:4px;flex-wrap:wrap}
+.card-chip{display:inline-flex;align-items:center;gap:3px;border-radius:10px;padding:3px 8px 3px 5px;font-size:.72rem;font-weight:700}
+.card-chip.yellow{background:rgba(255,193,7,.18);border:1px solid rgba(255,193,7,.45);color:#ffc107}
+.card-chip.red{background:rgba(220,53,69,.18);border:1px solid rgba(220,53,69,.45);color:#f87171}
+.card-chip-x{background:none;border:none;color:inherit;cursor:pointer;font-size:.78rem;line-height:1;padding:0 0 0 2px;opacity:.75}
+.card-chip-x:hover{opacity:1}
+.btn-card-y{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);border-radius:5px;color:#ffc107;font-size:.7rem;font-weight:700;cursor:pointer;padding:4px 8px;white-space:nowrap;flex-shrink:0}
+.btn-card-y:hover{background:rgba(255,193,7,.22)}
+.btn-card-r{background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);border-radius:5px;color:#f87171;font-size:.7rem;font-weight:700;cursor:pointer;padding:4px 8px;white-space:nowrap;flex-shrink:0}
+.btn-card-r:hover{background:rgba(220,53,69,.22)}
 .bye-card{background:rgba(255,255,255,.02);border:1px dashed #21262d;border-radius:10px;padding:10px 16px;text-align:center;font-size:.8rem;color:#4a5568;font-style:italic}
 
 /* Matchday summary bar */
@@ -366,6 +381,7 @@ const FIREBASE_URL = 'https://dls-hub-62226-default-rtdb.firebaseio.com';
 // ═══════════════════════════════════════════
 
 const editingFix = new Set(); // "day-idx" strings for in-edit fixtures
+let _pendingCards = {};       // "day-idx" -> [{team,type,fine}] while editing
 let editingTeam = null;
 
 function defaultLS(){
@@ -675,16 +691,37 @@ function renderFixtures(){
       const homeWin = m.hs > m.as, awayWin = m.as > m.hs;
       const hStyle = homeWin ? 'style="color:#4ade80"' : awayWin ? 'style="color:#f87171"' : '';
       const aStyle = awayWin ? 'style="color:#4ade80"' : homeWin ? 'style="color:#f87171"' : '';
+      const cardBadge = (m.cards && m.cards.length) ? `<span style="font-size:.72rem;letter-spacing:.5px">${m.cards.map(c=>c.type==='yellow'?'&#127936;':'&#127947;').join('')}</span>` : '';
       matchesHTML += `<div class="match-card played">
         <div class="mc-team home" ${hStyle}>${esc(m.home)}</div>
         <div class="mc-result">${m.hs} &ndash; ${m.as}</div>
         <div class="mc-team away" ${aStyle}>${esc(m.away)}</div>
-        <span class="mc-ok">&#10003;</span>
+        ${cardBadge}<span class="mc-ok">&#10003;</span>
         <button class="mc-edit-btn" onclick="editScore(${LS.currentDay},${idx})">&#9998;</button>
       </div>`;
     } else {
       const ph = isEditing && m.hs !== null ? m.hs : '';
       const pa = isEditing && m.as !== null ? m.as : '';
+      let cardSectionHTML = '';
+      if(isEditing){
+        const pendingC = _pendingCards[key] || [];
+        const hChips = pendingC.map((c,ci)=>c.team===m.home?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
+        const aChips = pendingC.map((c,ci)=>c.team===m.away?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
+        cardSectionHTML = `<div class="card-section">
+          <div class="card-team-row">
+            <span class="card-team-lbl">${esc(m.home)}</span>
+            <button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'home','yellow')">&#127936; Yellow +150</button>
+            <button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'home','red')">&#127947; Red +300</button>
+            <div class="card-chips">${hChips}</div>
+          </div>
+          <div class="card-team-row">
+            <span class="card-team-lbl">${esc(m.away)}</span>
+            <button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'away','yellow')">&#127936; Yellow +150</button>
+            <button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'away','red')">&#127947; Red +300</button>
+            <div class="card-chips">${aChips}</div>
+          </div>
+        </div>`;
+      }
       matchesHTML += `<div class="match-card${isEditing?' editing':''}">
         <div class="mc-team home">${esc(m.home)}</div>
         <div class="mc-score-area">
@@ -695,6 +732,7 @@ function renderFixtures(){
         <div class="mc-team away">${esc(m.away)}</div>
         <button class="mc-save-btn" onclick="saveScore(${LS.currentDay},${idx})">Save</button>
         ${isEditing ? `<button class="mc-cancel-btn" onclick="cancelEdit(${LS.currentDay},${idx})">&#10005;</button>` : ''}
+        ${cardSectionHTML}
       </div>`;
     }
   });
@@ -769,21 +807,30 @@ function saveScore(dayIdx, matchIdx){
   const as = parseInt(aEl?.value);
   if(isNaN(hs)||isNaN(as)||hs<0||as<0){ toast('Enter valid scores (0 or more) for both teams!','error'); return; }
 
+  const key = `${dayIdx}-${matchIdx}`;
   const m = LS.matchdays[dayIdx].matches[matchIdx];
   m.hs = hs; m.as = as; m.played = true;
-  editingFix.delete(`${dayIdx}-${matchIdx}`);
+  m.cards = _pendingCards[key] || m.cards || [];
+  delete _pendingCards[key];
+  editingFix.delete(key);
   saveLS();
   renderFixtures();
-  toast(`${esc(m.home)} ${hs}–${as} ${esc(m.away)} saved!`);
+  const cc = m.cards.length;
+  toast(`${esc(m.home)} ${hs}–${as} ${esc(m.away)} saved!${cc ? ` ${cc} card(s) recorded.` : ''}`);
 }
 
 function editScore(dayIdx, matchIdx){
-  editingFix.add(`${dayIdx}-${matchIdx}`);
+  const key = `${dayIdx}-${matchIdx}`;
+  const m = LS.matchdays[dayIdx].matches[matchIdx];
+  _pendingCards[key] = m.cards ? JSON.parse(JSON.stringify(m.cards)) : [];
+  editingFix.add(key);
   renderFixtures();
 }
 
 function cancelEdit(dayIdx, matchIdx){
-  editingFix.delete(`${dayIdx}-${matchIdx}`);
+  const key = `${dayIdx}-${matchIdx}`;
+  editingFix.delete(key);
+  delete _pendingCards[key];
   renderFixtures();
 }
 
@@ -843,14 +890,33 @@ function saveAllDay(dayIdx){
     if(!hEl || !aEl) return;
     const hs = parseInt(hEl.value), as = parseInt(aEl.value);
     if(isNaN(hs)||isNaN(as)||hs<0||as<0) return;
+    const key = `${dayIdx}-${idx}`;
     m.hs = hs; m.as = as; m.played = true;
-    editingFix.delete(`${dayIdx}-${idx}`);
+    m.cards = _pendingCards[key] || m.cards || [];
+    delete _pendingCards[key];
+    editingFix.delete(key);
     saved++;
   });
   if(saved === 0){ toast('No new scores to save.','info'); return; }
   saveLS();
   renderFixtures();
   toast(`${saved} score${saved>1?'s':''} saved!`);
+}
+
+// ── Cards ──
+function addCard(dayIdx, matchIdx, side, type){
+  const m = LS.matchdays[dayIdx].matches[matchIdx];
+  const team = side === 'home' ? m.home : m.away;
+  const key = `${dayIdx}-${matchIdx}`;
+  if(!_pendingCards[key]) _pendingCards[key] = [];
+  _pendingCards[key].push({ team, type, fine: type === 'yellow' ? 150 : 300 });
+  renderFixtures();
+}
+
+function removeCard(dayIdx, matchIdx, cardIdx){
+  const key = `${dayIdx}-${matchIdx}`;
+  if(_pendingCards[key]) _pendingCards[key].splice(cardIdx, 1);
+  renderFixtures();
 }
 
 // ═══════════════════════════════════════════

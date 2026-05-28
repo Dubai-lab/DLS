@@ -689,7 +689,7 @@ function renderFixtures(){
       const ph = isEditing && m.hs !== null ? m.hs : '';
       const pa = isEditing && m.as !== null ? m.as : '';
       let cardSectionHTML = '';
-      if(isEditing){
+      if(isEditing || !m.played){
         const pendingC = _pendingCards[key] || [];
         const hChips = pendingC.map((c,ci)=>c.team===m.home?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');
         const aChips = pendingC.map((c,ci)=>c.team===m.away?`<span class="card-chip ${c.type}">${c.type==='yellow'?'&#127936;':'&#127947;'} ${c.fine} RWF<button class="card-chip-x" onclick="removeCard(${LS.currentDay},${idx},${ci})">&#10005;</button></span>`:'').join('');

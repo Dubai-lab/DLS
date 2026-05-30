@@ -3421,20 +3421,29 @@ function renderHomeTab(){
     </div>`;
   }
 
-  // ── Golden Boot Leader (placeholder until admin adds scorer data) ──
-  const topScorer = pub.topScorer || null;
+  // ── Golden Boot Leader — auto-read from pub.players (computed from events on publish) ──
+  const allPlayers = pub.players || [];
+  const topScorer = allPlayers.find(p=>(p.goals||0)>0) || pub.topScorer || null;
   let goldenBootHTML='';
   if(topScorer && topScorer.name){
-    const tLogo=logos[topScorer.team]||'';
-    const badge=tLogo?`<img src="${tLogo}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #FFD700">`:`<div style="width:36px;height:36px;border-radius:50%;background:#21262d;border:2px solid #FFD700;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#FFD700">${(topScorer.team||'?')[0].toUpperCase()}</div>`;
-    goldenBootHTML=`<div style="background:#1a1f27;border:1px solid #21262d;border-radius:12px;margin:10px 16px 0;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="switchTab('players')">
-      <div style="font-size:.58rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;min-width:fit-content">Golden Boot</div>
-      ${badge}
+    const tLogo = logos[topScorer.team]||'';
+    const tColor = teamColor(topScorer.team);
+    const tAbbr  = teamAbbr(topScorer.team);
+    const badge = tLogo
+      ? `<div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #FFD700;flex-shrink:0"><img src="${tLogo}" style="width:100%;height:100%;object-fit:cover"></div>`
+      : `<div style="width:40px;height:40px;border-radius:50%;background:${tColor};border:2px solid #FFD700;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:#fff;flex-shrink:0">${tAbbr}</div>`;
+    goldenBootHTML=`<div style="background:#1a1f27;border:1px solid rgba(255,215,0,.2);border-radius:12px;margin:10px 16px 0;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="switchTab('players')">
       <div style="flex:1;min-width:0">
-        <div style="font-size:.92rem;font-weight:800;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(topScorer.name)}</div>
-        <div style="font-size:.7rem;color:#8b949e;margin-top:2px">${topScorer.goals||0} goals${topScorer.assists?` &middot; ${topScorer.assists} assists`:''}</div>
+        <div style="font-size:.58rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px">&#127894; Golden Boot Leader</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${badge}
+          <div style="min-width:0">
+            <div style="font-size:.92rem;font-weight:800;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(topScorer.name)}</div>
+            <div style="font-size:.68rem;color:#8b949e;margin-top:2px">${topScorer.goals||0} goals${topScorer.assists?` &middot; ${topScorer.assists} assists`:''}</div>
+          </div>
+        </div>
       </div>
-      <div style="font-size:.72rem;font-weight:700;color:#00c853;white-space:nowrap">Stats &rarr;</div>
+      <div style="font-size:.72rem;font-weight:700;color:#FFD700;white-space:nowrap;flex-shrink:0">Stats &rarr;</div>
     </div>`;
   }
 

@@ -460,44 +460,533 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .live-topbar{position:absolute;top:0;left:0;right:0;height:48px;display:flex;align-items:center;background:#0f1923;border-bottom:1px solid #21262d;padding:0 16px;gap:12px;z-index:1;box-sizing:border-box}
 .live-back-btn{background:none;border:none;color:#00c853;font-size:.9rem;font-weight:700;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px;white-space:nowrap}
 #twitch-iframe{position:absolute;top:48px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 48px);border:none}
+
+/* ═══════ APP SHELL ═══════ */
+.app-shell{position:fixed;top:0;right:0;bottom:0;left:0;background:#0d1117;z-index:9990;display:flex;flex-direction:column}
+.app-shell.hidden{display:none}
+.app-main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.bottom-nav{flex-shrink:0;display:flex;background:#0f1923;border-top:1px solid #21262d;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;background:none;border:none;color:#8b949e;font-size:.58rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;gap:4px;transition:color .2s;-webkit-tap-highlight-color:transparent}
+.nav-item .nav-ico{font-size:1.25rem;line-height:1}
+.nav-item.active{color:#00c853}
+.tab-content{display:none;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.tab-content.active{display:block}
+
+/* ── App Top Bar ── */
+.app-topbar{background:#0f1923;border-bottom:1px solid #21262d;padding:14px 16px 12px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;padding-top:max(14px,env(safe-area-inset-top,14px))}
+.atb-left{flex:1}
+.atb-league{font-size:.6rem;font-weight:800;color:#00c853;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.atb-matchday{font-size:1.45rem;font-weight:900;color:#e6edf3;letter-spacing:-0.5px}
+.atb-actions{display:flex;gap:8px;align-items:center}
+.atb-icon-btn{background:rgba(255,255,255,.06);border:1px solid #21262d;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:.95rem;cursor:pointer;color:#8b949e;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.atb-icon-btn:active{background:rgba(255,255,255,.12)}
+
+/* ── Featured Match Card ── */
+.feat-card{background:#1a1f27;border:1px solid #21262d;border-radius:14px;margin:12px 16px 0;padding:14px 14px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s}
+.feat-card:active{opacity:.88}
+.feat-card:hover{border-color:#30363d}
+.feat-label-row{font-size:.58rem;font-weight:700;color:#8b949e;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.feat-played-tag{color:#00c853;font-size:.6rem;font-weight:800;letter-spacing:1px}
+.feat-teams{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.feat-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px}
+.feat-badge{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:900;color:#fff;text-align:center;overflow:hidden;flex-shrink:0;letter-spacing:.5px;border:3px solid rgba(255,255,255,.15);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.feat-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.feat-tname{font-size:.8rem;font-weight:700;color:#e6edf3;text-align:center;line-height:1.3;width:100%;word-break:break-word;hyphens:auto}
+.feat-score-mid{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;padding:0 6px}
+.feat-score{font-size:clamp(1.6rem,6vw,2.2rem);font-weight:900;color:#fff;letter-spacing:2px;line-height:1;white-space:nowrap}
+.feat-vs{font-size:.7rem;font-weight:800;color:#8b949e;letter-spacing:3px;text-transform:uppercase}
+.feat-tap-hint{font-size:.65rem;color:#ffc107;text-align:center;margin-top:10px;letter-spacing:.3px;font-weight:600}
+.feat-pending-tag{display:inline-flex;align-items:center;gap:5px;color:#dc3545;font-size:.62rem;font-weight:800;letter-spacing:.5px}
+.feat-pending-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:#dc3545;animation:blink 1.2s infinite;flex-shrink:0}
+
+/* ── My Stats Row ── */
+.my-stats-row{display:flex;gap:10px;margin:10px 16px 0}
+.my-stat-card{flex:1;background:#1a1f27;border:1px solid #21262d;border-radius:12px;padding:13px 12px}
+.msc-label{font-size:.58rem;font-weight:800;color:#8b949e;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
+.msc-val{font-size:1.8rem;font-weight:900;color:#e6edf3;line-height:1}
+.msc-sub{font-size:.68rem;color:#8b949e;margin-top:4px}
+.msc-pos-denom{font-size:1rem;font-weight:600;color:#4a5568}
+.form-dots{display:flex;gap:5px;margin-top:8px}
+.fd{width:24px;height:24px;border-radius:50%;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fd-w{background:#28a745;color:#fff}
+.fd-d{background:#6c757d;color:#fff}
+.fd-l{background:#dc3545;color:#fff}
+.fd-none{background:#1c2128;color:#4a5568}
+.pts-behind{font-size:.68rem;color:#4ade80;margin-top:4px;font-weight:600}
+.pts-leader{font-size:.68rem;color:#FFD700;margin-top:4px;font-weight:600}
+
+/* ── Today's Fixtures ── */
+.today-section{padding:12px 16px 8px}
+.today-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:12px}
+.today-title{font-size:.65rem;font-weight:800;color:#8b949e;letter-spacing:2px;text-transform:uppercase}
+.today-all-btn{font-size:.7rem;font-weight:700;color:#00c853;background:none;border:none;cursor:pointer;padding:0;letter-spacing:.3px}
+.today-fix-list{display:flex;flex-direction:column;gap:6px}
+.today-fix{display:flex;align-items:center;background:#1a1f27;border:1px solid #21262d;border-radius:10px;padding:10px 12px;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s;position:relative}
+.today-fix:active{border-color:#30363d}
+.today-fix.tf-played{border-left:3px solid rgba(0,200,83,.35)}
+.today-fix.tf-my-match{border-color:rgba(0,200,83,.4);background:rgba(0,200,83,.04)}
+.tf-time{font-size:.65rem;font-weight:700;color:#8b949e;min-width:30px;text-align:center;flex-shrink:0}
+.tf-live-dot{width:7px;height:7px;background:#dc3545;border-radius:50%;animation:blink 1.2s infinite;display:inline-block;margin-right:2px}
+.tf-teams{flex:1;min-width:0}
+.tf-team-row{display:flex;align-items:center;gap:6px;padding:2px 0}
+.tf-badge{width:18px;height:18px;border-radius:50%;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.42rem;font-weight:800;color:#8b949e;flex-shrink:0;overflow:hidden}
+.tf-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.tf-name{font-size:.82rem;font-weight:600;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.tf-name.tf-winner{color:#4ade80;font-weight:800}
+.tf-name.tf-loser{color:#6e7681}
+.tf-score-col{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0;min-width:18px}
+.tf-sc{font-size:.9rem;font-weight:800;color:#00c853;text-align:right}
+.tf-arrow{font-size:.72rem;color:#30363d;margin-left:6px;flex-shrink:0;align-self:center}
+
+/* ── Team Select Screen ── */
+.ts-screen{position:fixed;top:0;right:0;bottom:0;left:0;background:#0d1117;z-index:9998;display:flex;flex-direction:column}
+.ts-screen.hidden{display:none}
+.ts-topbar{background:#0f1923;border-bottom:1px solid #21262d;padding:16px;padding-top:max(16px,env(safe-area-inset-top,16px));flex-shrink:0;text-align:center}
+.ts-logo{font-size:2rem;margin-bottom:6px}
+.ts-title{font-size:1rem;font-weight:900;color:#e6edf3;letter-spacing:2px;text-transform:uppercase}
+.ts-sub{font-size:.72rem;color:#8b949e;margin-top:4px}
+.ts-body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+.ts-instructions{background:#161b22;border:1px solid rgba(0,200,83,.2);border-radius:10px;padding:13px 14px;margin-bottom:16px;font-size:.8rem;color:#8b949e;line-height:1.6}
+.ts-instructions strong{color:#00c853}
+.ts-grid{display:flex;flex-direction:column;gap:8px}
+.ts-team-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.ts-team-card:active{background:#1c2128}
+.ts-team-card.ts-mine{border-color:#00c853;background:rgba(0,200,83,.06)}
+.ts-team-card.ts-taken{opacity:.4;cursor:not-allowed;pointer-events:none}
+.ts-team-badge{width:40px;height:40px;border-radius:50%;background:#21262d;border:2px solid #30363d;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#e6edf3;flex-shrink:0;overflow:hidden}
+.ts-team-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ts-team-badge.ts-mine-badge{border-color:#00c853}
+.ts-team-info{flex:1;min-width:0}
+.ts-team-name{font-size:.9rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ts-team-pos{font-size:.68rem;color:#8b949e;margin-top:2px}
+.ts-team-status{font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:12px;flex-shrink:0;white-space:nowrap}
+.ts-stat-avail{color:#00c853;background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.25)}
+.ts-stat-taken{color:#f87171;background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.25)}
+.ts-stat-mine{color:#00c853;background:rgba(0,200,83,.12);border:1px solid rgba(0,200,83,.35)}
+.ts-loading{text-align:center;padding:40px 20px;color:#8b949e;font-size:.85rem}
+.ts-confirm-bar{background:#0f1923;border-top:1px solid #21262d;padding:14px 16px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));flex-shrink:0;display:none}
+.ts-confirm-bar.show{display:block}
+.ts-confirm-btn{width:100%;background:linear-gradient(135deg,#00c853,#00a844);border:none;border-radius:10px;padding:14px;color:#fff;font-size:.95rem;font-weight:800;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
+.ts-selected-preview{font-size:.75rem;color:#8b949e;text-align:center;margin-bottom:8px}
+.ts-selected-preview strong{color:#00c853}
+
+/* ── Notification Prompt Screen ── */
+.notif-screen{position:fixed;top:0;right:0;bottom:0;left:0;background:#0d1117;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;padding-top:max(32px,env(safe-area-inset-top,32px));padding-bottom:max(32px,env(safe-area-inset-bottom,32px));text-align:center;box-sizing:border-box}
+.notif-screen.hidden{display:none}
+.notif-icon{font-size:4.5rem;margin-bottom:18px;filter:drop-shadow(0 0 20px rgba(255,193,7,.4))}
+.notif-title{font-size:1.3rem;font-weight:900;color:#e6edf3;letter-spacing:.5px;margin-bottom:10px}
+.notif-desc{font-size:.85rem;color:#8b949e;line-height:1.7;margin-bottom:32px;max-width:300px}
+.notif-desc strong{color:#e6edf3}
+.notif-allow-btn{width:100%;max-width:320px;background:linear-gradient(135deg,#00c853,#00a844);border:none;border-radius:12px;padding:15px;color:#fff;font-size:.95rem;font-weight:800;cursor:pointer;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;display:block}
+.notif-skip-btn{background:none;border:none;color:#4a5568;font-size:.82rem;cursor:pointer;padding:8px;text-decoration:underline}
+
+/* ── Settings Screen ── */
+.settings-screen{position:fixed;top:0;right:0;bottom:0;left:0;background:#0d1117;z-index:9999;display:flex;flex-direction:column}
+.settings-screen.hidden{display:none}
+.settings-topbar{background:#0f1923;border-bottom:1px solid #21262d;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top,14px));display:flex;align-items:center;gap:12px;flex-shrink:0}
+.settings-back{background:none;border:none;color:#00c853;font-size:.9rem;font-weight:700;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:5px}
+.settings-body{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.settings-group{background:#161b22;border:1px solid #21262d;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.settings-item{display:flex;align-items:center;padding:14px 16px;gap:12px;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;border-bottom:1px solid #21262d}
+.settings-item:last-child{border-bottom:none}
+.settings-item:active{background:rgba(255,255,255,.04)}
+.si-icon{font-size:1.1rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:#21262d;border-radius:8px;flex-shrink:0}
+.si-info{flex:1}
+.si-label{font-size:.88rem;font-weight:700;color:#e6edf3}
+.si-sub{font-size:.7rem;color:#8b949e;margin-top:2px}
+.si-arrow{font-size:.8rem;color:#4a5568}
+.settings-section-lbl{font-size:.62rem;font-weight:800;color:#4a5568;letter-spacing:2px;text-transform:uppercase;margin:16px 4px 8px;display:block}
+.si-danger .si-label{color:#f87171}
+.si-danger .si-icon{background:rgba(220,53,69,.15)}
+
+/* ── New Table Design ── */
+.standings-header{padding:14px 16px 10px;flex-shrink:0}
+.standings-league{font-size:.6rem;font-weight:800;color:#00c853;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.standings-title{font-size:1.5rem;font-weight:900;color:#e6edf3}
+.stn-table{width:100%;border-collapse:collapse}
+.stn-table th{font-size:.6rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:1px;padding:8px 6px;text-align:center;border-bottom:1px solid #21262d}
+.stn-table th.club-th{text-align:left;padding-left:12px}
+.stn-table td{padding:8px 6px;text-align:center;border-bottom:1px solid #161b22;font-size:.78rem;color:#c9d1d9;font-weight:600}
+.stn-table tr:last-child td{border-bottom:none}
+.stn-table tr.stn-me td{background:rgba(0,200,83,.06)}
+.stn-table tr:active td{background:rgba(255,255,255,.03)}
+.stn-pos{font-size:.78rem;font-weight:700;color:#8b949e;text-align:center}
+.stn-club-cell{display:flex;align-items:center;gap:8px;text-align:left;padding-left:8px}
+.stn-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:900;color:#fff;flex-shrink:0;overflow:hidden}
+.stn-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.stn-club-name{font-size:.8rem;font-weight:700;color:#e6edf3}
+.stn-pts{font-weight:800;color:#e6edf3;font-size:.85rem}
+.stn-gd-p{color:#4ade80}
+.stn-gd-n{color:#f87171}
+.stn-zone-top td:first-child{border-left:3px solid #00c853}
+.stn-zone-1st td:first-child{border-left:3px solid #FFD700}
+.stn-zone-rel td:first-child{border-left:3px solid #dc3545}
+.stn-legend{display:flex;gap:16px;padding:10px 16px 6px;flex-wrap:wrap}
+.stn-leg-item{display:flex;align-items:center;gap:5px;font-size:.65rem;color:#8b949e}
+.stn-leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── Team Overview Screen ── */
+.tov-screen{position:fixed;top:0;right:0;bottom:0;left:0;background:#0d1117;z-index:10000;display:flex;flex-direction:column}
+.tov-screen.hidden{display:none}
+.tov-topbar{background:#0f1923;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
+.tov-back{background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#e6edf3;font-size:1rem;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tov-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:32px}
+.tov-hero{background:#0f1923;padding:18px 16px 14px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #21262d}
+.tov-hero-badge{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;color:#fff;overflow:hidden;border:3px solid rgba(255,255,255,.12);box-shadow:0 4px 16px rgba(0,0,0,.4);flex-shrink:0}
+.tov-hero-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.tov-hero-info{flex:1;min-width:0}
+.tov-hero-name{font-size:1.1rem;font-weight:900;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tov-hero-sub{font-size:.7rem;color:#8b949e;margin-top:3px}
+.tov-stats-row{display:flex;gap:0;padding:14px 16px;border-bottom:1px solid #21262d}
+.tov-stat{flex:1;text-align:center;padding:0 4px;border-right:1px solid #21262d}
+.tov-stat:last-child{border-right:none}
+.tov-stat-val{font-size:1.1rem;font-weight:900;color:#e6edf3;line-height:1}
+.tov-stat-lbl{font-size:.55rem;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.tov-section{padding:14px 16px 0}
+.tov-sec-title{font-size:.62rem;font-weight:800;color:#4a5568;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.tov-form-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.tov-form-dots{display:flex;gap:6px}
+.tov-fd{width:28px;height:28px;border-radius:50%;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tov-fd-w{background:#28a745;color:#fff}
+.tov-fd-d{background:#6c757d;color:#fff}
+.tov-fd-l{background:#dc3545;color:#fff}
+.tov-fd-none{background:#1c2128;color:#4a5568}
+.tov-live-badge{display:flex;align-items:center;gap:6px;background:#161b22;border:1px solid rgba(0,200,83,.3);border-radius:20px;padding:5px 10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s}
+.tov-live-badge:active{border-color:#00c853}
+.tov-live-dot{width:7px;height:7px;border-radius:50%;background:#00c853;animation:blink 1.2s infinite;flex-shrink:0}
+.tov-live-txt{font-size:.65rem;font-weight:800;color:#00c853;white-space:nowrap}
+.tov-live-opp{display:flex;align-items:center;gap:5px}
+.tov-live-opp-badge{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.38rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
+.tov-live-opp-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.tov-live-opp-name{font-size:.68rem;font-weight:700;color:#e6edf3}
+.tov-result-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.tov-result-row{display:flex;align-items:center;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:10px 12px;gap:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tov-result-row:active{background:#1c2128}
+.tov-res-badge{width:28px;height:28px;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tov-res-w{background:#28a745;color:#fff}
+.tov-res-d{background:#6c757d;color:#fff}
+.tov-res-l{background:#dc3545;color:#fff}
+.tov-ha{font-size:.6rem;font-weight:800;color:#8b949e;width:14px;flex-shrink:0;text-align:center}
+.tov-opp-cell{display:flex;align-items:center;gap:7px;flex:1;min-width:0}
+.tov-opp-badge{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.42rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
+.tov-opp-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.tov-opp-name{font-size:.82rem;font-weight:600;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tov-score{font-size:.88rem;font-weight:800;color:#e6edf3;flex-shrink:0;min-width:36px;text-align:right}
+
+/* ── Players Tab ── */
+.pl-header{padding:14px 16px 0}
+.pl-league-lbl{font-size:.6rem;font-weight:800;color:#ffc107;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.pl-title{font-size:1.5rem;font-weight:900;color:#e6edf3;margin-bottom:0}
+.pl-tabs{display:flex;gap:8px;padding:12px 16px 0}
+.pl-tab{flex:1;padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid #30363d;border-radius:20px;color:#8b949e;font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.pl-tab.active{background:rgba(255,193,7,.12);border-color:#ffc107;color:#ffc107}
+.players-podium{display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:14px 12px 0;min-height:165px}
+.pod-slot{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;max-width:105px}
+.pod-name{font-size:.68rem;font-weight:700;color:#e6edf3;text-align:center;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;padding:0 2px}
+.pod-box{width:100%;border-radius:8px 8px 3px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 6px;gap:0}
+.pod-1st .pod-box{box-shadow:0 4px 20px rgba(245,197,24,.3)}
+.pod-val{font-size:1.45rem;font-weight:900;color:#fff;line-height:1}
+.pod-rank{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.65);margin-top:3px}
+.pl-leaderboard-hdr{font-size:.62rem;font-weight:800;color:#4a5568;letter-spacing:2px;text-transform:uppercase;padding:14px 16px 8px;border-top:1px solid #21262d;margin-top:14px}
+.pl-leaderboard{padding:0 12px;display:flex;flex-direction:column;gap:5px;padding-bottom:24px}
+.pl-row{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#161b22;border:1px solid #21262d;border-radius:10px}
+.pl-rank-num{font-size:.78rem;font-weight:700;color:#4a5568;min-width:16px;text-align:center;flex-shrink:0}
+.pl-player-info{flex:1;min-width:0}
+.pl-player-name{font-size:.85rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-player-sub{font-size:.62rem;color:#4a5568;margin-top:2px}
+.pl-bar-wrap{width:55px;height:4px;background:#21262d;border-radius:2px;flex-shrink:0;overflow:hidden}
+.pl-bar{height:100%;background:linear-gradient(90deg,#ffc107,#ff8f00);border-radius:2px}
+.pl-stat-val{font-size:.88rem;font-weight:800;color:#e6edf3;min-width:26px;text-align:right;flex-shrink:0}
+.pl-empty{text-align:center;padding:48px 24px;color:#8b949e;line-height:1.8}
+
+/* ── Custom App Prompt ── */
+.app-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
+.app-prompt-overlay.hidden{display:none}
+.app-prompt-box{background:#1a1f27;border:1px solid #30363d;border-radius:18px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.app-prompt-icon{font-size:2.4rem;text-align:center;padding:24px 20px 8px}
+.app-prompt-title{font-size:1rem;font-weight:900;color:#e6edf3;text-align:center;padding:0 20px 8px;letter-spacing:.3px}
+.app-prompt-msg{font-size:.82rem;color:#8b949e;text-align:center;padding:0 24px 24px;line-height:1.6}
+.app-prompt-msg strong{color:#e6edf3}
+.app-prompt-actions{display:flex;border-top:1px solid #21262d}
+.app-prompt-cancel{flex:1;padding:14px;background:none;border:none;border-right:1px solid #21262d;color:#8b949e;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.app-prompt-cancel:active{background:rgba(255,255,255,.04)}
+.app-prompt-confirm{flex:1;padding:14px;background:none;border:none;color:#e6edf3;font-size:.88rem;font-weight:800;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.app-prompt-confirm.danger{color:#f87171}
+.app-prompt-confirm.green{color:#00c853}
+.app-prompt-confirm:active{background:rgba(255,255,255,.04)}
+
+/* ── About Section ── */
+.about-card{background:#161b22;border:1px solid #21262d;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.about-hero{background:linear-gradient(135deg,#0f1923,#161b22);padding:24px 16px 20px;text-align:center;border-bottom:1px solid #21262d}
+.about-ball{font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(0,200,83,.35))}
+.about-name{font-size:1.05rem;font-weight:900;color:#e6edf3;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.about-league-tag{font-size:.65rem;font-weight:700;color:#00c853;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
+.about-season-tag{font-size:.65rem;color:#4a5568;letter-spacing:1px}
+.about-desc{font-size:.78rem;color:#8b949e;line-height:1.6;text-align:center;padding:14px 16px;border-bottom:1px solid #21262d}
+.about-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #21262d}
+.about-row:last-child{border-bottom:none}
+.about-key{font-size:.75rem;color:#8b949e;font-weight:600}
+.about-val{font-size:.75rem;color:#e6edf3;font-weight:700}
+.about-contact-btn{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s;text-decoration:none;border-top:1px solid #21262d}
+.about-contact-btn:active{background:rgba(255,255,255,.04)}
+
+/* ── Inline section title for tabs ── */
+.tab-section-title{font-size:.68rem;font-weight:800;color:#8b949e;letter-spacing:2px;text-transform:uppercase;padding:14px 16px 8px;border-bottom:1px solid #21262d;margin-bottom:12px}
+
+/* ═══════ MATCH DETAIL SCREEN ═══════ */
+.match-detail-screen{position:fixed;top:0;right:0;bottom:0;left:0;background:#0d1117;z-index:10000;display:flex;flex-direction:column}
+.match-detail-screen.hidden{display:none}
+.md-topbar{background:#0f1923;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
+.md-back-btn{background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#e6edf3;font-size:1rem;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.md-topbar-title{flex:1;text-align:center;font-size:.6rem;font-weight:700;color:#8b949e;letter-spacing:1.5px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.md-scoreline{background:#0f1923;padding:18px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-shrink:0;border-bottom:1px solid #21262d}
+.md-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.md-badge{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:900;color:#fff;overflow:hidden;border:3px solid rgba(255,255,255,.12);box-shadow:0 4px 16px rgba(0,0,0,.5);flex-shrink:0}
+.md-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.md-tname{font-size:.82rem;font-weight:700;color:#e6edf3;text-align:center;line-height:1.3;max-width:90px}
+.md-score-mid{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;padding:0 4px}
+.md-score-num{font-size:2.6rem;font-weight:900;color:#fff;letter-spacing:3px;line-height:1;white-space:nowrap}
+.md-live-badge{display:flex;align-items:center;gap:4px;font-size:.68rem;font-weight:800;color:#dc3545;letter-spacing:.5px}
+.md-live-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:#dc3545;animation:blink 1.2s infinite;flex-shrink:0}
+.md-ft-badge{font-size:.68rem;font-weight:700;color:#8b949e;letter-spacing:1px;text-transform:uppercase}
+.md-vs-badge{font-size:.9rem;font-weight:800;color:#8b949e;letter-spacing:2px}
+.md-venue{font-size:.65rem;color:#4a5568;text-align:center;padding:6px 16px 4px;flex-shrink:0}
+
+/* ── MD Tabs ── */
+.md-tabs{display:flex;background:#161b22;border-bottom:1px solid #21262d;flex-shrink:0;padding:0 16px;gap:0}
+.md-tab{flex:1;padding:11px 8px;background:none;border:none;border-bottom:3px solid transparent;color:#8b949e;font-size:.8rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.md-tab.active{color:#ffc107;border-bottom-color:#ffc107;background:rgba(255,193,7,.04)}
+.md-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.md-tab-panel{display:none;padding-bottom:40px}
+.md-tab-panel.active{display:block}
+
+/* ── Timeline ── */
+.tl-no-data{text-align:center;padding:48px 24px;color:#8b949e;font-size:.85rem;line-height:1.7}
+.tl-kickoff{display:flex;align-items:center;gap:8px;margin:0 16px 8px;padding:10px 0}
+.tl-kickoff-line{flex:1;height:1px;background:#21262d}
+.tl-kickoff-tag{font-size:.6rem;color:#4a5568;letter-spacing:2px;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.tl-row{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;min-height:40px;padding:3px 16px}
+.tl-home-cell{display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding-right:8px}
+.tl-away-cell{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding-left:8px}
+.tl-min-cell{text-align:center;font-size:.75rem;font-weight:800;color:#4a5568;position:relative}
+.tl-min-cell::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:#21262d;transform:translateX(-50%);z-index:0}
+.tl-min-pill{background:#21262d;border-radius:20px;padding:2px 7px;font-size:.65rem;font-weight:800;color:#8b949e;position:relative;z-index:1;white-space:nowrap}
+.tl-pname{font-size:.82rem;font-weight:800;color:#ffc107;line-height:1.2}
+.tl-sub{font-size:.65rem;color:#8b949e;line-height:1.2}
+.tl-ico-row{display:flex;align-items:center;gap:5px}
+.tl-ico-row.away{flex-direction:row-reverse}
+.tl-team-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.4rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
+.tl-team-dot img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.tl-ycard{width:12px;height:16px;border-radius:2px;background:#ffc107;flex-shrink:0;box-shadow:0 1px 4px rgba(255,193,7,.4)}
+.tl-rcard{width:12px;height:16px;border-radius:2px;background:#dc3545;flex-shrink:0;box-shadow:0 1px 4px rgba(220,53,69,.4)}
+.tl-goal-ball{font-size:.75rem}
+.tl-half-marker{display:flex;align-items:center;gap:8px;margin:10px 16px;padding:2px 0}
+.tl-half-line{flex:1;height:1px;background:#30363d}
+.tl-half-tag{background:#21262d;border:1px solid #30363d;border-radius:20px;padding:5px 14px;font-size:.7rem;font-weight:800;color:#8b949e;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.tl-half-score{color:#e6edf3;font-size:.78rem;font-weight:900;letter-spacing:2px}
+.tl-ft-marker{display:flex;align-items:center;gap:8px;margin:10px 16px 16px;padding:2px 0}
+.tl-ft-tag{background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.25);border-radius:20px;padding:5px 14px;font-size:.7rem;font-weight:800;color:#00c853;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.tl-ft-score{color:#e6edf3;font-size:.78rem;font-weight:900;letter-spacing:2px}
+
+/* ── Line-ups ── */
+.lineup-section{padding:10px 12px}
+.lineup-team-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 4px}
+.lu-abbr-badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;color:#fff;flex-shrink:0;overflow:hidden}
+.lu-abbr-badge img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.lu-team-name{font-size:.82rem;font-weight:700;color:#e6edf3}
+.lu-formation{font-size:.72rem;font-weight:700;color:#8b949e;margin-left:auto;background:#21262d;border-radius:8px;padding:3px 9px}
+.pitch-wrap{background:linear-gradient(180deg,#1b4020 0%,#1f4d24 35%,#1b4020 65%,#163618 100%);border-radius:12px;padding:14px 6px 10px;position:relative;overflow:hidden;margin-bottom:12px;border:1px solid rgba(255,255,255,.06)}
+.pitch-center-line{position:absolute;left:10%;right:10%;height:1px;background:rgba(255,255,255,.08);top:50%}
+.pitch-row{display:flex;justify-content:center;gap:4px;margin-bottom:8px}
+.pitch-row:last-child{margin-bottom:0}
+.p-player{display:flex;flex-direction:column;align-items:center;gap:3px;width:48px}
+.p-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:.45rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
+.p-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.p-name{font-size:.5rem;color:#e6edf3;text-align:center;line-height:1.2;width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lineup-no-data{text-align:center;padding:32px 20px;color:#8b949e;font-size:.82rem;line-height:1.6}
 </style>
 </head>
 <body>
 
-<!-- ═══════ HOME SCREEN ═══════ -->
-<div class="home-screen hidden" id="home-screen">
-  <div class="hs-balls" id="hs-balls"></div>
-  <div class="hs-wrap">
-    <div class="hs-logo">&#9917;</div>
-    <div class="hs-title">DLS <span>Football</span> Hub</div>
-    <div class="hs-season">Season 2026</div>
+<!-- ═══════ APP SHELL ═══════ -->
+<div class="app-shell hidden" id="app-shell">
 
-    <div class="home-card live-card" onclick="showLiveScreen()">
-      <div class="hc-accent">&#128250;</div>
-      <div class="hc-body">
-        <div class="hc-title">Watch Live</div>
-        <div class="hc-sub">Stream live matches</div>
-        <div class="hc-live-dot">Live Now</div>
-      </div>
-      <div class="hc-arrow">&#8250;</div>
+  <!-- Top Bar -->
+  <div class="app-topbar" id="app-topbar">
+    <div class="atb-left">
+      <div class="atb-league" id="atb-league">DLS League</div>
+      <div class="atb-matchday" id="atb-matchday">Loading...</div>
+    </div>
+    <div class="atb-actions">
+      <div class="atb-icon-btn" onclick="showHighlightsScreen()" title="Highlights">&#127909;</div>
+      <div class="atb-icon-btn" onclick="showLiveScreen()" title="Watch Live">&#128250;</div>
+      <div class="atb-icon-btn" onclick="showSettingsScreen()" title="Settings">&#9881;</div>
+    </div>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="app-main" id="app-main">
+
+    <!-- HOME TAB -->
+    <div class="tab-content active" id="tab-home">
+      <!-- Featured match + stats + fixtures rendered by JS -->
+      <div id="home-tab-content"></div>
     </div>
 
-    <div class="home-card league-card" onclick="showLeagueScreen()">
-      <div class="hc-accent">&#127942;</div>
-      <div class="hc-body">
-        <div class="hc-title">My League</div>
-        <div class="hc-sub">Tables, fixtures &amp; standings</div>
+    <!-- FIXTURES TAB -->
+    <div class="tab-content" id="tab-fixtures">
+      <div class="tab-section-title">&#128197; Fixtures &mdash; <span id="fix-tab-md"></span></div>
+      <div style="padding:0 16px" id="fix-tab-content">
+        <div style="text-align:center;padding:40px 20px;color:#8b949e;font-size:.85rem">Loading fixtures...</div>
       </div>
-      <div class="hc-arrow">&#8250;</div>
     </div>
 
-    <div class="home-card hl-card" onclick="showHighlightsScreen()">
-      <div class="hc-accent">&#127909;</div>
-      <div class="hc-body">
-        <div class="hc-title">Highlights</div>
-        <div class="hc-sub">Watch &amp; upload match clips</div>
+    <!-- TABLE TAB -->
+    <div class="tab-content" id="tab-table">
+      <div class="tab-section-title">&#127942; Standings</div>
+      <div id="table-tab-content">
+        <div style="text-align:center;padding:40px 20px;color:#8b949e;font-size:.85rem">Loading table...</div>
       </div>
-      <div class="hc-arrow">&#8250;</div>
+    </div>
+
+    <!-- PLAYERS TAB -->
+    <div class="tab-content" id="tab-players"></div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <span class="nav-ico">&#8962;</span>Home
+    </button>
+    <button class="nav-item" id="nav-fixtures" onclick="switchTab('fixtures')">
+      <span class="nav-ico">&#128197;</span>Fixtures
+    </button>
+    <button class="nav-item" id="nav-table" onclick="switchTab('table')">
+      <span class="nav-ico">&#128202;</span>Table
+    </button>
+    <button class="nav-item" id="nav-players" onclick="switchTab('players')">
+      <span class="nav-ico">&#128100;</span>Players
+    </button>
+  </nav>
+
+</div>
+
+<!-- ═══════ TEAM SELECTION SCREEN ═══════ -->
+<div class="ts-screen hidden" id="ts-screen">
+  <div class="ts-topbar">
+    <div class="ts-logo">&#9917;</div>
+    <div class="ts-title">Select Your Team</div>
+    <div class="ts-sub" id="ts-comp-label">DLS League &mdash; Season 2026</div>
+  </div>
+  <div class="ts-body" id="ts-body">
+    <div class="ts-instructions">
+      Tap your team to claim it. <strong>Each team can only be claimed by one player.</strong>
+      Teams already taken are grayed out. If someone has your team, contact the admin.
+    </div>
+    <div class="ts-grid" id="ts-grid">
+      <div class="ts-loading">Loading teams...</div>
+    </div>
+  </div>
+  <div class="ts-confirm-bar" id="ts-confirm-bar">
+    <div class="ts-selected-preview">Claiming: <strong id="ts-preview-name"></strong></div>
+    <button class="ts-confirm-btn" onclick="confirmTeamSelection()">&#10003; Confirm &amp; Continue</button>
+  </div>
+</div>
+
+<!-- ═══════ NOTIFICATION PROMPT SCREEN ═══════ -->
+<div class="notif-screen hidden" id="notif-screen">
+  <div class="notif-icon">&#128276;</div>
+  <div class="notif-title">Stay in the Loop</div>
+  <div class="notif-desc">
+    Get <strong>match reminders</strong> and result alerts for <strong id="notif-team-name-display"></strong> so you never miss a game.
+  </div>
+  <button class="notif-allow-btn" onclick="allowNotifications()">&#10003; Allow Notifications</button>
+  <button class="notif-skip-btn" onclick="skipNotifications()">Skip for now</button>
+</div>
+
+<!-- ═══════ SETTINGS SCREEN ═══════ -->
+<div class="settings-screen hidden" id="settings-screen">
+  <div class="settings-topbar">
+    <button class="settings-back" onclick="hideSettingsScreen()">&#8592; Back</button>
+    <span style="flex:1;text-align:center;font-size:.88rem;font-weight:800;color:#e6edf3;letter-spacing:2px;text-transform:uppercase">Settings</span>
+    <span style="width:48px"></span>
+  </div>
+  <div class="settings-body">
+    <span class="settings-section-lbl">My Account</span>
+    <div class="settings-group">
+      <div class="settings-item" id="si-team-display">
+        <div class="si-icon">&#9917;</div>
+        <div class="si-info">
+          <div class="si-label">My Team</div>
+          <div class="si-sub" id="si-team-name">No team selected</div>
+        </div>
+      </div>
+      <div class="settings-item" onclick="changeTeam()">
+        <div class="si-icon">&#128260;</div>
+        <div class="si-info">
+          <div class="si-label">Change Team</div>
+          <div class="si-sub">Release your current team and pick again</div>
+        </div>
+        <div class="si-arrow">&#8250;</div>
+      </div>
+    </div>
+
+    <span class="settings-section-lbl">League</span>
+    <div class="settings-group">
+      <div class="settings-item" onclick="document.getElementById('rules-overlay').classList.add('show');document.body.style.overflow='hidden';hideSettingsScreen()">
+        <div class="si-icon">&#128203;</div>
+        <div class="si-info">
+          <div class="si-label">League Rules</div>
+          <div class="si-sub">View official rules</div>
+        </div>
+        <div class="si-arrow">&#8250;</div>
+      </div>
+      <div class="settings-item" onclick="doSwitchLeague()">
+        <div class="si-icon">&#127881;</div>
+        <div class="si-info">
+          <div class="si-label">Switch League</div>
+          <div class="si-sub">Log out and access a different league</div>
+        </div>
+        <div class="si-arrow">&#8250;</div>
+      </div>
+    </div>
+
+    <span class="settings-section-lbl">About</span>
+    <div class="about-card">
+      <div class="about-hero">
+        <div class="about-ball">&#9917;</div>
+        <div class="about-name">DLS Football Hub</div>
+        <div class="about-league-tag">Africa DLS Global League</div>
+        <div class="about-season-tag">Season 2026</div>
+      </div>
+      <div class="about-desc">
+        Your official league companion app. Track standings, live fixtures and results, view match timelines and line-ups, and connect with your opponents — all in one place.
+      </div>
+      <div class="about-row">
+        <span class="about-key">Platform</span>
+        <span class="about-val">Dream League Soccer</span>
+      </div>
+      <div class="about-row">
+        <span class="about-key">Season</span>
+        <span class="about-val">2026</span>
+      </div>
+      <div class="about-row">
+        <span class="about-key">Divisions</span>
+        <span class="about-val">League 1 · League 2 · League 3</span>
+      </div>
+      <div class="about-row">
+        <span class="about-key">Cups</span>
+        <span class="about-val">Champions League · Europa</span>
+      </div>
+      <div class="about-row">
+        <span class="about-key">Version</span>
+        <span class="about-val" id="about-version">1.0</span>
+      </div>
+      <div class="about-row" id="about-admin-row" style="display:none">
+        <span class="about-key">Admin</span>
+        <a id="about-admin-link" href="#" target="_blank" rel="noopener" style="font-size:.75rem;color:#25d366;font-weight:700;text-decoration:none">&#128172; Contact on WhatsApp</a>
+      </div>
     </div>
   </div>
 </div>
@@ -567,6 +1056,48 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
     <span class="live-badge" style="animation:blink 1.5s infinite">&#9679; LIVE</span>
   </div>
   <iframe id="twitch-iframe" allowfullscreen allow="autoplay"></iframe>
+</div>
+
+<!-- ═══════ CUSTOM APP PROMPT ═══════ -->
+<div class="app-prompt-overlay hidden" id="app-prompt-overlay">
+  <div class="app-prompt-box">
+    <div class="app-prompt-icon" id="app-prompt-icon">&#10067;</div>
+    <div class="app-prompt-title" id="app-prompt-title"></div>
+    <div class="app-prompt-msg" id="app-prompt-msg"></div>
+    <div class="app-prompt-actions">
+      <button class="app-prompt-cancel" id="app-prompt-cancel" onclick="appPromptCancel()">Cancel</button>
+      <button class="app-prompt-confirm" id="app-prompt-confirm" onclick="appPromptConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TEAM OVERVIEW SCREEN ═══════ -->
+<div class="tov-screen hidden" id="tov-screen">
+  <div class="tov-topbar">
+    <button class="tov-back" onclick="closeTOV()">&#8592;</button>
+    <span style="flex:1;text-align:center;font-size:.65rem;font-weight:700;color:#8b949e;letter-spacing:1.5px;text-transform:uppercase" id="tov-topbar-lbl"></span>
+    <div style="width:34px;flex-shrink:0"></div>
+  </div>
+  <div class="tov-body" id="tov-body"></div>
+</div>
+
+<!-- ═══════ MATCH DETAIL SCREEN ═══════ -->
+<div class="match-detail-screen hidden" id="match-detail-screen">
+  <div class="md-topbar">
+    <button class="md-back-btn" onclick="closeMatchDetail()">&#8592;</button>
+    <div class="md-topbar-title" id="md-topbar-title"></div>
+    <div style="width:34px;flex-shrink:0"></div>
+  </div>
+  <div class="md-scoreline" id="md-scoreline"></div>
+  <div class="md-venue" id="md-venue"></div>
+  <div class="md-tabs">
+    <button class="md-tab active" id="md-tab-timeline" onclick="showMDTab('timeline')">Timeline</button>
+    <button class="md-tab" id="md-tab-lineups" onclick="showMDTab('lineups')">Line-ups</button>
+  </div>
+  <div class="md-body">
+    <div class="md-tab-panel active" id="md-panel-timeline"></div>
+    <div class="md-tab-panel" id="md-panel-lineups"></div>
+  </div>
 </div>
 
 <!-- ═══════ CODE GATE ═══════ -->
@@ -806,6 +1337,25 @@ function urlBase64ToUint8Array(b64){
 
 function slugTeam(name){ return name.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,''); }
 
+function teamColor(name){
+  const palette=['#e74c3c','#3498db','#27ae60','#f39c12','#8e44ad','#16a085','#d35400','#2c3e50','#c0392b','#2980b9','#1e8449','#e67e22'];
+  let h=0; for(let i=0;i<(name||'').length;i++) h=(name.charCodeAt(i)+((h<<5)-h))|0;
+  return palette[Math.abs(h)%palette.length];
+}
+function teamAbbr(name){
+  const words=(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!words.length) return '?';
+  // Use first 3 letters of first word if it's long enough, otherwise initials
+  if(words[0].length>=3) return words[0].slice(0,3).toUpperCase();
+  return words.slice(0,3).map(w=>w[0]).join('').toUpperCase();
+}
+function featBadgeHTML(teamName, logoUrl){
+  if(logoUrl) return `<img src="${logoUrl}" alt="">`;
+  const color = teamColor(teamName);
+  const abbr  = teamAbbr(teamName);
+  return `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:${color};font-size:.82rem;font-weight:900;color:#fff;letter-spacing:.5px">${abbr}</span>`;
+}
+
 function getTeamsForComp(comp){
   switch(comp){
     case 'league1': return (leaguePub?.table||[]).map(r=>r.team);
@@ -888,10 +1438,23 @@ function renderCurrentComp(){
 }
 
 // Close dropdown on outside click
+// ── Device ID ──
+function getDeviceId(){
+  let id = localStorage.getItem('dls_device_id');
+  if(!id){
+    id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
+    localStorage.setItem('dls_device_id', id);
+  }
+  return id;
+}
+
 // ── Code Gate ──
 let codesPub = null;
 function showCodeGate(){
   document.getElementById('code-gate').classList.remove('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
+  document.getElementById('ts-screen').classList.add('hidden');
+  document.getElementById('notif-screen').classList.add('hidden');
   document.getElementById('cg-input').value='';
   document.getElementById('cg-err').textContent='';
   setTimeout(()=>document.getElementById('cg-input').focus(),200);
@@ -904,12 +1467,15 @@ async function submitCode(){
   const errEl = document.getElementById('cg-err');
   const code = (input.value||'').trim();
   if(!code){ errEl.textContent='Please enter a code'; return; }
+  const btn = document.querySelector('.cg-btn');
+  if(btn){ btn.textContent='Checking...'; btn.disabled=true; }
   if(!codesPub){
     try{
       const r = await fetch(FIREBASE_URL+'/dls_codes.json');
       codesPub = r.ok ? await r.json() : null;
     } catch(e){}
   }
+  if(btn){ btn.textContent='&#9654; Access League'; btn.disabled=false; }
   if(!codesPub){ errEl.textContent='Could not verify. Check your connection.'; return; }
   const entries = Object.entries(codesPub);
   const match = entries.find(([,v])=>v===code);
@@ -923,11 +1489,27 @@ async function submitCode(){
   localStorage.setItem('dls_viewer_access', comp);
   hideCodeGate();
   selectComp(comp);
-  showHomeScreen();
+  // Check if team already selected for this comp
+  const savedTeam = localStorage.getItem('dls_selected_team_'+comp);
+  if(savedTeam){
+    showAppShell();
+  } else {
+    showTeamSelectScreen(comp);
+  }
 }
-function switchLeague(){
-  localStorage.removeItem('dls_viewer_access');
-  showCodeGate();
+function doSwitchLeague(){
+  showAppPrompt({
+    icon: '&#127881;',
+    title: 'Switch League',
+    message: 'You will be logged out of your current league and returned to the login screen.<br><br>Your team selection will be remembered if you log back in with the same device.',
+    confirmText: 'Switch League',
+    confirmClass: 'green',
+    onConfirm: ()=>{
+      hideSettingsScreen();
+      localStorage.removeItem('dls_viewer_access');
+      showCodeGate();
+    }
+  });
 }
 
 // ── Load from Firebase ──
@@ -1742,39 +2324,40 @@ function initHsBalls(){
 }
 
 // ── Home / Live / League / Highlights navigation ──
-function showHomeScreen(){
-  document.getElementById('home-screen').classList.remove('hidden');
+function showAppShell(){
+  document.getElementById('app-shell').classList.remove('hidden');
   document.getElementById('live-screen').classList.add('hidden');
   document.getElementById('highlights-screen').classList.add('hidden');
   document.getElementById('hl-upload-modal').classList.add('hidden');
-  document.getElementById('twitch-iframe').src = '';
+  document.getElementById('ts-screen').classList.add('hidden');
+  document.getElementById('notif-screen').classList.add('hidden');
+  document.getElementById('settings-screen').classList.add('hidden');
   const vp = document.getElementById('hl-inline-player');
   if(vp){ vp.pause(); vp.src=''; }
+  document.getElementById('twitch-iframe').src = '';
   document.getElementById('team-overview-modal').style.display = 'none';
   document.getElementById('rules-overlay').classList.remove('show');
   document.body.style.overflow = 'hidden';
+  updateAppTopBar();
+  renderHomeTab();
 }
+// Keep showHomeScreen as alias so existing calls still work
+function showHomeScreen(){ showAppShell(); }
+
 function showLiveScreen(){
-  document.getElementById('home-screen').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
   document.getElementById('live-screen').classList.remove('hidden');
   const host = window.location.hostname || 'localhost';
   document.getElementById('twitch-iframe').src =
     'https://player.twitch.tv/?channel=dubai_tech&parent=' + host + '&autoplay=true';
 }
-function showLeagueScreen(){
-  document.getElementById('home-screen').classList.add('hidden');
-  document.getElementById('live-screen').classList.add('hidden');
-  document.getElementById('twitch-iframe').src = '';
-  document.body.style.overflow = '';
-  renderCurrentComp();
-  updateNotifBanner();
-  updateTicker();
-}
 function showHighlightsScreen(){
-  document.getElementById('home-screen').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
   document.getElementById('highlights-screen').classList.remove('hidden');
   loadHighlights();
 }
+// showLeagueScreen now handled by Fixtures/Table tabs — keep for backwards compat
+function showLeagueScreen(){ showAppShell(); switchTab('fixtures'); }
 
 // ── Highlights ──
 const HL_BUCKET = 'dls-hub-62226.firebasestorage.app';
@@ -2074,33 +2657,1201 @@ function updateTicker(){
 // ── Main refresh ──
 async function refresh(){
   await loadData();
-  renderCurrentComp();
   updateTimestamp();
-  updateNotifBanner();
   updateTicker();
+  updateAppTopBar();
+  if(_activeTab==='home')     renderHomeTab();
+  else if(_activeTab==='fixtures') renderFixturesTab();
+  else if(_activeTab==='table')    renderTableTab();
+  else if(_activeTab==='players')  renderPlayersTab();
 }
 
-// Auto-refresh every 30 seconds (only when on the league screen)
+// ═══════════════════════════════════════════
+//  TEAM SELECTION
+// ═══════════════════════════════════════════
+
+let _tsSelectedTeam = null;
+
+async function showTeamSelectScreen(comp){
+  _tsSelectedTeam = null;
+  document.getElementById('code-gate').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
+  document.getElementById('notif-screen').classList.add('hidden');
+  document.getElementById('ts-screen').classList.remove('hidden');
+  document.getElementById('ts-confirm-bar').classList.remove('show');
+  document.body.style.overflow = 'hidden';
+
+  const compNames = {league1:'DLS League — Division 1',league2:'DLS League 2 — Division 2',league3:'DLS League 3 — Division 3'};
+  document.getElementById('ts-comp-label').textContent = (compNames[comp]||'DLS League') + ' · Season 2026';
+
+  document.getElementById('ts-grid').innerHTML = '<div class="ts-loading">&#9203; Loading teams...</div>';
+
+  // Load teams from published data and claims from Firebase
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  let claims = {};
+  try{
+    const r = await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'.json');
+    claims = (r.ok ? await r.json() : null) || {};
+  } catch(e){}
+
+  const myDeviceId = getDeviceId();
+  const teams = pub ? (pub.table||[]).map(r=>({name:r.team,pos:r.pos,pts:r.pts})) : [];
+
+  if(!teams.length){
+    document.getElementById('ts-grid').innerHTML = '<div class="ts-loading">No teams found. Check your connection.</div>';
+    return;
+  }
+
+  // Find if this device already has a team claimed
+  const myClaimedTeam = Object.entries(claims).find(([,v])=>v===myDeviceId)?.[0];
+  if(myClaimedTeam){
+    // Decode slug back — store the real name in claims
+    const realName = teams.find(t=>slugTeam(t.name)===myClaimedTeam)?.name || myClaimedTeam;
+    localStorage.setItem('dls_selected_team_'+comp, realName);
+    document.getElementById('ts-screen').classList.add('hidden');
+    showAppShell();
+    return;
+  }
+
+  const logos = pub?.logos || {};
+  let html = '';
+  teams.forEach(t=>{
+    const slug = slugTeam(t.name);
+    const claimedBy = claims[slug];
+    const isMine = claimedBy === myDeviceId;
+    const isTaken = claimedBy && !isMine;
+    const logoSrc = logos[t.name];
+    const badgeContent = logoSrc
+      ? `<img src="${logoSrc}" alt="">`
+      : (t.name[0]||'?').toUpperCase();
+
+    let cardClass = 'ts-team-card';
+    let badgeClass = 'ts-team-badge';
+    let statusHtml = '<span class="ts-team-status ts-stat-avail">Available</span>';
+    if(isMine){ cardClass+=' ts-mine'; badgeClass+=' ts-mine-badge'; statusHtml='<span class="ts-team-status ts-stat-mine">&#10003; Mine</span>'; }
+    if(isTaken){ cardClass+=' ts-taken'; statusHtml='<span class="ts-team-status ts-stat-taken">Taken</span>'; }
+
+    const clickAttr = isTaken ? '' : `onclick="selectTeamCard('${esc(t.name)}')"`;
+
+    html += `<div class="${cardClass}" id="tsc-${slug}" ${clickAttr}>
+      <div class="${badgeClass}">${badgeContent}</div>
+      <div class="ts-team-info">
+        <div class="ts-team-name">${esc(t.name)}</div>
+        <div class="ts-team-pos">#${t.pos} &middot; ${t.pts} pts</div>
+      </div>
+      ${statusHtml}
+    </div>`;
+  });
+
+  document.getElementById('ts-grid').innerHTML = html;
+}
+
+function selectTeamCard(teamName){
+  // Deselect previous
+  document.querySelectorAll('.ts-team-card:not(.ts-taken)').forEach(el=>{
+    el.classList.remove('ts-mine');
+    el.querySelector('.ts-team-badge')?.classList.remove('ts-mine-badge');
+    const st = el.querySelector('.ts-team-status');
+    if(st && !st.classList.contains('ts-stat-taken')){
+      st.className='ts-team-status ts-stat-avail';
+      st.textContent='Available';
+    }
+  });
+
+  // Highlight selected
+  const slug = slugTeam(teamName);
+  const card = document.getElementById('tsc-'+slug);
+  if(card){
+    card.classList.add('ts-mine');
+    card.querySelector('.ts-team-badge')?.classList.add('ts-mine-badge');
+    const st = card.querySelector('.ts-team-status');
+    if(st){ st.className='ts-team-status ts-stat-mine'; st.innerHTML='&#10003; Selected'; }
+  }
+
+  _tsSelectedTeam = teamName;
+  document.getElementById('ts-preview-name').textContent = teamName;
+  document.getElementById('ts-confirm-bar').classList.add('show');
+}
+
+async function confirmTeamSelection(){
+  if(!_tsSelectedTeam) return;
+  const comp = localStorage.getItem('dls_viewer_access');
+  if(!comp) return;
+  const slug = slugTeam(_tsSelectedTeam);
+  const deviceId = getDeviceId();
+  const btn = document.querySelector('.ts-confirm-btn');
+  if(btn){ btn.textContent='Saving...'; btn.disabled=true; }
+
+  try{
+    // Check claim isn't taken by a race condition
+    const r = await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json');
+    const existing = r.ok ? await r.json() : null;
+    if(existing && existing !== deviceId){
+      if(btn){ btn.textContent='&#10003; Confirm & Continue'; btn.disabled=false; }
+      alert('Sorry, that team was just claimed by someone else. Please pick another.');
+      showTeamSelectScreen(comp);
+      return;
+    }
+    // Write claim
+    await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(deviceId)
+    });
+    localStorage.setItem('dls_selected_team_'+comp, _tsSelectedTeam);
+    document.getElementById('ts-screen').classList.add('hidden');
+    // Show notification prompt
+    document.getElementById('notif-team-name-display').textContent = _tsSelectedTeam;
+    document.getElementById('notif-screen').classList.remove('hidden');
+  } catch(e){
+    if(btn){ btn.textContent='&#10003; Confirm & Continue'; btn.disabled=false; }
+    alert('Connection error. Please try again.');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  NOTIFICATION PROMPT
+// ═══════════════════════════════════════════
+
+async function allowNotifications(){
+  document.getElementById('notif-screen').classList.add('hidden');
+  const comp = localStorage.getItem('dls_viewer_access');
+  const team = localStorage.getItem('dls_selected_team_'+(comp||''));
+  // Trigger native browser permission
+  if('Notification' in window && Notification.permission === 'default'){
+    try{ await Notification.requestPermission(); } catch(e){}
+  }
+  // If granted, subscribe push
+  if('Notification' in window && Notification.permission === 'granted'){
+    try{
+      const sw = await navigator.serviceWorker.ready;
+      const sub = await sw.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+      if(team && comp){
+        const slug = slugTeam(team);
+        await fetch(FIREBASE_URL+'/dls_push/'+comp+'/'+slug+'.json',{
+          method:'PUT', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({sub: JSON.stringify(sub), team, ts:Date.now()})
+        });
+        localStorage.setItem('dls_notif_'+comp, team);
+      }
+    } catch(e){}
+  }
+  showAppShell();
+}
+
+function skipNotifications(){
+  document.getElementById('notif-screen').classList.add('hidden');
+  showAppShell();
+}
+
+// ═══════════════════════════════════════════
+//  SETTINGS SCREEN
+// ═══════════════════════════════════════════
+
+function showSettingsScreen(){
+  const comp = localStorage.getItem('dls_viewer_access')||'league1';
+  const team = localStorage.getItem('dls_selected_team_'+comp)||'None';
+  document.getElementById('si-team-name').textContent = team;
+
+  // Populate about section
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  const curSeason = pub?.currentSeason||2026;
+  const el = document.getElementById('about-version');
+  if(el) el.textContent = 'Season '+curSeason+' · v1.0';
+
+  // Admin contact — read from league data if available
+  const adminPhone = pub?.adminPhone;
+  const adminRow = document.getElementById('about-admin-row');
+  const adminLink = document.getElementById('about-admin-link');
+  if(adminPhone && adminRow && adminLink){
+    const clean = adminPhone.replace(/[^\d]/g,'');
+    adminLink.href = 'https://wa.me/'+clean;
+    adminRow.style.display = 'flex';
+  } else if(adminRow){
+    adminRow.style.display = 'none';
+  }
+
+  document.getElementById('settings-screen').classList.remove('hidden');
+}
+function hideSettingsScreen(){
+  document.getElementById('settings-screen').classList.add('hidden');
+}
+function changeTeam(){
+  const comp = localStorage.getItem('dls_viewer_access');
+  if(!comp) return;
+  const team = localStorage.getItem('dls_selected_team_'+comp);
+  if(!team) return;
+  showAppPrompt({
+    icon: '&#128260;',
+    title: 'Change Team',
+    message: `You are about to release <strong>${esc(team)}</strong>.<br><br>This frees up the team for another player. You will need to select a new team before you can continue.`,
+    confirmText: 'Yes, Change Team',
+    confirmClass: 'danger',
+    onConfirm: async ()=>{
+      const slug = slugTeam(team);
+      const deviceId = getDeviceId();
+      try{
+        const r = await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json');
+        const existing = r.ok ? await r.json() : null;
+        if(existing === deviceId){
+          await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{method:'DELETE'});
+        }
+      } catch(e){}
+      localStorage.removeItem('dls_selected_team_'+comp);
+      localStorage.removeItem('dls_notif_'+comp);
+      hideSettingsScreen();
+      showTeamSelectScreen(comp);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  CUSTOM APP PROMPT SYSTEM
+// ═══════════════════════════════════════════
+
+let _promptOnConfirm = null;
+let _promptOnCancel  = null;
+
+function showAppPrompt({ icon='&#10067;', title='', message='', confirmText='Confirm', cancelText='Cancel', confirmClass='green', onConfirm=null, onCancel=null }={}){
+  document.getElementById('app-prompt-icon').innerHTML = icon;
+  document.getElementById('app-prompt-title').textContent = title;
+  document.getElementById('app-prompt-msg').innerHTML = message;
+  const confirmBtn = document.getElementById('app-prompt-confirm');
+  confirmBtn.textContent = confirmText;
+  confirmBtn.className = 'app-prompt-confirm ' + confirmClass;
+  document.getElementById('app-prompt-cancel').textContent = cancelText;
+  _promptOnConfirm = onConfirm;
+  _promptOnCancel  = onCancel;
+  document.getElementById('app-prompt-overlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function appPromptConfirm(){
+  document.getElementById('app-prompt-overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+  if(typeof _promptOnConfirm === 'function') _promptOnConfirm();
+  _promptOnConfirm = null; _promptOnCancel = null;
+}
+
+function appPromptCancel(){
+  document.getElementById('app-prompt-overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+  if(typeof _promptOnCancel === 'function') _promptOnCancel();
+  _promptOnConfirm = null; _promptOnCancel = null;
+}
+
+// ═══════════════════════════════════════════
+//  APP TOP BAR
+// ═══════════════════════════════════════════
+
+function updateAppTopBar(){
+  const comp = currentComp;
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  const compLabel = comp==='league1'?'AFRICA DLS GLOBAL LEAGUE':comp==='league2'?'DLS LEAGUE 2':comp==='league3'?'DLS LEAGUE 3':'DLS LEAGUE';
+  document.getElementById('atb-league').textContent = compLabel;
+  if(pub && pub.currentMatchday){
+    document.getElementById('atb-matchday').textContent = 'Matchday '+pub.currentMatchday;
+  } else {
+    document.getElementById('atb-matchday').textContent = 'Loading...';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  BOTTOM NAV TAB SWITCHING
+// ═══════════════════════════════════════════
+
+let _activeTab = 'home';
+function switchTab(tab){
+  _activeTab = tab;
+  ['home','fixtures','table','players'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='fixtures') renderFixturesTab();
+  if(tab==='table')    renderTableTab();
+  if(tab==='players')  renderPlayersTab();
+  // Scroll to top
+  const main = document.getElementById('app-main');
+  if(main) main.scrollTop = 0;
+}
+
+// ═══════════════════════════════════════════
+//  HOME TAB RENDER
+// ═══════════════════════════════════════════
+
+// ═══════════════════════════════════════════
+//  MATCH DETAIL SCREEN
+// ═══════════════════════════════════════════
+
+function openMatchDetail(home, away){
+  const comp = currentComp;
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  if(!pub) return;
+
+  // Find the match across all matchdays
+  const mdsAll = pub.allMatchdays&&pub.allMatchdays.length ? pub.allMatchdays : (pub.matchday?[pub.matchday]:[]);
+  let match = null, matchDay = null;
+  for(const md of mdsAll){
+    const found = md.matches.find(m=>m.home===home&&m.away===away);
+    if(found){ match=found; matchDay=md.day; break; }
+  }
+  if(!match) match = {home, away, hs:0, as:0, played:false};
+
+  const logos = pub.logos||{};
+  const compLabel = comp==='league1'?'AFRICA DLS GLOBAL LEAGUE':comp==='league2'?'DLS LEAGUE 2':'DLS LEAGUE 3';
+  const phones = pub.phones || {};
+
+  // Top bar title — short form to avoid truncation
+  document.getElementById('md-topbar-title').textContent = `${compLabel} · MD ${matchDay||pub.currentMatchday||1}`;
+
+  // Score line
+  const hBadgeHTML = featBadgeHTML(home, logos[home]);
+  const aBadgeHTML = featBadgeHTML(away, logos[away]);
+  const hWin = match.played && match.hs > match.as;
+  const aWin = match.played && match.as > match.hs;
+  const hNameStyle = hWin?'color:#4ade80;font-weight:800':aWin?'color:#f87171':'';
+  const aNameStyle = aWin?'color:#4ade80;font-weight:800':hWin?'color:#f87171':'';
+
+  // WhatsApp link helper for match detail
+  function mdWaName(teamName, style){
+    const rawPhone = phones[teamName];
+    const phone = rawPhone ? rawPhone.replace(/[^\d]/g,'') : '';
+    const nameEl = `<span style="${style}">${esc(teamName)}</span>`;
+    if(!phone) return `<div class="md-tname">${nameEl}</div>`;
+    return `<a href="https://wa.me/${phone}" target="_blank" rel="noopener" style="text-decoration:none;display:block">
+      <div class="md-tname">${nameEl}</div>
+      <div style="font-size:.6rem;color:#25d366;font-weight:700;text-align:center;margin-top:3px;letter-spacing:.5px">&#128172; WhatsApp</div>
+    </a>`;
+  }
+
+  const scoreMiddle = match.played
+    ? `<div class="md-score-num">${match.hs} - ${match.as}</div>
+       <div class="md-ft-badge">FT</div>`
+    : `<div class="md-vs-badge">VS</div>
+       <div style="display:flex;align-items:center;gap:4px;font-size:.65rem;font-weight:800;color:#dc3545;margin-top:2px"><span style="width:7px;height:7px;border-radius:50%;background:#dc3545;animation:blink 1.2s infinite;display:inline-block"></span>Upcoming</div>`;
+
+  document.getElementById('md-scoreline').innerHTML = `
+    <div class="md-team">
+      <div class="md-badge">${hBadgeHTML}</div>
+      ${mdWaName(home, hNameStyle)}
+    </div>
+    <div class="md-score-mid">${scoreMiddle}</div>
+    <div class="md-team">
+      <div class="md-badge">${aBadgeHTML}</div>
+      ${mdWaName(away, aNameStyle)}
+    </div>`;
+
+  // Venue
+  document.getElementById('md-venue').textContent = match.venue || '';
+
+  // Render panels
+  renderMDTimeline(match, home, away, logos);
+  renderMDLineups(match, home, away, logos);
+
+  // Show screen, default to timeline tab
+  showMDTab('timeline');
+  document.getElementById('match-detail-screen').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMatchDetail(){
+  document.getElementById('match-detail-screen').classList.add('hidden');
+}
+// Also make showAppShell hide these overlays
+const _origShowAppShell = showAppShell;
+showAppShell = function(){
+  document.getElementById('tov-screen').classList.add('hidden');
+  document.getElementById('match-detail-screen').classList.add('hidden');
+  _origShowAppShell();
+};
+
+function showMDTab(tab){
+  ['timeline','lineups'].forEach(t=>{
+    document.getElementById('md-tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('md-panel-'+t).classList.toggle('active', t===tab);
+  });
+}
+
+function buildTLEventRow(ev, home, away, logos){
+  const isHome = ev.team==='h' || ev.team===home;
+  const teamName = isHome ? home : away;
+  const logo = logos[teamName];
+  const dotHTML = logo
+    ? `<div class="tl-team-dot"><img src="${logo}" alt=""></div>`
+    : `<div class="tl-team-dot" style="background:${teamColor(teamName)}">${teamAbbr(teamName).slice(0,2)}</div>`;
+
+  let iconHTML='', subHTML='';
+  if(ev.type==='goal'){
+    iconHTML=`${dotHTML}<span class="tl-goal-ball">&#9917;</span>`;
+    if(ev.assist) subHTML=`<div class="tl-sub">assist ${esc(ev.assist)}</div>`;
+    else if(ev.note) subHTML=`<div class="tl-sub">${esc(ev.note)}</div>`;
+  } else if(ev.type==='yellowcard'){
+    iconHTML=`${dotHTML}<div class="tl-ycard"></div>`;
+  } else if(ev.type==='redcard'){
+    iconHTML=`${dotHTML}<div class="tl-rcard"></div>`;
+  } else {
+    iconHTML=dotHTML;
+  }
+
+  const minPill=`<div class="tl-min-pill">${ev.min||'?'}'</div>`;
+  const playerHTML=`<div class="tl-pname">${esc(ev.player||'')}</div>${subHTML}`;
+
+  if(isHome){
+    return `<div class="tl-row">
+      <div class="tl-home-cell"><div class="tl-ico-row">${iconHTML}<div style="text-align:right">${playerHTML}</div></div></div>
+      <div class="tl-min-cell">${minPill}</div>
+      <div class="tl-away-cell"></div>
+    </div>`;
+  } else {
+    return `<div class="tl-row">
+      <div class="tl-home-cell"></div>
+      <div class="tl-min-cell">${minPill}</div>
+      <div class="tl-away-cell"><div class="tl-ico-row away">${iconHTML}<div>${playerHTML}</div></div></div>
+    </div>`;
+  }
+}
+
+function renderMDTimeline(match, home, away, logos){
+  const panel = document.getElementById('md-panel-timeline');
+  const events = match.events;
+
+  if(!events || !events.length){
+    panel.innerHTML=`<div class="tl-no-data">
+      <div style="font-size:2rem;margin-bottom:10px">&#9203;</div>
+      ${match.played
+        ? 'Match events will appear here once<br>the admin adds goal scorers &amp; cards.'
+        : 'This match has not been played yet.<br>Check back after the match.'}
+    </div>`;
+    return;
+  }
+
+  // Sort all events by minute (null/0 → treated as 0 → first half)
+  const sorted=[...events].sort((a,b)=>(a.min||0)-(b.min||0));
+
+  // Split into halves: ≤45 = first half, >45 = second half
+  const firstHalf  = sorted.filter(ev=>!ev.min||ev.min<=45);
+  const secondHalf = sorted.filter(ev=>ev.min&&ev.min>45);
+
+  // Half-time score from first-half goals only
+  let htH=0, htA=0;
+  firstHalf.forEach(ev=>{
+    if(ev.type==='goal'){ if(ev.team==='h') htH++; else htA++; }
+  });
+
+  // Final score
+  const ftH=match.hs??0, ftA=match.as??0;
+
+  // ── Build HTML ──
+  let html=`<div class="tl-kickoff">
+    <div class="tl-kickoff-line"></div>
+    <div class="tl-kickoff-tag">Kick Off</div>
+    <div class="tl-kickoff-line"></div>
+  </div>`;
+
+  // First half events
+  firstHalf.forEach(ev=>{ html+=buildTLEventRow(ev,home,away,logos); });
+
+  // Half Time marker
+  html+=`<div class="tl-half-marker">
+    <div class="tl-half-line"></div>
+    <div class="tl-half-tag">HT &nbsp;<span class="tl-half-score">${htH} &ndash; ${htA}</span></div>
+    <div class="tl-half-line"></div>
+  </div>`;
+
+  // Second half events
+  secondHalf.forEach(ev=>{ html+=buildTLEventRow(ev,home,away,logos); });
+
+  // Full Time marker
+  if(match.played){
+    html+=`<div class="tl-ft-marker">
+      <div class="tl-half-line"></div>
+      <div class="tl-ft-tag">FT &nbsp;<span class="tl-ft-score">${ftH} &ndash; ${ftA}</span></div>
+      <div class="tl-half-line"></div>
+    </div>`;
+  }
+
+  panel.innerHTML=html;
+}
+
+function renderMDLineups(match, home, away, logos){
+  const panel = document.getElementById('md-panel-lineups');
+  const lu = match.lineup;
+
+  if(!lu || (!lu.h && !lu.a)){
+    panel.innerHTML = `<div class="lineup-no-data">
+      <div style="font-size:2rem;margin-bottom:10px">&#128100;</div>
+      Line-ups will appear here once<br>the admin adds formation &amp; player data.
+    </div>`;
+    return;
+  }
+
+  let html = '<div class="lineup-section">';
+
+  ['h','a'].forEach(side=>{
+    const teamName = side==='h' ? home : away;
+    const teamData = lu[side];
+    if(!teamData) return;
+    const logo = logos[teamName];
+    const color = teamColor(teamName);
+    const abbr = teamAbbr(teamName);
+    const badgeHTML = logo
+      ? `<div class="lu-abbr-badge"><img src="${logo}" alt=""></div>`
+      : `<div class="lu-abbr-badge" style="background:${color}">${abbr}</div>`;
+    const players = teamData.players || [];
+    const formation = teamData.formation || '4-4-2';
+
+    html += `<div class="lineup-team-hdr">
+      ${badgeHTML}
+      <div class="lu-team-name">${esc(teamName)}</div>
+      <div class="lu-formation">${esc(formation)}</div>
+    </div>`;
+    html += renderPitch(players, formation, side==='h', logo, color);
+  });
+
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function renderPitch(players, formationStr, isHome, logo, color){
+  // Parse formation: "4-3-3" → rows [4,3,3], add GK [1] at bottom
+  const outfield = (formationStr||'4-4-2').split('-').map(Number).filter(n=>!isNaN(n)&&n>0);
+  const rows = isHome ? [outfield.slice().reverse(), [1]] : [[1], outfield.slice()];
+  // rows[0] = top of pitch (strikers for home, GK for away), rows[last] = GK for home, strikers for away
+
+  let playerIdx = 0;
+  // Re-order players: players[0]=GK, then outfield from DEF to FWD
+  const orderedRows = isHome
+    ? [[players[0]], ...outfield.map((n,i)=>players.slice(1+outfield.slice(0,i).reduce((a,b)=>a+b,0)+1, 1+outfield.slice(0,i+1).reduce((a,b)=>a+b,0)+1))]
+    : [[players[0]], ...outfield.map((n,i)=>players.slice(1+outfield.slice(0,i).reduce((a,b)=>a+b,0)+1, 1+outfield.slice(0,i+1).reduce((a,b)=>a+b,0)+1))];
+
+  // Simpler: just split player array into row groups
+  const allRows = [];
+  allRows.push([players[0]||'']); // GK
+  let idx=1;
+  for(const n of outfield){
+    allRows.push(players.slice(idx,idx+n));
+    idx+=n;
+  }
+  // Home: FWD at top (reverse rows so GK at bottom visually)
+  const displayRows = isHome ? [...allRows].reverse() : allRows;
+
+  let html = '<div class="pitch-wrap"><div class="pitch-center-line"></div>';
+  for(const row of displayRows){
+    html += '<div class="pitch-row">';
+    for(const pName of row){
+      const pCircle = logo
+        ? `<div class="p-circle"><img src="${logo}" alt=""></div>`
+        : `<div class="p-circle" style="background:${color};border-color:rgba(255,255,255,.5)">${(pName||'').slice(0,2).toUpperCase()}</div>`;
+      html += `<div class="p-player">${pCircle}<div class="p-name">${esc(pName||'')}</div></div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function smallBadgeHTML(teamName, logoUrl){
+  if(logoUrl) return `<img src="${logoUrl}" alt="">`;
+  const color=teamColor(teamName);
+  return `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:${color};font-size:.38rem;font-weight:900;color:#fff">${teamAbbr(teamName)}</span>`;
+}
+
+function buildFixCard(m, logos, myTeam){
+  const hBadge=smallBadgeHTML(m.home, logos[m.home]);
+  const aBadge=smallBadgeHTML(m.away, logos[m.away]);
+  const isMyMatch = myTeam && (m.home===myTeam||m.away===myTeam);
+  let cardClass='today-fix';
+  if(m.played) cardClass+=' tf-played';
+  if(isMyMatch) cardClass+=' tf-my-match';
+  let timeCol='', scoreCol='', hCls='tf-name', aCls='tf-name';
+  if(m.played){
+    const hWin=m.hs>m.as, aWin=m.as>m.hs;
+    hCls+=hWin?' tf-winner':aWin?' tf-loser':'';
+    aCls+=aWin?' tf-winner':hWin?' tf-loser':'';
+    timeCol=`<span style="font-size:.58rem;font-weight:800;color:#8b949e;letter-spacing:.5px">FT</span>`;
+    scoreCol=`<div class="tf-score-col"><div class="tf-sc">${m.hs}</div><div class="tf-sc">${m.as}</div></div>`;
+  } else {
+    timeCol=`<span class="tf-live-dot"></span>`;
+    scoreCol='';
+  }
+  return `<div class="${cardClass}" onclick="openMatchDetail('${esc(m.home)}','${esc(m.away)}')">
+    <div class="tf-time">${timeCol}</div>
+    <div class="tf-teams">
+      <div class="tf-team-row"><div class="tf-badge">${hBadge}</div><div class="${hCls}">${esc(m.home)}</div></div>
+      <div class="tf-team-row"><div class="tf-badge">${aBadge}</div><div class="${aCls}">${esc(m.away)}</div></div>
+    </div>
+    ${scoreCol}
+    <div class="tf-arrow">&#8250;</div>
+  </div>`;
+}
+
+function renderHomeTab(){
+  const comp = currentComp;
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  const wrap = document.getElementById('home-tab-content');
+  if(!wrap) return;
+
+  if(!pub){ wrap.innerHTML='<div style="text-align:center;padding:60px 20px;color:#8b949e;font-size:.85rem">No data yet.<br>Check back soon.</div>'; return; }
+
+  const myTeam = localStorage.getItem('dls_selected_team_'+comp)||'';
+  const logos = pub.logos||{};
+  const allMDs = pub.allMatchdays||[];
+  const tableRows = pub.table||[];
+  const n = tableRows.length;
+
+  // ── Featured match: always prioritise the player's own match ──
+  // Priority: 1) my last played  2) my next upcoming  3) any played (last resort)
+  let featMatch=null, featUpcoming=null, featDay=null;
+
+  const mdsAll = allMDs.length ? allMDs : (pub.matchday ? [pub.matchday] : []);
+
+  if(myTeam){
+    // 1. My last played
+    for(let i=mdsAll.length-1;i>=0;i--){
+      const mine=mdsAll[i].matches.filter(m=>m.played&&(m.home===myTeam||m.away===myTeam));
+      if(mine.length){ featMatch=mine[mine.length-1]; featDay=mdsAll[i].day; break; }
+    }
+    // 2. My next upcoming (if I haven't played yet in this matchday)
+    if(!featMatch){
+      for(const md of mdsAll){
+        const next=md.matches.find(m=>!m.played&&(m.home===myTeam||m.away===myTeam));
+        if(next){ featUpcoming=next; featDay=md.day; break; }
+      }
+    }
+  }
+
+  // 3. Fallback: any played match (only if player has no team or no matches at all)
+  if(!featMatch && !featUpcoming){
+    for(let i=mdsAll.length-1;i>=0;i--){
+      const played=mdsAll[i].matches.filter(m=>m.played);
+      if(played.length){ featMatch=played[played.length-1]; featDay=mdsAll[i].day; break; }
+    }
+    if(!featMatch && pub.matchday){
+      featUpcoming=pub.matchday.matches.find(m=>!m.played)||null;
+      featDay=pub.matchday.day;
+    }
+  }
+
+  const isMyFeat = featMatch && myTeam && (featMatch.home===myTeam||featMatch.away===myTeam);
+
+  let featHTML='';
+  if(featMatch){
+    const hBadge=featBadgeHTML(featMatch.home, logos[featMatch.home]);
+    const aBadge=featBadgeHTML(featMatch.away, logos[featMatch.away]);
+    const hWin=featMatch.hs>featMatch.as, aWin=featMatch.as>featMatch.hs;
+    const hNameStyle=hWin?'color:#4ade80;font-weight:800':aWin?'color:#f87171;font-weight:600':'';
+    const aNameStyle=aWin?'color:#4ade80;font-weight:800':hWin?'color:#f87171;font-weight:600':'';
+    featHTML=`<div class="feat-card" onclick="openMatchDetail('${esc(featMatch.home)}','${esc(featMatch.away)}')">
+      <div class="feat-label-row">
+        <span>FEATURED &middot; MATCHDAY ${featDay}</span>
+        <span class="feat-played-tag">&#10003; PLAYED</span>
+      </div>
+      <div class="feat-teams">
+        <div class="feat-team">
+          <div class="feat-badge">${hBadge}</div>
+          <div class="feat-tname" style="${hNameStyle}">${esc(featMatch.home)}</div>
+        </div>
+        <div class="feat-score-mid">
+          <div class="feat-score">${featMatch.hs} : ${featMatch.as}</div>
+        </div>
+        <div class="feat-team">
+          <div class="feat-badge">${aBadge}</div>
+          <div class="feat-tname" style="${aNameStyle}">${esc(featMatch.away)}</div>
+        </div>
+      </div>
+      <div class="feat-tap-hint">Tap for line-ups &amp; timeline &rarr;</div>
+    </div>`;
+  } else if(featUpcoming){
+    const hBadge=featBadgeHTML(featUpcoming.home, logos[featUpcoming.home]);
+    const aBadge=featBadgeHTML(featUpcoming.away, logos[featUpcoming.away]);
+    featHTML=`<div class="feat-card" onclick="openMatchDetail('${esc(featUpcoming.home)}','${esc(featUpcoming.away)}')">
+      <div class="feat-label-row">
+        <span>NEXT UP &middot; MATCHDAY ${featDay}</span>
+        <span class="feat-pending-tag">NOT PLAYED</span>
+      </div>
+      <div class="feat-teams">
+        <div class="feat-team"><div class="feat-badge">${hBadge}</div><div class="feat-tname">${esc(featUpcoming.home)}</div></div>
+        <div class="feat-score-mid"><div class="feat-vs">VS</div></div>
+        <div class="feat-team"><div class="feat-badge">${aBadge}</div><div class="feat-tname">${esc(featUpcoming.away)}</div></div>
+      </div>
+      <div class="feat-tap-hint">Tap for line-ups &amp; timeline &rarr;</div>
+    </div>`;
+  }
+
+  // ── My Stats (position, points, form) ──
+  let myStatsHTML='';
+  if(myTeam){
+    const myRow=tableRows.find(r=>r.team===myTeam);
+    const pos=myRow?myRow.pos:'–';
+    const pts=myRow?myRow.pts:0;
+    const leaderPts=tableRows.length?tableRows[0].pts:0;
+    const behind=leaderPts-pts;
+    const ptsSubText=pos===1
+      ?`<div class="pts-leader">&#127942; League leader</div>`
+      :`<div class="pts-behind">${behind} pt${behind!==1?'s':''} behind leader</div>`;
+
+    const myResults=[];
+    for(const md of allMDs){
+      md.matches.forEach(m=>{
+        if(!m.played) return;
+        if(m.home===myTeam) myResults.push(m.hs>m.as?'W':m.hs===m.as?'D':'L');
+        else if(m.away===myTeam) myResults.push(m.as>m.hs?'W':m.as===m.hs?'D':'L');
+      });
+    }
+    const last5=myResults.slice(-5);
+    while(last5.length<5) last5.unshift(null);
+    const dotMap={W:'fd-w',D:'fd-d',L:'fd-l',null:'fd-none'};
+    const dotLabel={W:'W',D:'D',L:'L',null:'–'};
+    const dotsHTML=last5.map(r=>`<div class="fd ${dotMap[r]}">${dotLabel[r]}</div>`).join('');
+
+    myStatsHTML=`<div class="my-stats-row">
+      <div class="my-stat-card">
+        <div class="msc-label">Your Position</div>
+        <div class="msc-val">${pos}<span class="msc-pos-denom"> / ${n}</span></div>
+        <div class="form-dots">${dotsHTML}</div>
+      </div>
+      <div class="my-stat-card">
+        <div class="msc-label">Points</div>
+        <div class="msc-val">${pts}<span class="msc-pos-denom"> pts</span></div>
+        ${ptsSubText}
+      </div>
+    </div>`;
+  }
+
+  // ── Golden Boot Leader (placeholder until admin adds scorer data) ──
+  const topScorer = pub.topScorer || null;
+  let goldenBootHTML='';
+  if(topScorer && topScorer.name){
+    const tLogo=logos[topScorer.team]||'';
+    const badge=tLogo?`<img src="${tLogo}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #FFD700">`:`<div style="width:36px;height:36px;border-radius:50%;background:#21262d;border:2px solid #FFD700;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#FFD700">${(topScorer.team||'?')[0].toUpperCase()}</div>`;
+    goldenBootHTML=`<div style="background:#1a1f27;border:1px solid #21262d;border-radius:12px;margin:10px 16px 0;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="switchTab('players')">
+      <div style="font-size:.58rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;min-width:fit-content">Golden Boot</div>
+      ${badge}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.92rem;font-weight:800;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(topScorer.name)}</div>
+        <div style="font-size:.7rem;color:#8b949e;margin-top:2px">${topScorer.goals||0} goals${topScorer.assists?` &middot; ${topScorer.assists} assists`:''}</div>
+      </div>
+      <div style="font-size:.72rem;font-weight:700;color:#00c853;white-space:nowrap">Stats &rarr;</div>
+    </div>`;
+  }
+
+  // ── Today's Fixtures — limit to 3 on home, player's match always first ──
+  const md=pub.matchday;
+  let todayHTML='';
+  if(md && md.matches && md.matches.length){
+    let matches=[...md.matches];
+    // Bubble player's own match to top
+    if(myTeam){
+      const myIdx=matches.findIndex(m=>m.home===myTeam||m.away===myTeam);
+      if(myIdx>0){ const [mine]=matches.splice(myIdx,1); matches.unshift(mine); }
+    }
+    const preview=matches.slice(0,3);
+    const remaining=matches.length-3;
+    const items=preview.map(m=>buildFixCard(m,logos,myTeam)).join('');
+    const moreBtn=remaining>0
+      ?`<button type="button" class="today-all-btn" style="width:100%;text-align:center;padding:10px;background:#1a1f27;border:1px solid #21262d;border-radius:10px;margin-top:6px;font-size:.78rem;font-weight:700;color:#00c853;cursor:pointer" onclick="switchTab('fixtures')">+${remaining} more fixture${remaining!==1?'s':''} &rarr;</button>`
+      :'';
+    todayHTML=`<div class="today-section">
+      <div class="today-hdr">
+        <span class="today-title">TODAY &middot; MATCHDAY ${md.day}</span>
+        <button type="button" class="today-all-btn" onclick="switchTab('fixtures')">All fixtures &rarr;</button>
+      </div>
+      <div class="today-fix-list">${items}</div>
+      ${moreBtn}
+    </div>`;
+  }
+
+  wrap.innerHTML = featHTML + myStatsHTML + goldenBootHTML + todayHTML;
+}
+
+// ═══════════════════════════════════════════
+//  FIXTURES TAB
+// ═══════════════════════════════════════════
+
+function renderFixturesTab(){
+  const comp = currentComp;
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  const wrap = document.getElementById('fix-tab-content');
+  const mdLabel = document.getElementById('fix-tab-md');
+  if(!wrap) return;
+  if(!pub){ wrap.innerHTML='<div style="text-align:center;padding:40px 20px;color:#8b949e">No data yet.</div>'; return; }
+
+  const md = pub.matchday;
+  const logos = pub.logos||{};
+  const myTeam = localStorage.getItem('dls_selected_team_'+comp)||'';
+  if(mdLabel) mdLabel.textContent = 'Matchday '+(pub.currentMatchday||1);
+
+  if(!md || !md.matches || !md.matches.length){
+    wrap.innerHTML='<div style="text-align:center;padding:40px 20px;color:#8b949e">No fixtures yet.</div>';
+    return;
+  }
+
+  let matches=[...md.matches];
+  // Player's own match first
+  if(myTeam){
+    const myIdx=matches.findIndex(m=>m.home===myTeam||m.away===myTeam);
+    if(myIdx>0){ const [mine]=matches.splice(myIdx,1); matches.unshift(mine); }
+  }
+  const items=matches.map(m=>buildFixCard(m,logos,myTeam)).join('');
+  wrap.innerHTML=`<div class="today-fix-list" style="padding:0 16px">${items}</div>`;
+}
+
+// ═══════════════════════════════════════════
+//  TABLE TAB
+// ═══════════════════════════════════════════
+
+function renderTableTab(){
+  const comp = currentComp;
+  const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  const wrap = document.getElementById('table-tab-content');
+  if(!wrap) return;
+  if(!pub){ wrap.innerHTML='<div style="text-align:center;padding:40px 20px;color:#8b949e">No data yet.</div>'; return; }
+
+  const myTeam = localStorage.getItem('dls_selected_team_'+comp)||'';
+  const logos  = pub.logos||{};
+  const table  = pub.table||[];
+  const n = table.length;
+  const CL_SPOTS  = n>=9?8:Math.max(1,n-3);
+  const REL_SPOTS = n>=4?3:0;
+  const compLabel = comp==='league1'?'AFRICA DLS GLOBAL LEAGUE':comp==='league2'?'DLS LEAGUE 2':'DLS LEAGUE 3';
+
+  let rows='';
+  table.forEach((r,i)=>{
+    const isFirst = i===0;
+    const isTop   = i>0 && i<CL_SPOTS;
+    const isRel   = REL_SPOTS>0 && i>=n-REL_SPOTS;
+    const isMe    = r.team===myTeam;
+    let zoneClass = isFirst?'stn-zone-1st':isTop?'stn-zone-top':isRel?'stn-zone-rel':'';
+    let rowClass  = zoneClass + (isMe?' stn-me':'');
+
+    const logo = logos[r.team];
+    const abbr = teamAbbr(r.team);
+    const color = teamColor(r.team);
+    const badgeInner = logo ? `<img src="${logo}" alt="">` : abbr;
+    const badgeStyle = logo ? '' : `style="background:${color}"`;
+    const gd = r.gd>0?'+'+r.gd:r.gd;
+    const gdClass = r.gd>0?'stn-gd-p':r.gd<0?'stn-gd-n':'';
+
+    rows+=`<tr class="${rowClass}" onclick="openTeamOverview('${esc(r.team)}')">
+      <td class="stn-pos">${r.pos}</td>
+      <td>
+        <div class="stn-club-cell">
+          <div class="stn-badge" ${badgeStyle}>${badgeInner}</div>
+          <span class="stn-club-name">${abbr}${isMe?' <span style="color:#00c853;font-size:.55rem">●</span>':''}</span>
+        </div>
+      </td>
+      <td>${r.p}</td>
+      <td>${r.w}</td><td>${r.d}</td><td>${r.l}</td>
+      <td class="${gdClass}">${gd}</td>
+      <td class="stn-pts">${r.pts}</td>
+    </tr>`;
+  });
+
+  wrap.innerHTML = `
+    <div class="standings-header">
+      <div class="standings-league">${compLabel}</div>
+      <div class="standings-title">Standings</div>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="stn-table" style="width:100%;min-width:280px">
+      <thead><tr>
+        <th style="width:28px">#</th>
+        <th class="club-th">Club</th>
+        <th>P</th><th>W</th><th>D</th><th>L</th>
+        <th>GD</th><th>PTS</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>
+    <div class="stn-legend">
+      ${CL_SPOTS>0?`<div class="stn-leg-item"><div class="stn-leg-dot" style="background:#00c853"></div>Title / Champions route</div>`:''}
+      ${REL_SPOTS>0?`<div class="stn-leg-item"><div class="stn-leg-dot" style="background:#dc3545"></div>Relegation</div>`:''}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  PLAYERS TAB
+// ═══════════════════════════════════════════
+
+let _playersMode = 'goals';
+
+function renderPlayersTab(mode){
+  if(mode) _playersMode = mode;
+  mode = _playersMode;
+
+  const comp   = currentComp;
+  const pub    = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  const wrap   = document.getElementById('tab-players');
+  if(!wrap) return;
+
+  const logos  = pub?.logos||{};
+  const table  = pub?.table||[];
+  const players= pub?.players||[];
+  const compLabel = comp==='league1'?'AFRICA DLS GLOBAL LEAGUE':comp==='league2'?'DLS LEAGUE 2':'DLS LEAGUE 3';
+
+  // Rating = pts-per-game normalised to 10
+  function teamRating(teamName){
+    const r=table.find(t=>t.team===teamName);
+    if(!r||!r.p) return 0;
+    return Math.round((r.pts/(r.p*3))*100)/10;
+  }
+
+  // Tab bar (always shown)
+  function tabBar(){
+    return `<div class="pl-tabs">
+      <button class="pl-tab ${mode==='goals'?'active':''}" onclick="renderPlayersTab('goals')">Goals</button>
+      <button class="pl-tab ${mode==='assists'?'active':''}" onclick="renderPlayersTab('assists')">Assists</button>
+      <button class="pl-tab ${mode==='rating'?'active':''}" onclick="renderPlayersTab('rating')">Rating</button>
+    </div>`;
+  }
+
+  const header = `<div class="pl-header">
+    <div class="pl-league-lbl">${compLabel}</div>
+    <div class="pl-title">Players</div>
+  </div>`;
+
+  if(!players.length){
+    wrap.innerHTML = header + tabBar() + `<div class="pl-empty">
+      <div style="font-size:2.5rem;margin-bottom:12px">&#128100;</div>
+      <div style="font-size:.9rem;font-weight:700;color:#e6edf3;margin-bottom:6px">Stats Coming Soon</div>
+      <div style="font-size:.78rem">Player goals, assists &amp; ratings<br>appear here once the admin<br>starts entering scorer data.</div>
+    </div>`;
+    return;
+  }
+
+  // Sort
+  function getVal(p){ return mode==='goals'?(p.goals||0):mode==='assists'?(p.assists||0):(p.rating??teamRating(p.team)); }
+  const sorted = [...players].map(p=>({...p, _val:getVal(p)})).sort((a,b)=>b._val-a._val);
+  const maxVal = sorted[0]?._val||1;
+  const fmtVal = v => mode==='rating' ? v.toFixed(1) : v;
+
+  // Inline badge helper
+  function inlineBadge(teamName, size=32){
+    const logo=logos[teamName], color=teamColor(teamName), abbr=teamAbbr(teamName);
+    const fs=Math.floor(size*0.3);
+    return logo
+      ? `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.2);flex-shrink:0"><img src="${logo}" style="width:100%;height:100%;object-fit:cover"></div>`
+      : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:${fs}px;font-weight:900;color:#fff;flex-shrink:0">${abbr}</div>`;
+  }
+
+  // Podium slot builder
+  function podSlot(p, rank){
+    if(!p) return `<div class="pod-slot"></div>`;
+    const val=fmtVal(p._val);
+    const lastName=(p.name||'').split(' ').pop();
+    const h = rank===1?92:rank===2?70:60;
+    const bg = rank===1?'linear-gradient(180deg,#f5c518,#c8960c)'
+              :rank===2?'linear-gradient(180deg,#9e9e9e,#616161)'
+              :         'linear-gradient(180deg,#cd7f32,#8b4513)';
+    const badgeSize = rank===1?44:34;
+    return `<div class="pod-slot ${rank===1?'pod-1st':''}">
+      ${inlineBadge(p.team, badgeSize)}
+      <div class="pod-name">${esc(lastName)}</div>
+      <div class="pod-box" style="background:${bg};height:${h}px">
+        <div class="pod-val">${val}</div>
+        <div class="pod-rank">${rank}</div>
+      </div>
+    </div>`;
+  }
+
+  const top3 = sorted.slice(0,3);
+  const podHTML = `<div class="players-podium">
+    ${podSlot(top3[1],2)}
+    ${podSlot(top3[0],1)}
+    ${podSlot(top3[2],3)}
+  </div>`;
+
+  // Full leaderboard
+  const boardHTML = sorted.map((p,i)=>{
+    const val=fmtVal(p._val);
+    const barPct=Math.round((p._val/maxVal)*100);
+    return `<div class="pl-row">
+      <div class="pl-rank-num">${i+1}</div>
+      ${inlineBadge(p.team,30)}
+      <div class="pl-player-info">
+        <div class="pl-player-name">${esc(p.name||'')}</div>
+        <div class="pl-player-sub">${esc(p.position||'')}${p.position?' · ':''}${teamAbbr(p.team)}</div>
+      </div>
+      <div class="pl-bar-wrap"><div class="pl-bar" style="width:${barPct}%"></div></div>
+      <div class="pl-stat-val">${val}</div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = header + tabBar() + podHTML
+    + `<div class="pl-leaderboard-hdr">FULL LEADERBOARD</div>`
+    + `<div class="pl-leaderboard">${boardHTML}</div>`;
+}
+
+// ═══════════════════════════════════════════
+//  TEAM OVERVIEW SCREEN
+// ═══════════════════════════════════════════
+
+function openTeamOverview(teamName){
+  const comp = currentComp;
+  const pub  = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
+  if(!pub) return;
+
+  const myTeam  = localStorage.getItem('dls_selected_team_'+comp)||'';
+  const isMe    = teamName===myTeam;
+  const logos   = pub.logos||{};
+  const phones  = pub.phones||{};
+  const allMDs  = pub.allMatchdays||[];
+  const table   = pub.table||[];
+  const row     = table.find(r=>r.team===teamName)||{};
+  const compLabel = comp==='league1'?'AFRICA DLS GLOBAL LEAGUE':comp==='league2'?'DLS LEAGUE 2':'DLS LEAGUE 3';
+
+  // Topbar label
+  document.getElementById('tov-topbar-lbl').textContent = compLabel;
+
+  const logo  = logos[teamName];
+  const color = teamColor(teamName);
+  const abbr  = teamAbbr(teamName);
+  const heroBadge = logo
+    ? `<div class="tov-hero-badge"><img src="${logo}" alt=""></div>`
+    : `<div class="tov-hero-badge" style="background:${color}">${abbr}</div>`;
+
+  // Stats
+  const pos  = row.pos||'–';
+  const pts  = row.pts??'–';
+  const wdl  = `${row.w??0}-${row.d??0}-${row.l??0}`;
+  const gd   = row.gd!=null?(row.gd>0?'+'+row.gd:row.gd):'–';
+
+  // Collect all season results for this team
+  const results=[];
+  for(const md of allMDs){
+    for(const m of md.matches){
+      if(!m.played) continue;
+      if(m.home===teamName) results.push({r:m.hs>m.as?'W':m.hs===m.as?'D':'L',opp:m.away,gs:m.hs,ga:m.as,ha:'H',home:m.home,away:m.away,day:md.day});
+      else if(m.away===teamName) results.push({r:m.as>m.hs?'W':m.as===m.hs?'D':'L',opp:m.home,gs:m.as,ga:m.hs,ha:'A',home:m.home,away:m.away,day:md.day});
+    }
+  }
+  const last5 = results.slice(-5);
+
+  // Find current matchday fixture for this team (for Live Now)
+  const curMD = pub.matchday;
+  let liveFixture = null;
+  if(curMD){
+    liveFixture = curMD.matches.find(m=>m.home===teamName||m.away===teamName)||null;
+  }
+
+  // Form dots (last 5)
+  const formSlots = [...last5]; while(formSlots.length<5) formSlots.unshift(null);
+  const fdMap={W:'tov-fd-w',D:'tov-fd-d',L:'tov-fd-l',null:'tov-fd-none'};
+  const dotsHTML = formSlots.map(r=>`<div class="tov-fd ${fdMap[r?.r??null]}">${r?r.r:'–'}</div>`).join('');
+
+  // Live Now section
+  let liveHTML='';
+  if(liveFixture){
+    const opp = liveFixture.home===teamName ? liveFixture.away : liveFixture.home;
+    const oppLogo = logos[opp];
+    const oppBadge = oppLogo
+      ? `<div class="tov-live-opp-badge"><img src="${oppLogo}" alt=""></div>`
+      : `<div class="tov-live-opp-badge" style="background:${teamColor(opp)}">${teamAbbr(opp).slice(0,2)}</div>`;
+    const statusTxt = liveFixture.played ? 'RESULT' : 'LIVE NOW';
+    liveHTML=`<div class="tov-live-badge" onclick="openMatchDetail('${esc(liveFixture.home)}','${esc(liveFixture.away)}')">
+      <div class="tov-live-dot"></div>
+      <div class="tov-live-txt">${statusTxt}</div>
+      <div class="tov-live-opp">
+        <span style="font-size:.65rem;color:#8b949e;margin-right:2px">vs</span>
+        ${oppBadge}
+        <span class="tov-live-opp-name">${esc(opp)}</span>
+      </div>
+    </div>`;
+  }
+
+  // All season matches
+  let matchListHTML='';
+  if(results.length){
+    matchListHTML = results.slice().reverse().map(res=>{
+      const oppLogo = logos[res.opp];
+      const oppColor = teamColor(res.opp);
+      const oppBadge = oppLogo
+        ? `<div class="tov-opp-badge"><img src="${oppLogo}" alt=""></div>`
+        : `<div class="tov-opp-badge" style="background:${oppColor}">${teamAbbr(res.opp).slice(0,2)}</div>`;
+      const resCls = res.r==='W'?'tov-res-w':res.r==='D'?'tov-res-d':'tov-res-l';
+      return `<div class="tov-result-row" onclick="openMatchDetail('${esc(res.home)}','${esc(res.away)}')">
+        <div class="tov-res-badge ${resCls}">${res.r}</div>
+        <div class="tov-ha">${res.ha}</div>
+        <div class="tov-opp-cell">${oppBadge}<span class="tov-opp-name">${esc(res.opp)}</span></div>
+        <div class="tov-score">${res.gs}–${res.ga}</div>
+      </div>`;
+    }).join('');
+  } else {
+    matchListHTML='<div style="text-align:center;padding:24px;color:#8b949e;font-size:.82rem">No matches played yet.</div>';
+  }
+
+  // WhatsApp contact button (if phone set and not own team)
+  const phone = phones[teamName];
+  const waBtn = (phone && !isMe)
+    ? `<a href="https://wa.me/${phone.replace(/[^\d]/g,'')}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;background:#161b22;border:1px solid rgba(37,211,102,.3);border-radius:10px;padding:12px 14px;margin:0 16px 14px;text-decoration:none">
+        <span style="font-size:1.2rem">&#128172;</span>
+        <div><div style="font-size:.82rem;font-weight:700;color:#25d366">Contact on WhatsApp</div>
+        <div style="font-size:.68rem;color:#8b949e;margin-top:2px">Tap to arrange your match</div></div>
+       </a>`
+    : '';
+
+  document.getElementById('tov-body').innerHTML = `
+    <div class="tov-hero">
+      ${heroBadge}
+      <div class="tov-hero-info">
+        <div class="tov-hero-name">${esc(teamName)}</div>
+        <div class="tov-hero-sub">${isMe?'&#9679; Your team &nbsp;&middot;&nbsp; Manager You':'Season '+(pub.currentSeason||2026)}</div>
+      </div>
+    </div>
+
+    <div class="tov-stats-row">
+      <div class="tov-stat"><div class="tov-stat-val">${pos}</div><div class="tov-stat-lbl">POS</div></div>
+      <div class="tov-stat"><div class="tov-stat-val">${pts}</div><div class="tov-stat-lbl">PTS</div></div>
+      <div class="tov-stat"><div class="tov-stat-val" style="font-size:.85rem">${wdl}</div><div class="tov-stat-lbl">W-D-L</div></div>
+      <div class="tov-stat"><div class="tov-stat-val" style="${row.gd>0?'color:#4ade80':row.gd<0?'color:#f87171':''}">${gd}</div><div class="tov-stat-lbl">GD</div></div>
+    </div>
+
+    <div class="tov-section">
+      <div class="tov-sec-title">Recent Form</div>
+      <div class="tov-form-row">
+        <div class="tov-form-dots">${dotsHTML}</div>
+        ${liveHTML}
+      </div>
+    </div>
+
+    ${waBtn}
+
+    <div class="tov-section">
+      <div class="tov-sec-title">Season Matches</div>
+      <div class="tov-result-list">${matchListHTML}</div>
+    </div>`;
+
+  document.getElementById('tov-screen').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function closeTOV(){
+  document.getElementById('tov-screen').classList.add('hidden');
+}
+
+// Auto-refresh every 30 seconds when the app shell is visible
 setInterval(()=>{
-  const codeHidden = document.getElementById('code-gate').classList.contains('hidden');
-  const homeHidden = document.getElementById('home-screen').classList.contains('hidden');
-  const liveHidden = document.getElementById('live-screen').classList.contains('hidden');
-  const hlHidden   = document.getElementById('highlights-screen').classList.contains('hidden');
-  if(codeHidden && homeHidden && liveHidden && hlHidden) refresh();
+  const shellVisible = !document.getElementById('app-shell').classList.contains('hidden');
+  if(shellVisible) refresh();
 }, 30000);
 
 // Initial load
 (async()=>{
-  initHsBalls();
   await loadData();
   updateTimestamp();
-  updateNotifBanner();
   updateTicker();
   const saved = localStorage.getItem('dls_viewer_access');
   if(saved && COMP_CFG[saved]){
     selectComp(saved);
     hideCodeGate();
-    showHomeScreen();
+    const savedTeam = localStorage.getItem('dls_selected_team_'+saved);
+    if(savedTeam){
+      showAppShell();
+    } else {
+      showTeamSelectScreen(saved);
+    }
   } else {
     showCodeGate();
   }

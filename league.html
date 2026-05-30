@@ -233,6 +233,44 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .season-end-zone{background:#1a1f26;border:1px dashed #30363d;border-radius:12px;padding:18px 20px;margin-bottom:16px}
 .season-end-zone h3{font-size:1rem;color:#e6edf3;margin-bottom:4px}
 .season-end-zone p{font-size:.83rem;color:#8b949e;margin-bottom:14px}
+
+/* ── Events Modal ── */
+.ev-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.ev-modal-overlay.hidden{display:none}
+.ev-modal{background:#161b22;border:1px solid #30363d;border-radius:14px;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.ev-modal-hdr{background:#0f1923;border-bottom:1px solid #21262d;padding:14px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ev-modal-score{font-size:.72rem;font-weight:800;color:#ffc107;letter-spacing:1px;margin-right:4px}
+.ev-modal-title{flex:1;font-size:.95rem;font-weight:800;color:#e6edf3}
+.ev-modal-close{background:rgba(255,255,255,.06);border:1px solid #30363d;border-radius:7px;color:#8b949e;font-size:1rem;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.ev-modal-body{flex:1;overflow-y:auto;padding:16px 18px}
+.ev-modal-footer{background:#0f1923;border-top:1px solid #21262d;padding:10px 18px;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.ev-section{margin-bottom:22px}
+.ev-sec-title{font-size:.62rem;font-weight:800;color:#8b949e;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #21262d;display:flex;align-items:center;gap:8px}
+.ev-team-hdr{font-size:.78rem;font-weight:700;color:#e6edf3;margin-bottom:6px;margin-top:12px;display:flex;align-items:center;gap:8px}
+.ev-team-hdr:first-child{margin-top:0}
+.ev-goal-cnt{background:#21262d;border-radius:10px;padding:2px 8px;font-size:.6rem;color:#8b949e;font-weight:600}
+.ev-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.ev-inp{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:7px 9px;color:#e6edf3;font-size:.82rem;outline:none;transition:border-color .2s;font-family:inherit;box-sizing:border-box}
+.ev-inp:focus{border-color:#00c853}
+.ev-inp.ev-wide{flex:1;min-width:110px}
+.ev-inp.ev-min{width:56px}
+.ev-sel{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:7px 7px;color:#e6edf3;font-size:.78rem;outline:none;cursor:pointer;max-width:100px}
+.ev-rm{background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.2);border-radius:6px;color:#f87171;font-size:.78rem;cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ev-add-btn{background:rgba(0,200,83,.06);border:1px dashed rgba(0,200,83,.25);border-radius:7px;color:#00c853;font-size:.75rem;font-weight:700;cursor:pointer;padding:7px 14px;width:100%;margin-top:2px;text-align:left;transition:all .2s}
+.ev-add-btn:hover{background:rgba(0,200,83,.12)}
+.fm-team-block{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;margin-bottom:10px}
+.fm-team-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.fm-lbl{font-size:.82rem;font-weight:700;color:#e6edf3;flex:1}
+.fm-grid{display:flex;flex-direction:column;gap:5px}
+.fm-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.fm-pos-lbl{font-size:.6rem;font-weight:700;color:#4a5568;text-transform:uppercase;width:32px;text-align:right;flex-shrink:0}
+.fm-inp{background:#161b22;border:1px solid #30363d;border-radius:5px;padding:5px 8px;color:#e6edf3;font-size:.78rem;outline:none;width:96px;flex-shrink:0;transition:border-color .2s;font-family:inherit}
+.fm-inp:focus{border-color:#00c853}
+.ev-save-btn{background:linear-gradient(135deg,#00c853,#00a844);border:none;border-radius:8px;padding:9px 22px;color:#fff;font-size:.88rem;font-weight:800;cursor:pointer;letter-spacing:.5px}
+.ev-cancel-btn{background:rgba(255,255,255,.05);border:1px solid #30363d;border-radius:8px;padding:9px 14px;color:#8b949e;font-size:.85rem;cursor:pointer}
+.mc-events-btn{padding:4px 8px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:5px;color:#ffc107;font-size:.7rem;cursor:pointer;transition:all .2s;flex-shrink:0;font-weight:700}
+.mc-events-btn:hover{background:rgba(255,193,7,.18)}
+.ev-has-dot{display:inline-flex;align-items:center;justify-content:center;background:#ffc107;color:#0d1117;border-radius:50%;width:13px;height:13px;font-size:.52rem;font-weight:800;margin-left:3px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -701,6 +739,7 @@ function renderFixtures(){
         <div class="mc-team away" ${aStyle}>${esc(m.away)}</div>
         ${cardBadge}<span class="mc-ok">&#10003;</span>
         <button class="mc-edit-btn" onclick="editScore(${LS.currentDay},${idx})">&#9998;</button>
+        <button class="mc-events-btn" onclick="openEventsModal(${LS.currentDay},${idx})">&#9883; Events${m.events&&m.events.length?`<span class="ev-has-dot">${m.events.length}</span>`:''}</button>
       </div>`;
     } else {
       const ph = isEditing && m.hs !== null ? m.hs : '';
@@ -843,6 +882,27 @@ async function publishLeague(){
   const totalMatches = LS.matchdays.reduce((s,md)=>s+md.matches.length,0);
   const totalGoals   = LS.matchdays.reduce((s,md)=>s+md.matches.reduce((s2,m)=>s2+(m.played?m.hs+m.as:0),0),0);
 
+  // ── Auto-compute players array from all goal events ──
+  const _playerMap = {};
+  LS.matchdays.forEach(md=>{
+    md.matches.forEach(m=>{
+      if(!m.events) return;
+      m.events.forEach(ev=>{
+        if(ev.type!=='goal' || !ev.player) return;
+        const teamName = ev.team==='h' ? m.home : m.away;
+        const key = ev.player+'::'+teamName;
+        if(!_playerMap[key]) _playerMap[key]={name:ev.player,team:teamName,goals:0,assists:0};
+        _playerMap[key].goals++;
+        if(ev.assist){
+          const aKey = ev.assist+'::'+teamName;
+          if(!_playerMap[aKey]) _playerMap[aKey]={name:ev.assist,team:teamName,goals:0,assists:0};
+          _playerMap[aKey].assists++;
+        }
+      });
+    });
+  });
+  const players = Object.values(_playerMap).sort((a,b)=>b.goals-a.goals);
+
   const pub = {
     publishedAt: Date.now(),
     totalTeams: LS.teams.length,
@@ -851,6 +911,7 @@ async function publishLeague(){
     matchday: LS.matchdays[LS.currentDay],
     allMatchdays: LS.matchdays,
     table,
+    players,
     season: { totalPlayed, totalMatches, totalGoals },
     phones: LS.phones,
     logos: LS.logos,
@@ -1394,5 +1455,227 @@ function confirmSeasonEnd(){
     </div>
   </div>
 </div>
+<!-- ═══════ EVENTS MODAL ═══════ -->
+<div class="ev-modal-overlay hidden" id="ev-modal-overlay">
+  <div class="ev-modal">
+    <div class="ev-modal-hdr">
+      <span class="ev-modal-score" id="ev-modal-score"></span>
+      <div class="ev-modal-title" id="ev-modal-title">Match Events</div>
+      <button class="ev-modal-close" onclick="closeEventsModal()">&#10005;</button>
+    </div>
+    <div class="ev-modal-body" id="ev-modal-body"></div>
+    <div class="ev-modal-footer">
+      <button class="ev-cancel-btn" onclick="closeEventsModal()">Cancel</button>
+      <button class="ev-save-btn" onclick="saveEventsModal()">&#10003; Save Events</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  EVENTS MODAL
+// ═══════════════════════════════════════════
+
+let _evDay = null, _evIdx = null;
+
+const FORMATIONS = ['4-3-3','4-4-2','4-2-3-1','3-5-2','4-5-1','5-3-2','3-4-3','4-1-4-1','5-4-1','4-3-2-1'];
+
+function openEventsModal(dayIdx, matchIdx){
+  _evDay = dayIdx; _evIdx = matchIdx;
+  const m = LS.matchdays[dayIdx].matches[matchIdx];
+  const evCount = (m.events||[]).length;
+  document.getElementById('ev-modal-score').textContent = `MD${dayIdx+1} ·`;
+  document.getElementById('ev-modal-title').textContent = `${m.home}  ${m.hs} – ${m.as}  ${m.away}`;
+  document.getElementById('ev-modal-body').innerHTML = buildEvModalBody(m);
+  document.getElementById('ev-modal-overlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEventsModal(){
+  document.getElementById('ev-modal-overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+  _evDay = null; _evIdx = null;
+}
+
+function buildEvModalBody(m){
+  const evts = m.events || [];
+  const hGoals = evts.filter(e=>e.type==='goal'&&e.team==='h');
+  const aGoals = evts.filter(e=>e.type==='goal'&&e.team==='a');
+  const cardEvts = evts.filter(e=>e.type==='yellowcard'||e.type==='redcard');
+  const lu = m.lineup || {};
+
+  // Pre-fill goal rows up to the score count
+  const hCount = Math.max(hGoals.length, m.hs||0);
+  const aCount = Math.max(aGoals.length, m.as||0);
+  let hRows='', aRows='';
+  for(let i=0;i<hCount;i++) hRows+=goalRowHTML('h', hGoals[i]||{});
+  for(let i=0;i<aCount;i++) aRows+=goalRowHTML('a', aGoals[i]||{});
+
+  // Card event rows — seed from existing events OR from m.cards if no events yet
+  let cRows='';
+  if(cardEvts.length){
+    cRows = cardEvts.map(e=>cardEvtRowHTML(e,m)).join('');
+  } else if(m.cards&&m.cards.length){
+    cRows = m.cards.map(c=>cardEvtRowHTML({type:c.type==='yellow'?'yellowcard':'redcard',team:c.team===m.home?'h':'a',player:'',min:''},m)).join('');
+  }
+
+  // Formation options
+  const fmOpts = `<option value="">Formation...</option>${FORMATIONS.map(f=>`<option value="${f}">${f}</option>`).join('')}`;
+
+  return `
+  <div class="ev-section">
+    <div class="ev-sec-title">&#9917; Goals</div>
+    <div class="ev-team-hdr"><span>${esc(m.home)}</span><span class="ev-goal-cnt">${m.hs||0} goal${(m.hs||0)!==1?'s':''}</span></div>
+    <div id="ev-goals-h">${hRows}</div>
+    <button class="ev-add-btn" onclick="addGoalRow('h')">&#43; Add ${esc(m.home)} goal</button>
+    <div class="ev-team-hdr"><span>${esc(m.away)}</span><span class="ev-goal-cnt">${m.as||0} goal${(m.as||0)!==1?'s':''}</span></div>
+    <div id="ev-goals-a">${aRows}</div>
+    <button class="ev-add-btn" onclick="addGoalRow('a')">&#43; Add ${esc(m.away)} goal</button>
+  </div>
+
+  <div class="ev-section">
+    <div class="ev-sec-title">&#127936; Card Events <span style="font-size:.6rem;color:#4a5568;text-transform:none;letter-spacing:0;font-weight:400">&nbsp;(for timeline display)</span></div>
+    <div id="ev-cards-list">${cRows}</div>
+    <button class="ev-add-btn" onclick="addCardEvtRow()">&#43; Add card event</button>
+  </div>
+
+  <div class="ev-section">
+    <div class="ev-sec-title">&#128101; Formations &amp; Line-ups</div>
+    <div class="fm-team-block">
+      <div class="fm-team-row">
+        <span class="fm-lbl">${esc(m.home)}</span>
+        <select class="ev-sel" id="fm-h-sel" onchange="updateFmGrid('h')" style="max-width:130px">
+          ${FORMATIONS.map(f=>`<option value="${f}" ${lu.h&&lu.h.formation===f?'selected':''}>${f}</option>`).join('')}
+          ${!lu.h?'<option value="" selected>Formation...</option>':''}
+        </select>
+      </div>
+      <div class="fm-grid" id="fm-h-grid">${lu.h&&lu.h.formation?buildFmInputs('h',lu.h.formation,lu.h.players||[]):''}</div>
+    </div>
+    <div class="fm-team-block">
+      <div class="fm-team-row">
+        <span class="fm-lbl">${esc(m.away)}</span>
+        <select class="ev-sel" id="fm-a-sel" onchange="updateFmGrid('a')" style="max-width:130px">
+          ${FORMATIONS.map(f=>`<option value="${f}" ${lu.a&&lu.a.formation===f?'selected':''}>${f}</option>`).join('')}
+          ${!lu.a?'<option value="" selected>Formation...</option>':''}
+        </select>
+      </div>
+      <div class="fm-grid" id="fm-a-grid">${lu.a&&lu.a.formation?buildFmInputs('a',lu.a.formation,lu.a.players||[]):''}</div>
+    </div>
+  </div>`;
+}
+
+function goalRowHTML(side, ev){
+  const noteOpts = ['','penalty','own goal','free kick'].map(n=>`<option value="${n}" ${ev.note===n?'selected':''}>${n||'—'}</option>`).join('');
+  return `<div class="ev-row" data-team="${side}" data-type="goal">
+    <input class="ev-inp ev-wide" placeholder="Scorer name" value="${esc(ev.player||'')}">
+    <input class="ev-inp ev-min" type="number" min="1" max="120" placeholder="Min" value="${ev.min||''}">
+    <input class="ev-inp ev-wide" placeholder="Assist (optional)" value="${esc(ev.assist||'')}">
+    <select class="ev-sel" style="max-width:90px">${noteOpts}</select>
+    <button class="ev-rm" onclick="this.closest('[data-type]').remove()">&#10005;</button>
+  </div>`;
+}
+
+function addGoalRow(side){
+  const d=document.createElement('div');
+  d.innerHTML=goalRowHTML(side,{});
+  document.getElementById('ev-goals-'+side).appendChild(d.firstElementChild);
+}
+
+function cardEvtRowHTML(ev, m){
+  const typeOpts = ['yellowcard','redcard'].map(t=>`<option value="${t}" ${ev.type===t?'selected':''}>${t==='yellowcard'?'🟨 Yellow':'🟥 Red'}</option>`).join('');
+  const teamOpts = `<option value="h" ${ev.team==='h'?'selected':''}>${esc(m.home)}</option><option value="a" ${ev.team==='a'?'selected':''}>${esc(m.away)}</option>`;
+  return `<div class="ev-row" data-type="card">
+    <select class="ev-sel" style="max-width:110px">${typeOpts}</select>
+    <select class="ev-sel" style="max-width:130px">${teamOpts}</select>
+    <input class="ev-inp ev-wide" placeholder="Player name" value="${esc(ev.player||'')}">
+    <input class="ev-inp ev-min" type="number" min="1" max="120" placeholder="Min" value="${ev.min||''}">
+    <button class="ev-rm" onclick="this.closest('[data-type]').remove()">&#10005;</button>
+  </div>`;
+}
+
+function addCardEvtRow(){
+  if(_evDay===null) return;
+  const m=LS.matchdays[_evDay].matches[_evIdx];
+  const d=document.createElement('div');
+  d.innerHTML=cardEvtRowHTML({type:'yellowcard',team:'h',player:'',min:''},m);
+  document.getElementById('ev-cards-list').appendChild(d.firstElementChild);
+}
+
+function buildFmInputs(side, formation, players){
+  const parts=formation.split('-').map(Number).filter(n=>!isNaN(n)&&n>0);
+  const rowDefs=[[1,'GK'],...parts.map((n,i)=>{
+    const lbls=['DEF','MID','ATK','FWD','ATK'];
+    return [n,lbls[Math.min(i,lbls.length-1)]];
+  })];
+  let html='', pi=0;
+  for(const [count,lbl] of rowDefs){
+    html+=`<div class="fm-row"><span class="fm-pos-lbl">${lbl}</span>`;
+    for(let j=0;j<count;j++){
+      html+=`<input class="fm-inp" placeholder="Player ${pi+1}" value="${esc(players[pi]||'')}" data-fm="${side}-${pi}">`;
+      pi++;
+    }
+    html+='</div>';
+  }
+  return html;
+}
+
+function updateFmGrid(side){
+  const sel=document.getElementById('fm-'+side+'-sel');
+  const grid=document.getElementById('fm-'+side+'-grid');
+  if(!sel.value){grid.innerHTML='';return;}
+  const m=LS.matchdays[_evDay].matches[_evIdx];
+  const existing=(m.lineup&&m.lineup[side]&&m.lineup[side].players)||[];
+  grid.innerHTML=buildFmInputs(side,sel.value,existing);
+}
+
+function saveEventsModal(){
+  if(_evDay===null||_evIdx===null) return;
+  const m=LS.matchdays[_evDay].matches[_evIdx];
+  const events=[];
+
+  // Goals
+  document.querySelectorAll('[data-type="goal"]').forEach(row=>{
+    const side=row.dataset.team;
+    const inps=row.querySelectorAll('input');
+    const sels=row.querySelectorAll('select');
+    const player=(inps[0]?.value||'').trim();
+    const min=parseInt(inps[1]?.value)||null;
+    const assist=(inps[2]?.value||'').trim()||null;
+    const note=sels[0]?.value||null;
+    if(player) events.push({type:'goal',team:side,player,min,assist,note:note||null});
+  });
+
+  // Cards
+  document.querySelectorAll('[data-type="card"]').forEach(row=>{
+    const sels=row.querySelectorAll('select');
+    const inps=row.querySelectorAll('input');
+    const type=sels[0]?.value||'yellowcard';
+    const team=sels[1]?.value||'h';
+    const player=(inps[0]?.value||'').trim()||null;
+    const min=parseInt(inps[1]?.value)||null;
+    events.push({type,team,player,min});
+  });
+
+  // Sort by minute
+  events.sort((a,b)=>(a.min||0)-(b.min||0));
+  m.events=events;
+
+  // Formation
+  m.lineup=m.lineup||{};
+  ['h','a'].forEach(side=>{
+    const sel=document.getElementById('fm-'+side+'-sel');
+    if(!sel||!sel.value) return;
+    const playerEls=[...document.querySelectorAll(`[data-fm^="${side}-"]`)];
+    playerEls.sort((a,b)=>parseInt(a.dataset.fm.split('-')[1])-parseInt(b.dataset.fm.split('-')[1]));
+    m.lineup[side]={formation:sel.value,players:playerEls.map(el=>el.value.trim())};
+  });
+
+  saveLS();
+  closeEventsModal();
+  renderFixtures();
+  toast(`Events saved for ${m.home} vs ${m.away}. Publish to send to players.`);
+}
+</script>
+
 </body>
 </html>

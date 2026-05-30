@@ -2774,36 +2774,30 @@ function selectTeamCard(teamName){
   document.getElementById('ts-confirm-bar').classList.add('show');
 }
 
-async function confirmTeamSelection(){
+function confirmTeamSelection(){
   if(!_tsSelectedTeam) return;
   const comp = localStorage.getItem('dls_viewer_access');
   if(!comp) return;
-  const slug = slugTeam(_tsSelectedTeam);
+  const team = _tsSelectedTeam;
+  const slug = slugTeam(team);
   const deviceId = getDeviceId();
-  const btn = document.querySelector('.ts-confirm-btn');
-  if(btn){ btn.textContent='Saving...'; btn.disabled=true; }
 
-  // Write claim to Firebase with a 6-second timeout so it never hangs forever
-  // We proceed regardless — localStorage is the primary source of truth on device
-  try{
-    const writeReq = fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(deviceId)
-    });
-    await Promise.race([writeReq, new Promise(res=>setTimeout(res,6000))]);
-  } catch(e){
-    // Network error — still proceed, localStorage keeps the claim on this device
-  }
+  // 1. Save to localStorage instantly — no waiting for Firebase
+  localStorage.setItem('dls_selected_team_'+comp, team);
 
-  // Save locally and proceed
-  localStorage.setItem('dls_selected_team_'+comp, _tsSelectedTeam);
-  localStorage.setItem('dls_notif_asked_'+comp, '0'); // allow notification prompt once
+  // 2. Fire Firebase write in the background — don't await, never blocks UI
+  fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(deviceId)
+  }).catch(()=>{});
+
+  // 3. Move on immediately
   document.getElementById('ts-screen').classList.add('hidden');
 
-  // Only show notification prompt if not yet asked on this device
-  const notifAsked = localStorage.getItem('dls_notif_done_'+comp);
-  if(!notifAsked){
-    document.getElementById('notif-team-name-display').textContent = _tsSelectedTeam;
+  // Show notification prompt only on first-ever team selection
+  const notifDone = localStorage.getItem('dls_notif_done_'+comp);
+  if(!notifDone){
+    document.getElementById('notif-team-name-display').textContent = team;
     document.getElementById('notif-screen').classList.remove('hidden');
   } else {
     showAppShell();
@@ -2894,21 +2888,21 @@ function changeTeam(){
     message: `You are about to release <strong>${esc(team)}</strong>.<br><br>This frees up the team for another player. You will need to select a new team before you can continue.`,
     confirmText: 'Yes, Change Team',
     confirmClass: 'danger',
-    onConfirm: async ()=>{
+    onConfirm: ()=>{
       const slug = slugTeam(team);
       const deviceId = getDeviceId();
-      try{
-        const r = await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json');
-        const existing = r.ok ? await r.json() : null;
-        if(existing === deviceId){
-          await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{method:'DELETE'});
-        }
-      } catch(e){}
+
+      // Clear localStorage immediately — no waiting for Firebase
       localStorage.removeItem('dls_selected_team_'+comp);
       localStorage.removeItem('dls_notif_'+comp);
       localStorage.removeItem('dls_notif_done_'+comp);
+
+      // Fire Firebase delete in background — don't block UI
+      fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{method:'DELETE'})
+        .catch(()=>{});
+
       hideSettingsScreen();
-      // Pass true to skip claim re-check — Firebase deletion may not have propagated yet
+      // true = skip claim re-check since Firebase delete is background
       showTeamSelectScreen(comp, true);
     }
   });

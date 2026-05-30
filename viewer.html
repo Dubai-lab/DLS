@@ -2672,7 +2672,9 @@ async function refresh(){
 
 let _tsSelectedTeam = null;
 
-async function showTeamSelectScreen(comp){
+// skipClaimCheck=true when called from changeTeam() to avoid race condition
+// where old claim hasn't propagated deletion yet
+async function showTeamSelectScreen(comp, skipClaimCheck=false){
   _tsSelectedTeam = null;
   document.getElementById('code-gate').classList.add('hidden');
   document.getElementById('app-shell').classList.add('hidden');
@@ -2683,10 +2685,8 @@ async function showTeamSelectScreen(comp){
 
   const compNames = {league1:'DLS League — Division 1',league2:'DLS League 2 — Division 2',league3:'DLS League 3 — Division 3'};
   document.getElementById('ts-comp-label').textContent = (compNames[comp]||'DLS League') + ' · Season 2026';
-
   document.getElementById('ts-grid').innerHTML = '<div class="ts-loading">&#9203; Loading teams...</div>';
 
-  // Load teams from published data and claims from Firebase
   const pub = comp==='league1'?leaguePub:comp==='league2'?league2Pub:league3Pub;
   let claims = {};
   try{
@@ -2702,15 +2702,17 @@ async function showTeamSelectScreen(comp){
     return;
   }
 
-  // Find if this device already has a team claimed
-  const myClaimedTeam = Object.entries(claims).find(([,v])=>v===myDeviceId)?.[0];
-  if(myClaimedTeam){
-    // Decode slug back — store the real name in claims
-    const realName = teams.find(t=>slugTeam(t.name)===myClaimedTeam)?.name || myClaimedTeam;
-    localStorage.setItem('dls_selected_team_'+comp, realName);
-    document.getElementById('ts-screen').classList.add('hidden');
-    showAppShell();
-    return;
+  // Only auto-skip to home if NOT coming from a changeTeam() call
+  // (changeTeam already deleted the claim but Firebase may not have propagated yet)
+  if(!skipClaimCheck){
+    const myClaimedTeam = Object.entries(claims).find(([,v])=>v===myDeviceId)?.[0];
+    if(myClaimedTeam){
+      const realName = teams.find(t=>slugTeam(t.name)===myClaimedTeam)?.name || myClaimedTeam;
+      localStorage.setItem('dls_selected_team_'+comp, realName);
+      document.getElementById('ts-screen').classList.add('hidden');
+      showAppShell();
+      return;
+    }
   }
 
   const logos = pub?.logos || {};
@@ -2718,12 +2720,11 @@ async function showTeamSelectScreen(comp){
   teams.forEach(t=>{
     const slug = slugTeam(t.name);
     const claimedBy = claims[slug];
-    const isMine = claimedBy === myDeviceId;
-    const isTaken = claimedBy && !isMine;
+    // When skipClaimCheck=true, treat our own device's old claim as unclaimed
+    const isMine = !skipClaimCheck && claimedBy === myDeviceId;
+    const isTaken = claimedBy && claimedBy !== myDeviceId;
     const logoSrc = logos[t.name];
-    const badgeContent = logoSrc
-      ? `<img src="${logoSrc}" alt="">`
-      : (t.name[0]||'?').toUpperCase();
+    const badgeContent = logoSrc ? `<img src="${logoSrc}" alt="">` : (t.name[0]||'?').toUpperCase();
 
     let cardClass = 'ts-team-card';
     let badgeClass = 'ts-team-badge';
@@ -2782,29 +2783,30 @@ async function confirmTeamSelection(){
   const btn = document.querySelector('.ts-confirm-btn');
   if(btn){ btn.textContent='Saving...'; btn.disabled=true; }
 
+  // Write claim to Firebase with a 6-second timeout so it never hangs forever
+  // We proceed regardless — localStorage is the primary source of truth on device
   try{
-    // Check claim isn't taken by a race condition
-    const r = await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json');
-    const existing = r.ok ? await r.json() : null;
-    if(existing && existing !== deviceId){
-      if(btn){ btn.textContent='&#10003; Confirm & Continue'; btn.disabled=false; }
-      alert('Sorry, that team was just claimed by someone else. Please pick another.');
-      showTeamSelectScreen(comp);
-      return;
-    }
-    // Write claim
-    await fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{
+    const writeReq = fetch(FIREBASE_URL+'/dls_team_claims/'+comp+'/'+slug+'.json',{
       method:'PUT', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(deviceId)
     });
-    localStorage.setItem('dls_selected_team_'+comp, _tsSelectedTeam);
-    document.getElementById('ts-screen').classList.add('hidden');
-    // Show notification prompt
+    await Promise.race([writeReq, new Promise(res=>setTimeout(res,6000))]);
+  } catch(e){
+    // Network error — still proceed, localStorage keeps the claim on this device
+  }
+
+  // Save locally and proceed
+  localStorage.setItem('dls_selected_team_'+comp, _tsSelectedTeam);
+  localStorage.setItem('dls_notif_asked_'+comp, '0'); // allow notification prompt once
+  document.getElementById('ts-screen').classList.add('hidden');
+
+  // Only show notification prompt if not yet asked on this device
+  const notifAsked = localStorage.getItem('dls_notif_done_'+comp);
+  if(!notifAsked){
     document.getElementById('notif-team-name-display').textContent = _tsSelectedTeam;
     document.getElementById('notif-screen').classList.remove('hidden');
-  } catch(e){
-    if(btn){ btn.textContent='&#10003; Confirm & Continue'; btn.disabled=false; }
-    alert('Connection error. Please try again.');
+  } else {
+    showAppShell();
   }
 }
 
@@ -2815,6 +2817,7 @@ async function confirmTeamSelection(){
 async function allowNotifications(){
   document.getElementById('notif-screen').classList.add('hidden');
   const comp = localStorage.getItem('dls_viewer_access');
+  if(comp) localStorage.setItem('dls_notif_done_'+comp, '1');
   const team = localStorage.getItem('dls_selected_team_'+(comp||''));
   // Trigger native browser permission
   if('Notification' in window && Notification.permission === 'default'){
@@ -2842,6 +2845,8 @@ async function allowNotifications(){
 }
 
 function skipNotifications(){
+  const comp = localStorage.getItem('dls_viewer_access');
+  if(comp) localStorage.setItem('dls_notif_done_'+comp, '1');
   document.getElementById('notif-screen').classList.add('hidden');
   showAppShell();
 }
@@ -2901,8 +2906,10 @@ function changeTeam(){
       } catch(e){}
       localStorage.removeItem('dls_selected_team_'+comp);
       localStorage.removeItem('dls_notif_'+comp);
+      localStorage.removeItem('dls_notif_done_'+comp);
       hideSettingsScreen();
-      showTeamSelectScreen(comp);
+      // Pass true to skip claim re-check — Firebase deletion may not have propagated yet
+      showTeamSelectScreen(comp, true);
     }
   });
 }

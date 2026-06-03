@@ -3738,7 +3738,7 @@ function renderPlayersTab(mode){
   function getVal(p){ return mode==='goals'?(p.goals||0):mode==='assists'?(p.assists||0):(p.rating??teamRating(p.team)); }
 
   // Minimum thresholds: Goals ≥ 5, Assists ≥ 5, Rating ≥ 5.0
-  const MIN = { goals:5, assists:5, rating:5.0 };
+  const MIN = { goals:5, assists:3, rating:5.0 };
   const minVal = MIN[mode];
 
   const sorted = [...players]
@@ -3750,7 +3750,7 @@ function renderPlayersTab(mode){
     wrap.innerHTML = header + tabBar() + `<div class="pl-empty">
       <div style="font-size:2rem;margin-bottom:10px">&#128202;</div>
       <div style="font-size:.88rem;font-weight:700;color:#e6edf3;margin-bottom:6px">No entries yet</div>
-      <div style="font-size:.75rem">Players need at least <strong style="color:#ffc107">${mode==='rating'?'5.0 rating':'5 '+mode}</strong> to appear here.</div>
+      <div style="font-size:.75rem">Players need at least <strong style="color:#ffc107">${mode==='rating'?'5.0 rating':mode==='assists'?'3 assists':'5 goals'}</strong> to appear here.</div>
     </div>`;
     return;
   }

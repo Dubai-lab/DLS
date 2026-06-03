@@ -257,6 +257,43 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .acc-release-btn:hover{background:rgba(220,53,69,.25);border-color:#dc3545}
 .acc-loading{text-align:center;padding:32px;color:#8b949e;font-size:.85rem}
 
+/* ── League News Admin ── */
+.news-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px}
+.news-topbar h2{font-size:1.2rem;color:#e6edf3;font-weight:800}
+.news-topbar p{font-size:.78rem;color:#8b949e;margin-top:3px}
+.news-add-card{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:20px;margin-bottom:28px}
+.news-add-card h3{font-size:.78rem;font-weight:900;color:#00c853;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
+.news-form-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.news-inp{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 14px;color:#e6edf3;font-size:.88rem;outline:none;transition:border-color .25s;flex:1;min-width:0}
+.news-inp:focus{border-color:#00c853}
+.news-ta{resize:vertical;min-height:64px;width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 14px;color:#e6edf3;font-size:.88rem;outline:none;transition:border-color .25s;font-family:inherit;box-sizing:border-box}
+.news-ta:focus{border-color:#00c853}
+.news-type-row{display:flex;gap:8px;margin-bottom:14px}
+.news-type-btn{flex:1;padding:11px;background:#0d1117;border:2px solid #21262d;border-radius:8px;color:#8b949e;font-size:.8rem;font-weight:800;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:1px}
+.news-type-btn.social.active{border-color:#4fc3f7;color:#4fc3f7;background:rgba(79,195,247,.06)}
+.news-type-btn.prize.active{border-color:#FFD700;color:#FFD700;background:rgba(255,215,0,.06)}
+.news-field-lbl{font-size:.7rem;color:#8b949e;font-weight:700;letter-spacing:.5px;margin-bottom:5px;display:block}
+.news-img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid #30363d;display:none;margin-top:10px}
+.news-img-preview.show{display:block}
+.news-save-btn{width:100%;padding:13px;background:linear-gradient(135deg,#00c853,#00a844);border:none;border-radius:8px;color:#fff;font-size:.88rem;font-weight:800;cursor:pointer;transition:all .2s;letter-spacing:1px;text-transform:uppercase;margin-top:6px}
+.news-save-btn:hover{opacity:.9;transform:translateY(-1px)}
+.news-save-btn:disabled{opacity:.5;transform:none;cursor:not-allowed}
+.news-list-hdr{font-size:.72rem;font-weight:900;color:#8b949e;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.news-item{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s}
+.news-item:hover{border-color:#30363d}
+.news-item-badge{padding:3px 10px;border-radius:10px;font-size:.58rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;flex-shrink:0;margin-top:3px}
+.news-item-badge.social{background:rgba(79,195,247,.15);color:#4fc3f7;border:1px solid rgba(79,195,247,.3)}
+.news-item-badge.prize{background:rgba(255,215,0,.15);color:#FFD700;border:1px solid rgba(255,215,0,.3)}
+.news-item-body{flex:1;min-width:0}
+.news-item-title{font-size:.9rem;font-weight:800;color:#e6edf3;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.news-item-desc{font-size:.75rem;color:#8b949e;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.news-item-meta{font-size:.65rem;color:#4a5568;margin-top:5px}
+.news-item-meta .expired{color:#f87171}
+.news-item-thumb{width:56px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #21262d;flex-shrink:0;align-self:center}
+.news-del-btn{background:none;border:1px solid rgba(220,53,69,.3);border-radius:6px;padding:5px 12px;color:#f87171;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0;align-self:flex-start;white-space:nowrap}
+.news-del-btn:hover{background:rgba(220,53,69,.15);border-color:#dc3545}
+.news-empty{text-align:center;padding:32px;color:#4a5568;font-size:.85rem}
+
 /* ── Events Modal ── */
 .ev-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
 .ev-modal-overlay.hidden{display:none}
@@ -342,6 +379,7 @@ function checkLock(){
   <button class="nav-btn" onclick="switchTab('fixtures')">&#128197; Matchdays</button>
   <button class="nav-btn" onclick="switchTab('table')">&#128202; Table</button>
   <button class="nav-btn" onclick="switchTab('accounts')">&#128100; Player Accounts</button>
+  <button class="nav-btn" onclick="switchTab('news')">&#128240; League News</button>
 </nav>
 <div style="text-align:right;padding:5px 16px;font-size:.72rem;background:#0d1117;border-bottom:1px solid #21262d">
   <span id="cloud-status" style="color:#4a5568">☁️ Cloud Backup Active</span>
@@ -439,6 +477,60 @@ function checkLock(){
   </div>
 </section>
 
+<!-- ══════════════════ LEAGUE NEWS ══════════════════ -->
+<section id="news" class="section">
+  <div class="news-topbar">
+    <div>
+      <h2>&#128240; League News</h2>
+      <p>Post social links, prize packages &amp; announcements with expiry timers.</p>
+    </div>
+    <button class="acc-refresh-btn" onclick="renderNews()">&#8635; Refresh</button>
+  </div>
+
+  <!-- Add new card -->
+  <div class="news-add-card">
+    <h3>&#43; New Announcement</h3>
+    <div class="news-type-row">
+      <button class="news-type-btn social active" id="news-type-social" onclick="setNewsType('social')">&#127760; Social</button>
+      <button class="news-type-btn prize" id="news-type-prize" onclick="setNewsType('prize')">&#127942; Prize</button>
+    </div>
+
+    <div class="news-form-row">
+      <input class="news-inp" id="news-title" placeholder="Title  e.g. Join the League Discord!">
+    </div>
+
+    <div style="margin-bottom:12px">
+      <textarea class="news-ta" id="news-desc" placeholder="Description (optional)"></textarea>
+    </div>
+
+    <div class="news-form-row">
+      <input class="news-inp" id="news-action-label" placeholder="Button label  e.g. Join Discord">
+      <input class="news-inp" id="news-action-url" type="url" placeholder="Link URL  e.g. https://discord.gg/...">
+    </div>
+
+    <div class="news-form-row" style="align-items:center">
+      <input class="news-inp" id="news-days" type="number" min="1" max="90" value="7" style="max-width:110px">
+      <span style="font-size:.78rem;color:#8b949e">days display duration</span>
+    </div>
+
+    <!-- Prize image upload -->
+    <div id="news-img-section" style="display:none;margin-bottom:12px">
+      <label class="news-field-lbl">&#128247; PACKAGE IMAGE — Upload from device</label>
+      <input type="file" id="news-img-file" accept="image/*" onchange="previewNewsImg(this)"
+        style="font-size:.8rem;color:#8b949e;background:#0d1117;border:1px dashed #30363d;border-radius:8px;padding:10px;width:100%;cursor:pointer;box-sizing:border-box">
+      <img id="news-img-preview" class="news-img-preview" alt="preview">
+    </div>
+
+    <button class="news-save-btn" onclick="saveNews()">&#128278; Post Announcement</button>
+  </div>
+
+  <!-- Existing cards -->
+  <div class="news-list-hdr">Active &amp; Recent</div>
+  <div id="news-list">
+    <div class="news-empty">&#128240; No announcements yet. Add one above.</div>
+  </div>
+</section>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -519,12 +611,13 @@ function switchTab(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const idx={teams:0,fixtures:1,table:2,accounts:3}[id];
+  const idx={teams:0,fixtures:1,table:2,accounts:3,news:4}[id];
   if(idx!==undefined) document.querySelectorAll('.nav-btn')[idx].classList.add('active');
   if(id==='teams')    renderTeams();
   if(id==='fixtures') renderFixtures();
   if(id==='table')    renderTable();
   if(id==='accounts') renderAccounts();
+  if(id==='news')     renderNews();
 }
 
 // ═══════════════════════════════════════════
@@ -1847,6 +1940,152 @@ function saveEventsModal(){
   closeEventsModal();
   renderFixtures();
   toast(`Events saved for ${m.home} vs ${m.away}. Publish to send to players.`);
+}
+</script>
+
+<!-- ═══════ LEAGUE NEWS JS ═══════ -->
+<script>
+// ═══════════════════════════════════════════
+//  LEAGUE NEWS
+// ═══════════════════════════════════════════
+
+let _newsType = 'social';
+let _newsImgData = '';
+
+function setNewsType(type){
+  _newsType = type;
+  document.getElementById('news-type-social').classList.toggle('active', type==='social');
+  document.getElementById('news-type-prize').classList.toggle('active', type==='prize');
+  document.getElementById('news-img-section').style.display = type==='prize' ? 'block' : 'none';
+  if(type !== 'prize'){
+    _newsImgData = '';
+    const prev = document.getElementById('news-img-preview');
+    prev.src = ''; prev.classList.remove('show');
+    document.getElementById('news-img-file').value = '';
+  }
+}
+
+function previewNewsImg(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _newsImgData = e.target.result;
+    const prev = document.getElementById('news-img-preview');
+    prev.src = _newsImgData;
+    prev.classList.add('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function renderNews(){
+  const wrap = document.getElementById('news-list');
+  wrap.innerHTML = '<div class="news-empty">&#8987; Loading...</div>';
+  try{
+    const r = await fetch(FIREBASE_URL + '/dls_league_news.json');
+    const data = r.ok ? await r.json() : null;
+    if(!data || !Object.keys(data).length){
+      wrap.innerHTML = '<div class="news-empty">&#128240; No announcements yet. Add one above.</div>';
+      return;
+    }
+    const now = Date.now();
+    const items = Object.entries(data)
+      .map(([id, v]) => ({...v, id}))
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    wrap.innerHTML = items.map(item => {
+      const expired = item.expiresAt && now > item.expiresAt;
+      const msLeft  = (item.expiresAt || 0) - now;
+      const daysLeft = expired ? 0 : Math.ceil(msLeft / 86400000);
+      const timeLabel = expired
+        ? '<span class="expired">&#9940; Expired</span>'
+        : `${daysLeft}d left`;
+      const typeClass = item.type === 'prize' ? 'prize' : 'social';
+      const typeIcon  = item.type === 'prize' ? '&#127942;' : '&#127760;';
+      const typeLabel = item.type === 'prize' ? 'PRIZE' : 'SOCIAL';
+      const thumbHTML = item.imageData
+        ? `<img class="news-item-thumb" src="${item.imageData}" alt="">`
+        : '';
+      const urlInfo = item.actionUrl
+        ? `<a href="${esc(item.actionUrl)}" target="_blank" rel="noopener" style="color:#4fc3f7;font-size:.65rem;word-break:break-all">${esc(item.actionUrl.slice(0,50))}${item.actionUrl.length>50?'…':''}</a>`
+        : '';
+      return `<div class="news-item">
+        <span class="news-item-badge ${typeClass}">${typeIcon} ${typeLabel}</span>
+        <div class="news-item-body">
+          <div class="news-item-title">${esc(item.title)}</div>
+          ${item.desc ? `<div class="news-item-desc">${esc(item.desc)}</div>` : ''}
+          <div class="news-item-meta">${timeLabel}${item.actionLabel ? ' &middot; '+esc(item.actionLabel) : ''}</div>
+          ${urlInfo}
+        </div>
+        ${thumbHTML}
+        <button class="news-del-btn" onclick="deleteNews('${item.id}')">&#128465; Delete</button>
+      </div>`;
+    }).join('');
+  } catch(e){
+    wrap.innerHTML = '<div class="news-empty">Failed to load. Check your connection.</div>';
+  }
+}
+
+async function saveNews(){
+  const title       = (document.getElementById('news-title').value || '').trim();
+  const desc        = (document.getElementById('news-desc').value || '').trim();
+  const actionLabel = (document.getElementById('news-action-label').value || '').trim();
+  const actionUrl   = (document.getElementById('news-action-url').value || '').trim();
+  const days        = parseInt(document.getElementById('news-days').value) || 7;
+
+  if(!title){ toast('Enter a title first.', 'error'); return; }
+
+  const now  = Date.now();
+  const item = {
+    type: _newsType,
+    title,
+    desc,
+    actionLabel,
+    actionUrl,
+    imageData: _newsType === 'prize' ? _newsImgData : '',
+    createdAt: now,
+    expiresAt: now + days * 86400000,
+  };
+
+  const btn = document.querySelector('.news-save-btn');
+  btn.textContent = 'Posting...'; btn.disabled = true;
+  try{
+    const r = await fetch(FIREBASE_URL + '/dls_league_news.json', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(item),
+    });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+
+    // Reset form
+    document.getElementById('news-title').value = '';
+    document.getElementById('news-desc').value = '';
+    document.getElementById('news-action-label').value = '';
+    document.getElementById('news-action-url').value = '';
+    document.getElementById('news-days').value = '7';
+    _newsImgData = '';
+    const prev = document.getElementById('news-img-preview');
+    prev.src = ''; prev.classList.remove('show');
+    document.getElementById('news-img-file').value = '';
+
+    btn.textContent = '&#128278; Post Announcement'; btn.disabled = false;
+    toast('Announcement posted! &#10003;');
+    renderNews();
+  } catch(e){
+    btn.textContent = '&#128278; Post Announcement'; btn.disabled = false;
+    toast('Failed to save: ' + e.message, 'error');
+  }
+}
+
+async function deleteNews(id){
+  if(!confirm('Delete this announcement?')) return;
+  try{
+    const r = await fetch(FIREBASE_URL + '/dls_league_news/' + id + '.json', {method: 'DELETE'});
+    if(r.ok){ toast('Deleted.'); renderNews(); }
+    else toast('Delete failed. Check Firebase rules.', 'error');
+  } catch(e){
+    toast('Network error. Try again.', 'error');
+  }
 }
 </script>
 

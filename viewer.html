@@ -1017,8 +1017,8 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
         <div class="hl-comments-hdr">Comments</div>
         <div id="hl-comments-list"></div>
         <div class="hl-add-comment">
-          <select class="hl-cmt-sel" id="hl-cmt-team"><option value="">Your team...</option></select>
-          <input type="text" class="hl-cmt-input" id="hl-cmt-input" placeholder="Comment... use @Team to tag" autocomplete="off">
+          <div id="hl-cmt-team-display" style="font-size:.62rem;font-weight:800;color:#ffc107;white-space:nowrap;padding:0 2px;flex-shrink:0;align-self:center;max-width:70px;overflow:hidden;text-overflow:ellipsis"></div>
+          <input type="text" class="hl-cmt-input" id="hl-cmt-input" placeholder="Write a comment..." autocomplete="off" maxlength="200" onkeydown="if(event.key==='Enter'){event.preventDefault();submitComment()}">
           <button class="hl-cmt-post" onclick="submitComment()">Post</button>
         </div>
       </div>
@@ -1033,18 +1033,33 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 <!-- ═══════ UPLOAD MODAL ═══════ -->
 <div class="hl-modal hidden" id="hl-upload-modal">
   <div class="hl-modal-box">
-    <div class="hl-modal-title">&#127909; Upload Highlight</div>
-    <select class="hl-select" id="hl-team1"><option value="">Select Team 1...</option></select>
-    <select class="hl-select" id="hl-team2"><option value="">Select Team 2...</option></select>
-    <label class="hl-file-label" for="hl-file-input">&#128247; Tap to choose video from gallery</label>
-    <input type="file" id="hl-file-input" accept="video/*" style="display:none" onchange="onHlFileChange(this)">
-    <div class="hl-file-name" id="hl-file-name"></div>
-    <div class="hl-progress-wrap" id="hl-progress-wrap">
-      <div class="hl-progress-bar" id="hl-progress-bar"></div>
+
+    <!-- Upload form view -->
+    <div id="hl-upload-form">
+      <div class="hl-modal-title">&#127909; Upload Highlight</div>
+      <select class="hl-select" id="hl-team1"><option value="">Select Team 1...</option></select>
+      <select class="hl-select" id="hl-team2"><option value="">Select Team 2...</option></select>
+      <label class="hl-file-label" for="hl-file-input">&#128247; Tap to choose video from gallery</label>
+      <input type="file" id="hl-file-input" accept="video/*" style="display:none" onchange="onHlFileChange(this)">
+      <div class="hl-file-name" id="hl-file-name"></div>
+      <div id="hl-size-warn" style="display:none;font-size:.72rem;color:#ffc107;margin-bottom:8px;text-align:center"></div>
+      <div class="hl-progress-wrap" id="hl-progress-wrap">
+        <div class="hl-progress-bar" id="hl-progress-bar"></div>
+      </div>
+      <div id="hl-progress-label" style="display:none;font-size:.72rem;color:#8b949e;text-align:center;margin-bottom:8px"></div>
+      <button class="hl-submit-btn" id="hl-submit-btn" onclick="uploadHighlight()">&#8679; Upload Highlight</button>
+      <div class="hl-err" id="hl-err"></div>
+      <button class="hl-cancel-btn" onclick="closeUploadModal()">Cancel</button>
     </div>
-    <button class="hl-submit-btn" id="hl-submit-btn" onclick="uploadHighlight()">&#8679; Upload</button>
-    <div class="hl-err" id="hl-err"></div>
-    <button class="hl-cancel-btn" onclick="closeUploadModal()">Cancel</button>
+
+    <!-- Success view (shown after upload) -->
+    <div id="hl-upload-success" style="display:none;text-align:center;padding:20px 10px">
+      <div style="font-size:3.5rem;margin-bottom:14px;filter:drop-shadow(0 0 14px rgba(0,200,83,.5))">&#10004;&#65039;</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#00c853;margin-bottom:8px">Upload Complete!</div>
+      <div id="hl-success-label" style="font-size:.82rem;color:#8b949e;margin-bottom:22px;line-height:1.5"></div>
+      <button class="hl-submit-btn" style="background:linear-gradient(135deg,#00c853,#00a844)" onclick="closeUploadModal()">&#10003; Done</button>
+    </div>
+
   </div>
 </div>
 
@@ -2438,9 +2453,7 @@ async function selectHighlight(key){
   document.getElementById('hl-feed').scrollTop = 0;
   renderHlList();
   loadComments(key);
-  const teams = getTeamsForComp(currentComp).map(t=>typeof t==='object'?t.team:t).filter(Boolean);
-  document.getElementById('hl-cmt-team').innerHTML =
-    '<option value="">Your team...</option>' + teams.map(t=>`<option>${t}</option>`).join('');
+  updateCmtTeamDisplay();
 }
 
 function getLikedKeys(){
@@ -2488,18 +2501,54 @@ async function loadComments(key){
   } catch(e){ list.innerHTML=''; }
 }
 
+function getCommenterName(){
+  // Use claimed team name, fall back to stored name, then null
+  const comp = currentComp;
+  const claimed = localStorage.getItem('dls_selected_team_'+comp);
+  if(claimed) return claimed;
+  return localStorage.getItem('dls_commenter_name')||null;
+}
+
+function updateCmtTeamDisplay(){
+  const name = getCommenterName();
+  const el = document.getElementById('hl-cmt-team-display');
+  if(!el) return;
+  if(name){
+    el.textContent = name.split(' ')[0]; // first word only to save space
+    el.title = name;
+  } else {
+    el.textContent = 'You';
+  }
+}
+
 async function submitComment(){
   if(!_hlActiveKey) return;
-  const team = document.getElementById('hl-cmt-team').value;
   const input = document.getElementById('hl-cmt-input');
   const text = input.value.trim();
-  if(!team||!text) return;
+  if(!text) return;
+
+  let team = getCommenterName();
+  if(!team){
+    // No claimed team — ask for a name once and remember it
+    const name = prompt('What is your team name?','');
+    if(!name||!name.trim()) return;
+    team = name.trim();
+    localStorage.setItem('dls_commenter_name', team);
+    updateCmtTeamDisplay();
+  }
+
+  // Optimistic: clear input and show comment immediately
   input.value = '';
-  await fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/comments.json`,{
+  const btn = document.querySelector('.hl-cmt-post');
+  if(btn){ btn.textContent='...'; btn.disabled=true; }
+
+  // Post in background — reload comments after
+  fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/comments.json`,{
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({team, text, ts:Date.now()})
-  });
-  loadComments(_hlActiveKey);
+  }).then(()=>loadComments(_hlActiveKey)).catch(()=>{});
+
+  if(btn){ setTimeout(()=>{ btn.textContent='Post'; btn.disabled=false; }, 800); }
 }
 
 async function captureThumb(file){
@@ -2527,7 +2576,7 @@ async function captureThumb(file){
     vid.onloadeddata = ()=>{ vid.currentTime=0.5; };
     vid.oncanplay = ()=>{ if(!done) vid.currentTime=0.5; };
     vid.onerror = ()=>{ cleanup(); resolve(null); };
-    setTimeout(()=>{ if(!done){ capture(); setTimeout(()=>{ if(!done){cleanup();resolve(null);} },500); } }, 6000);
+    setTimeout(()=>{ if(!done){ capture(); setTimeout(()=>{ if(!done){cleanup();resolve(null);} },300); } }, 2000);
     vid.src = URL.createObjectURL(file);
     vid.load();
   });
@@ -2535,29 +2584,61 @@ async function captureThumb(file){
 
 function openUploadModal(){
   const teams = getTeamsForComp(currentComp).map(t=>typeof t==='object'?t.team:t).filter(Boolean);
-  const opts = '<option value="">Select team...</option>' + teams.map(t=>`<option>${t}</option>`).join('');
+  // Pre-select the player's own team if they have one
+  const myTeam = localStorage.getItem('dls_selected_team_'+currentComp)||'';
+  const opts = '<option value="">Select team...</option>' + teams.map(t=>`<option ${t===myTeam?'selected':''}>${t}</option>`).join('');
   document.getElementById('hl-team1').innerHTML = opts;
-  document.getElementById('hl-team2').innerHTML = opts;
+  document.getElementById('hl-team2').innerHTML = '<option value="">Select opponent...</option>' + teams.map(t=>`<option>${t}</option>`).join('');
   document.getElementById('hl-file-name').style.display = 'none';
   document.getElementById('hl-file-name').textContent = '';
   document.getElementById('hl-progress-wrap').style.display = 'none';
   document.getElementById('hl-progress-bar').style.width = '0%';
+  document.getElementById('hl-progress-label').style.display = 'none';
+  document.getElementById('hl-size-warn').style.display = 'none';
   document.getElementById('hl-err').textContent = '';
   document.getElementById('hl-file-input').value = '';
   document.getElementById('hl-submit-btn').disabled = false;
-  document.getElementById('hl-submit-btn').textContent = '⬆ Upload';
+  document.getElementById('hl-submit-btn').textContent = '⬆ Upload Highlight';
+  document.getElementById('hl-upload-form').style.display = 'block';
+  document.getElementById('hl-upload-success').style.display = 'none';
   _hlFile = null;
   document.getElementById('hl-upload-modal').classList.remove('hidden');
 }
+
 function closeUploadModal(){
   document.getElementById('hl-upload-modal').classList.add('hidden');
+  loadHighlights(); // always refresh list when modal closes
 }
+
 function onHlFileChange(input){
   _hlFile = input.files[0] || null;
-  const nameEl = document.getElementById('hl-file-name');
-  if(_hlFile){ nameEl.textContent = _hlFile.name; nameEl.style.display='block'; }
-  else { nameEl.style.display='none'; }
+  const nameEl   = document.getElementById('hl-file-name');
+  const warnEl   = document.getElementById('hl-size-warn');
+  if(_hlFile){
+    nameEl.textContent = _hlFile.name; nameEl.style.display='block';
+    const mb = _hlFile.size / (1024*1024);
+    if(mb > 200){
+      warnEl.textContent = `⚠ File is ${mb.toFixed(0)}MB — very large files may fail or take a long time. Try keeping it under 100MB.`;
+      warnEl.style.display='block';
+    } else if(mb > 80){
+      warnEl.textContent = `ℹ File is ${mb.toFixed(0)}MB — upload may take a few minutes on mobile.`;
+      warnEl.style.display='block';
+    } else {
+      warnEl.style.display='none';
+    }
+  } else {
+    nameEl.style.display='none';
+    warnEl.style.display='none';
+  }
 }
+
+function setUploadProgress(pct, label){
+  document.getElementById('hl-progress-bar').style.width = pct+'%';
+  const lbl = document.getElementById('hl-progress-label');
+  lbl.style.display = 'block';
+  lbl.textContent = label;
+}
+
 async function uploadHighlight(){
   const t1 = document.getElementById('hl-team1').value;
   const t2 = document.getElementById('hl-team2').value;
@@ -2566,41 +2647,63 @@ async function uploadHighlight(){
   if(!t1||!t2){ errEl.textContent='Please select both teams.'; return; }
   if(t1===t2){ errEl.textContent='Teams must be different.'; return; }
   if(!_hlFile){ errEl.textContent='Please choose a video file.'; return; }
+
   const btn = document.getElementById('hl-submit-btn');
-  btn.disabled=true; btn.textContent='Uploading...';
   const progWrap = document.getElementById('hl-progress-wrap');
-  const progBar  = document.getElementById('hl-progress-bar');
+  btn.disabled=true;
   progWrap.style.display='block';
+
   try {
     const fname = Date.now()+'_'+_hlFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-    // Capture thumbnail
-    btn.textContent='Processing...';
-    const thumbBlob = await captureThumb(_hlFile);
+
+    // ── Thumbnail: 1.5 second max, skip if slow ──
+    setUploadProgress(5, 'Preparing...');
+    const thumbBlob = await Promise.race([
+      captureThumb(_hlFile),
+      new Promise(res=>setTimeout(()=>res(null), 1500))
+    ]);
+
     let thumbUrl = '';
     if(thumbBlob){
+      setUploadProgress(15, 'Uploading thumbnail...');
       const tname = 'thumb_'+fname.replace(/\.[^.]+$/,'.jpg');
-      const tr = await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o?uploadType=media&name=highlights/${tname}`,{
-        method:'POST', headers:{'Content-Type':'image/jpeg'}, body:thumbBlob
-      });
-      if(tr.ok) thumbUrl = `https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/highlights%2F${encodeURIComponent(tname)}?alt=media`;
+      try{
+        const tr = await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o?uploadType=media&name=highlights/${tname}`,{
+          method:'POST', headers:{'Content-Type':'image/jpeg'}, body:thumbBlob
+        });
+        if(tr.ok) thumbUrl = `https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/highlights%2F${encodeURIComponent(tname)}?alt=media`;
+      } catch(e){}
     }
-    progBar.style.width='30%'; btn.textContent='Uploading video...';
+
+    // ── Upload video ──
+    setUploadProgress(25, 'Uploading video — please wait...');
     const upRes = await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o?uploadType=media&name=highlights/${fname}`,{
       method:'POST', headers:{'Content-Type':_hlFile.type||'video/mp4'}, body:_hlFile
     });
     if(!upRes.ok){ const e=await upRes.text(); throw new Error(e); }
-    progBar.style.width='80%';
+
+    setUploadProgress(90, 'Saving...');
     const videoUrl = `https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/highlights%2F${encodeURIComponent(fname)}?alt=media`;
     await fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}.json`,{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({team1:t1,team2:t2,title:`${t1} vs ${t2}`,videoUrl,thumbUrl,league:currentComp,
-        date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),ts:Date.now(),likes:0})
+      body: JSON.stringify({team1:t1, team2:t2, title:`${t1} vs ${t2}`, videoUrl, thumbUrl,
+        league:currentComp, date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+        ts:Date.now(), likes:0})
     });
-    progBar.style.width='100%';
-    setTimeout(()=>{ closeUploadModal(); loadHighlights(); }, 500);
+
+    setUploadProgress(100, 'Done!');
+
+    // ── Show success screen ──
+    document.getElementById('hl-upload-form').style.display = 'none';
+    document.getElementById('hl-upload-success').style.display = 'block';
+    document.getElementById('hl-success-label').textContent = `"${t1} vs ${t2}" has been uploaded and is now visible in the Highlights feed.`;
+
   } catch(e){
-    errEl.textContent='Upload failed. Check connection and try again.';
-    btn.disabled=false; btn.textContent='⬆ Upload'; progWrap.style.display='none';
+    errEl.textContent = 'Upload failed. Check your connection and try again.';
+    btn.disabled=false;
+    btn.textContent='⬆ Upload Highlight';
+    progWrap.style.display='none';
+    document.getElementById('hl-progress-label').style.display='none';
   }
 }
 
@@ -3633,7 +3736,25 @@ function renderPlayersTab(mode){
 
   // Sort
   function getVal(p){ return mode==='goals'?(p.goals||0):mode==='assists'?(p.assists||0):(p.rating??teamRating(p.team)); }
-  const sorted = [...players].map(p=>({...p, _val:getVal(p)})).sort((a,b)=>b._val-a._val);
+
+  // Minimum thresholds: Goals ≥ 5, Assists ≥ 5, Rating ≥ 5.0
+  const MIN = { goals:5, assists:5, rating:5.0 };
+  const minVal = MIN[mode];
+
+  const sorted = [...players]
+    .map(p=>({...p, _val:getVal(p)}))
+    .filter(p=>p._val >= minVal)
+    .sort((a,b)=>b._val-a._val);
+
+  if(!sorted.length){
+    wrap.innerHTML = header + tabBar() + `<div class="pl-empty">
+      <div style="font-size:2rem;margin-bottom:10px">&#128202;</div>
+      <div style="font-size:.88rem;font-weight:700;color:#e6edf3;margin-bottom:6px">No entries yet</div>
+      <div style="font-size:.75rem">Players need at least <strong style="color:#ffc107">${mode==='rating'?'5.0 rating':'5 '+mode}</strong> to appear here.</div>
+    </div>`;
+    return;
+  }
+
   const maxVal = sorted[0]?._val||1;
   const fmtVal = v => mode==='rating' ? v.toFixed(1) : v;
 

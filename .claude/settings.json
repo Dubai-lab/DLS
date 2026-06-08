@@ -14,7 +14,11 @@
       "Bash(cat .gitignore)",
       "Bash(git ls-files *)",
       "Bash(git rm *)",
-      "Bash(node -e \"const wp=require\\('./netlify/functions/node_modules/web-push'\\); const k=wp.generateVAPIDKeys\\(\\); const crypto=require\\('crypto'\\); const secret=crypto.randomBytes\\(32\\).toString\\('hex'\\); console.log\\('VAPID_PUBLIC_KEY='+k.publicKey\\); console.log\\('VAPID_PRIVATE_KEY='+k.privateKey\\); console.log\\('NOTIFY_SECRET='+secret\\);\")"
+      "Bash(node -e \"const wp=require\\('./netlify/functions/node_modules/web-push'\\); const k=wp.generateVAPIDKeys\\(\\); const crypto=require\\('crypto'\\); const secret=crypto.randomBytes\\(32\\).toString\\('hex'\\); console.log\\('VAPID_PUBLIC_KEY='+k.publicKey\\); console.log\\('VAPID_PRIVATE_KEY='+k.privateKey\\); console.log\\('NOTIFY_SECRET='+secret\\);\")",
+      "Bash(git ls-tree *)",
+      "Bash(git commit -q -m 'Add Champions League PWA \\(cl-viewer\\) + events system; rotate VAPID/NOTIFY_SECRET; gitignore secrets & node_modules *)",
+      "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\viewer.html\")",
+      "Bash(git commit -q -m 'Show selected team badge in league player top bar *)"
     ]
   }
 }

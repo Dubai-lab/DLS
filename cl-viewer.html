@@ -404,17 +404,20 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .hl-card-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px}
 .hl-card-vs{font-size:.82rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hl-card-date{font-size:.66rem;color:#8b949e}
-.hl-card-lk{font-size:.7rem;color:#f87171}
-.hl-share-btn{align-self:flex-start;margin-top:2px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:7px;color:#25d366;font-size:.66rem;font-weight:700;padding:4px 9px;cursor:pointer}
+.hl-card-meta{font-size:.64rem;color:#8b949e;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hl-card-stats{font-size:.64rem;color:#8b949e;display:flex;align-items:center;gap:10px;margin-top:1px}
 .hl-empty{text-align:center;padding:48px 24px;color:#8b949e;font-size:.85rem;line-height:1.7}
 .hl-player-box{margin:12px 16px 0;display:none}
 .hl-player-box.active{display:block}
 .hl-video{width:100%;border-radius:12px;background:#000;max-height:60vh}
-.hl-player-title{font-size:.9rem;font-weight:800;color:#e6edf3;margin-top:10px}
-.hl-player-meta{display:flex;align-items:center;gap:12px;margin-top:6px}
-.hl-player-date{font-size:.7rem;color:#8b949e}
-.hl-like-btn{background:none;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.75rem;padding:5px 11px;cursor:pointer;margin-left:auto}
-.hl-like-btn.liked{color:#f87171;border-color:rgba(248,113,113,.4)}
+.hl-player-title{font-size:.92rem;font-weight:800;color:#e6edf3;margin-top:10px}
+.hl-player-sub{font-size:.7rem;color:#8b949e;margin-top:4px;display:flex;align-items:center;gap:6px}
+/* YouTube-style action bar */
+.hl-actions{display:flex;gap:8px;margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.hl-act-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid #30363d;border-radius:20px;color:#e6edf3;font-size:.76rem;font-weight:700;padding:8px 14px;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.hl-act-btn:active{background:rgba(255,255,255,.12)}
+.hl-act-btn.active-up{color:#4fc3f7;border-color:rgba(79,195,247,.5);background:rgba(79,195,247,.12)}
+.hl-act-btn.active-down{color:#f87171;border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.12)}
 /* upload modal */
 .hl-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
 .hl-modal-box{background:#161b22;border:1px solid #30363d;border-radius:18px;width:100%;max-width:380px;padding:20px}
@@ -605,9 +608,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
     <div class="hl-player-box" id="hl-player-box">
       <video class="hl-video" id="hl-video" controls playsinline></video>
       <div class="hl-player-title" id="hl-player-title"></div>
-      <div class="hl-player-meta">
-        <span class="hl-player-date" id="hl-player-date"></span>
-        <button class="hl-like-btn" id="hl-like-btn" onclick="likeHighlight()">&#10084; <span id="hl-like-count">0</span></button>
+      <div class="hl-player-sub"><span id="hl-player-views">0 views</span> &middot; <span id="hl-player-date"></span></div>
+      <div class="hl-actions">
+        <button class="hl-act-btn" id="hl-like-btn" onclick="likeHighlight()">&#128077; <span id="hl-like-count">0</span></button>
+        <button class="hl-act-btn" id="hl-dislike-btn" onclick="dislikeHighlight()">&#128078; <span id="hl-dislike-count">0</span></button>
+        <button class="hl-act-btn" onclick="shareHighlight()">&#10548; Share</button>
+        <button class="hl-act-btn" id="hl-dl-btn" onclick="downloadHighlight()">&#11015; Download</button>
       </div>
     </div>
     <div id="hl-cards"></div>
@@ -1452,9 +1458,15 @@ function closeKO(){ document.getElementById('ko-screen').classList.add('hidden')
 // ═══════════════════════════════════════════
 const HL_BUCKET='dls-hub-62226.firebasestorage.app';
 let _hlFile=null,_hlItems=[],_hlActiveKey=null,_hlFilter='';
-function openHighlights(){
+let _pendingHL=null, _hlDeepLinkDone=false;   // shared ?hl= deep link
+async function openHighlights(autoKey){
   document.getElementById('highlights-screen').classList.remove('hidden');
-  loadHighlights();
+  await loadHighlights();
+  if(autoKey){
+    const exists=_hlItems.find(x=>x._key===autoKey);
+    if(exists) selectHighlight(autoKey);
+    else clToast('That highlight is no longer available');
+  }
 }
 function closeHighlights(){ document.getElementById('highlights-screen').classList.add('hidden'); }
 async function loadHighlights(){
@@ -1479,49 +1491,129 @@ function renderHlList(){
   cards.innerHTML=items.map(h=>{
     const thumb=h.thumbUrl?`<img src="${h.thumbUrl}" alt="">`:`<div class="hl-thumb-ph">&#127909;</div>`;
     const urlSafe=(h.videoUrl||'').replace(/'/g,"\\'");
-    const titleSafe=(h.title||'Match Highlight').replace(/'/g,"\\'");
     const isUpdate=h.admin||h.type==='update';
     const updateBadge=isUpdate
       ? `<div style="display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.5px;color:#1a1400;background:#FFD700;border-radius:5px;padding:2px 7px;margin-bottom:4px">&#128226; OFFICIAL UPDATE</div>`
       : '';
+    const views=h.views||0;
     return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')" style="${isUpdate?'border-color:rgba(255,215,0,.45)':''}">
       <div class="hl-thumb">${thumb}<div class="hl-play-ov"><span>&#9654;</span></div></div>
       <div class="hl-card-info">
         ${updateBadge}
         <div class="hl-card-vs">${esc(h.title||'Match Highlight')}</div>
-        <div class="hl-card-date">${esc(h.date||'')}</div>
-        <div class="hl-card-lk">&#10084; ${h.likes||0}</div>
-        <button class="hl-share-btn" onclick="event.stopPropagation();shareHighlight('${urlSafe}','${titleSafe}')">&#128233; WhatsApp</button>
+        <div class="hl-card-meta">&#128065; ${views} view${views===1?'':'s'} &middot; ${esc(h.date||'')}</div>
+        <div class="hl-card-stats"><span>&#128077; ${h.likes||0}</span><span>&#128078; ${h.dislikes||0}</span></div>
       </div>
     </div>`;
   }).join('');
 }
-function shareHighlight(url,title){ window.open(`https://wa.me/?text=${encodeURIComponent('⚽ *'+title+'*\n🎬 Watch: '+url)}`,'_blank'); }
-function selectHighlight(key){
+// ── local per-device state ──
+function getLikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_liked_cl')||'[]'); }catch(e){ return []; } }
+function getDislikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_disliked_cl')||'[]'); }catch(e){ return []; } }
+function getViewedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_viewed_cl')||'[]'); }catch(e){ return []; } }
+
+function refreshActionUI(){
+  const h=_hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
+  document.getElementById('hl-like-count').textContent=h.likes||0;
+  document.getElementById('hl-dislike-count').textContent=h.dislikes||0;
+  document.getElementById('hl-player-views').textContent=(h.views||0)+' view'+((h.views||0)===1?'':'s');
+  document.getElementById('hl-player-date').textContent=h.date||'';
+  document.getElementById('hl-like-btn').classList.toggle('active-up',getLikedKeys().includes(_hlActiveKey));
+  document.getElementById('hl-dislike-btn').classList.toggle('active-down',getDislikedKeys().includes(_hlActiveKey));
+}
+
+async function selectHighlight(key){
   _hlActiveKey=key;
   const h=_hlItems.find(x=>x._key===key); if(!h) return;
   const v=document.getElementById('hl-video'); v.src=h.videoUrl; v.load(); v.play().catch(()=>{});
   document.getElementById('hl-player-title').textContent=h.title||'Match Highlight';
-  document.getElementById('hl-player-date').textContent=h.date||'';
-  document.getElementById('hl-like-count').textContent=h.likes||0;
-  document.getElementById('hl-like-btn').classList.toggle('liked',getLikedKeys().includes(key));
   document.getElementById('hl-player-box').classList.add('active');
   document.getElementById('hl-feed').scrollTop=0;
+  await bumpView(key);   // count one view per device
+  refreshActionUI();
   renderHlList();
 }
-function getLikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_liked_cl')||'[]'); }catch(e){ return []; } }
+
+// Count a view once per device per video (like YouTube unique views)
+async function bumpView(key){
+  const viewed=getViewedKeys();
+  if(viewed.includes(key)) return;
+  const h=_hlItems.find(x=>x._key===key); if(!h) return;
+  const newCount=(h.views||0)+1;
+  h.views=newCount;
+  viewed.push(key); localStorage.setItem('dls_viewed_cl',JSON.stringify(viewed));
+  fetch(`${FIREBASE_URL}/dls_highlights/cl/${key}/views.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(newCount)}).catch(()=>{});
+}
+
 async function likeHighlight(){
   if(!_hlActiveKey) return;
-  const liked=getLikedKeys(), isLiked=liked.includes(_hlActiveKey);
   const h=_hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
-  const newCount=Math.max(0,(h.likes||0)+(isLiked?-1:1));
-  await fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(newCount)});
-  h.likes=newCount;
+  const liked=getLikedKeys(), disliked=getDislikedKeys();
+  const isLiked=liked.includes(_hlActiveKey);
+  // toggle like
+  let likes=Math.max(0,(h.likes||0)+(isLiked?-1:1));
   if(isLiked) liked.splice(liked.indexOf(_hlActiveKey),1); else liked.push(_hlActiveKey);
+  // remove any existing dislike (mutually exclusive)
+  if(!isLiked && disliked.includes(_hlActiveKey)){
+    h.dislikes=Math.max(0,(h.dislikes||0)-1);
+    disliked.splice(disliked.indexOf(_hlActiveKey),1);
+    fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.dislikes)}).catch(()=>{});
+  }
+  h.likes=likes;
   localStorage.setItem('dls_liked_cl',JSON.stringify(liked));
-  document.getElementById('hl-like-count').textContent=newCount;
-  document.getElementById('hl-like-btn').classList.toggle('liked',!isLiked);
-  renderHlList();
+  localStorage.setItem('dls_disliked_cl',JSON.stringify(disliked));
+  fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(likes)}).catch(()=>{});
+  refreshActionUI(); renderHlList();
+}
+
+async function dislikeHighlight(){
+  if(!_hlActiveKey) return;
+  const h=_hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
+  const liked=getLikedKeys(), disliked=getDislikedKeys();
+  const isDisliked=disliked.includes(_hlActiveKey);
+  let dislikes=Math.max(0,(h.dislikes||0)+(isDisliked?-1:1));
+  if(isDisliked) disliked.splice(disliked.indexOf(_hlActiveKey),1); else disliked.push(_hlActiveKey);
+  if(!isDisliked && liked.includes(_hlActiveKey)){
+    h.likes=Math.max(0,(h.likes||0)-1);
+    liked.splice(liked.indexOf(_hlActiveKey),1);
+    fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.likes)}).catch(()=>{});
+  }
+  h.dislikes=dislikes;
+  localStorage.setItem('dls_liked_cl',JSON.stringify(liked));
+  localStorage.setItem('dls_disliked_cl',JSON.stringify(disliked));
+  fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(dislikes)}).catch(()=>{});
+  refreshActionUI(); renderHlList();
+}
+
+// Share a deep link that opens this app straight to the video
+async function shareHighlight(){
+  if(!_hlActiveKey) return;
+  const h=_hlItems.find(x=>x._key===_hlActiveKey);
+  const link=location.origin+location.pathname+'?hl='+encodeURIComponent(_hlActiveKey);
+  const title=h?(h.title||'DLS Champions League Highlight'):'DLS Champions League Highlight';
+  if(navigator.share){
+    try{ await navigator.share({title, text:title+' — watch on DLS Champion League', url:link}); return; }catch(e){ if(e.name==='AbortError') return; }
+  }
+  try{ await navigator.clipboard.writeText(link); clToast('Link copied — paste it in your group'); }
+  catch(e){ prompt('Copy this link to share:', link); }
+}
+
+// Download the video to the device
+async function downloadHighlight(){
+  if(!_hlActiveKey) return;
+  const h=_hlItems.find(x=>x._key===_hlActiveKey); if(!h||!h.videoUrl) return;
+  const btn=document.getElementById('hl-dl-btn'); const orig=btn.innerHTML;
+  btn.innerHTML='&#11015; Downloading...'; btn.disabled=true;
+  try{
+    const res=await fetch(h.videoUrl); const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=((h.title||'highlight').replace(/[^a-z0-9]+/gi,'_'))+'.mp4';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    clToast('Saved to your device');
+  }catch(e){ window.open(h.videoUrl,'_blank'); }
+  btn.innerHTML=orig; btn.disabled=false;
 }
 async function captureThumb(file){
   return new Promise(resolve=>{
@@ -1629,6 +1721,8 @@ function showAppShell(){
   } else { mdEl.textContent='Champions League'; }
   document.getElementById('atb-myteam').innerHTML=myTeam?badgeHTML(myTeam,40):'';
   switchTab('home');
+  // If the player arrived via a shared highlight link, open it straight away
+  if(_pendingHL && !_hlDeepLinkDone){ _hlDeepLinkDone=true; openHighlights(_pendingHL); }
 }
 
 let _activeTab='home';
@@ -1817,6 +1911,8 @@ function renderHome(){
 // ═══════════════════════════════════════════
 (async()=>{
   await loadData();
+  // Shared highlight deep link (?hl=KEY)
+  try{ const hp=new URLSearchParams(location.search).get('hl'); if(hp) _pendingHL=hp; }catch(e){}
   const access=localStorage.getItem('cl_viewer_access');
   if(access==='cl'){
     document.getElementById('code-gate').classList.add('hidden');

@@ -20,7 +20,8 @@
       "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\viewer.html\")",
       "Bash(git commit -q -m 'Show selected team badge in league player top bar *)",
       "Bash(git commit -q -m 'Add Player Accounts tab to Champions League admin \\(release team claims\\) *)",
-      "Bash(git commit -q -m 'Admin upload update clips to Highlights + Official Update badge in player apps *)"
+      "Bash(git commit -q -m 'Admin upload update clips to Highlights + Official Update badge in player apps *)",
+      "Bash(git commit -q -m 'Highlights: YouTube-style like/dislike, share deep-link, download, view counts; remove WhatsApp button *)"
     ]
   }
 }

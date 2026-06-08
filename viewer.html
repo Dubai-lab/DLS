@@ -421,6 +421,12 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .hl-player-info{padding:12px 16px;background:#0f1923;border-bottom:1px solid #21262d}
 .hl-player-title{font-size:.92rem;font-weight:800;color:#e6edf3;margin-bottom:8px}
 .hl-player-meta{display:flex;align-items:center;gap:12px;font-size:.75rem;color:#8b949e;flex-wrap:wrap}
+/* YouTube-style action bar */
+.hl-actions{display:flex;gap:8px;margin-top:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.hl-act-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid #30363d;border-radius:20px;color:#e6edf3;font-size:.76rem;font-weight:700;padding:8px 14px;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.hl-act-btn:active{background:rgba(255,255,255,.12)}
+.hl-act-btn.active-up{color:#4fc3f7;border-color:rgba(79,195,247,.5);background:rgba(79,195,247,.12)}
+.hl-act-btn.active-down{color:#f87171;border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.12)}
 .hl-like-btn{background:none;border:1px solid #30363d;border-radius:20px;padding:5px 14px;color:#e6edf3;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s}
 .hl-like-btn.liked{border-color:#e05252;color:#e05252;background:rgba(224,82,82,.08)}
 /* Comments */
@@ -1031,9 +1037,12 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
       <video class="hl-inline-player" id="hl-inline-player" controls playsinline></video>
       <div class="hl-player-info">
         <div class="hl-player-title" id="hl-player-title"></div>
-        <div class="hl-player-meta">
-          <span id="hl-player-date"></span>
-          <button class="hl-like-btn" id="hl-like-btn" onclick="likeHighlight()">&#10084; <span id="hl-like-count">0</span></button>
+        <div class="hl-player-sub" style="font-size:.7rem;color:#8b949e;margin-top:4px"><span id="hl-player-views">0 views</span> &middot; <span id="hl-player-date"></span></div>
+        <div class="hl-actions" id="hl-actions">
+          <button class="hl-act-btn" id="hl-like-btn" onclick="likeHighlight()">&#128077; <span id="hl-like-count">0</span></button>
+          <button class="hl-act-btn" id="hl-dislike-btn" onclick="dislikeHighlight()">&#128078; <span id="hl-dislike-count">0</span></button>
+          <button class="hl-act-btn" onclick="shareHighlight()">&#10548; Share</button>
+          <button class="hl-act-btn" id="hl-dl-btn" onclick="downloadHighlight()">&#11015; Download</button>
         </div>
       </div>
       <div class="hl-comments-wrap">
@@ -2391,10 +2400,14 @@ function showLiveScreen(){
   document.getElementById('twitch-iframe').src =
     'https://player.twitch.tv/?channel=dubai_tech&parent=' + host + '&autoplay=true';
 }
-function showHighlightsScreen(){
+async function showHighlightsScreen(autoKey){
   document.getElementById('app-shell').classList.add('hidden');
   document.getElementById('highlights-screen').classList.remove('hidden');
-  loadHighlights();
+  await loadHighlights();
+  if(autoKey){
+    const exists = _hlItems.find(x=>x._key===autoKey);
+    if(exists) selectHighlight(autoKey);
+  }
 }
 // showLeagueScreen now handled by Fixtures/Table tabs — keep for backwards compat
 function showLeagueScreen(){ showAppShell(); switchTab('fixtures'); }
@@ -2444,28 +2457,37 @@ function renderHlList(){
     const thumb = h.thumbUrl
       ? `<img src="${h.thumbUrl}" alt="">`
       : `<div class="hl-thumb-ph">&#127909;</div>`;
-    const titleSafe = (h.title||'Match Highlight').replace(/'/g,"\\'");
-    const urlSafe = (h.videoUrl||'').replace(/'/g,"\\'");
     const isUpdate = h.admin || h.type==='update';
     const updateBadge = isUpdate
       ? `<div style="display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.5px;color:#0d1117;background:#00c853;border-radius:5px;padding:2px 7px;margin-bottom:4px">&#128226; OFFICIAL UPDATE</div>`
       : '';
+    const views = h.views||0;
     return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')" style="${isUpdate?'border-color:rgba(0,200,83,.45)':''}">
       <div class="hl-thumb">${thumb}<div class="hl-play-ov"><span>&#9654;</span></div></div>
       <div class="hl-card-info">
         ${updateBadge}
         <div class="hl-card-vs">${h.title||'Match Highlight'}</div>
-        <div class="hl-card-date">${h.date||''}</div>
-        <div class="hl-card-lk">&#10084; ${h.likes||0}</div>
-        <button class="hl-share-btn" onclick="event.stopPropagation();shareHighlight('${urlSafe}','${titleSafe}')">&#128233; WhatsApp</button>
+        <div class="hl-card-date">&#128065; ${views} view${views===1?'':'s'} &middot; ${h.date||''}</div>
+        <div class="hl-card-lk">&#128077; ${h.likes||0} &nbsp; &#128078; ${h.dislikes||0}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-function shareHighlight(videoUrl, title){
-  const text = encodeURIComponent(`⚽ *${title}*\n🎬 Watch the highlight:\n${videoUrl}`);
-  window.open(`https://wa.me/?text=${text}`, '_blank');
+// ── local per-device state (per competition) ──
+function getLikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_liked_'+currentComp)||'[]'); }catch(e){ return []; } }
+function getDislikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_disliked_'+currentComp)||'[]'); }catch(e){ return []; } }
+function getViewedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_viewed_'+currentComp)||'[]'); }catch(e){ return []; } }
+
+function refreshActionUI(){
+  const h = _hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
+  document.getElementById('hl-like-count').textContent = h.likes||0;
+  document.getElementById('hl-dislike-count').textContent = h.dislikes||0;
+  const vEl = document.getElementById('hl-player-views');
+  if(vEl) vEl.textContent = (h.views||0)+' view'+((h.views||0)===1?'':'s');
+  document.getElementById('hl-player-date').textContent = h.date||'';
+  document.getElementById('hl-like-btn').classList.toggle('active-up', getLikedKeys().includes(_hlActiveKey));
+  document.getElementById('hl-dislike-btn').classList.toggle('active-down', getDislikedKeys().includes(_hlActiveKey));
 }
 
 async function selectHighlight(key){
@@ -2475,37 +2497,91 @@ async function selectHighlight(key){
   const player = document.getElementById('hl-inline-player');
   player.src = h.videoUrl; player.load(); player.play().catch(()=>{});
   document.getElementById('hl-player-title').textContent = h.title||'Match Highlight';
-  document.getElementById('hl-player-date').textContent = h.date||'';
-  document.getElementById('hl-like-count').textContent = h.likes||0;
-  const liked = getLikedKeys().includes(key);
-  document.getElementById('hl-like-btn').classList.toggle('liked', liked);
   document.getElementById('hl-player-section').classList.add('active');
   document.getElementById('hl-feed').scrollTop = 0;
+  await bumpView(key);
+  refreshActionUI();
   renderHlList();
   loadComments(key);
   updateCmtTeamDisplay();
 }
 
-function getLikedKeys(){
-  try{ return JSON.parse(localStorage.getItem('dls_liked_'+currentComp)||'[]'); }catch(e){ return []; }
+// Count one view per device per video (like YouTube unique views)
+async function bumpView(key){
+  const viewed = getViewedKeys();
+  if(viewed.includes(key)) return;
+  const h = _hlItems.find(x=>x._key===key); if(!h) return;
+  h.views = (h.views||0)+1;
+  viewed.push(key); localStorage.setItem('dls_viewed_'+currentComp, JSON.stringify(viewed));
+  fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${key}/views.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.views)}).catch(()=>{});
 }
 
 async function likeHighlight(){
   if(!_hlActiveKey) return;
-  const liked = getLikedKeys();
+  const h = _hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
+  const liked = getLikedKeys(), disliked = getDislikedKeys();
   const isLiked = liked.includes(_hlActiveKey);
-  const h = _hlItems.find(x=>x._key===_hlActiveKey);
-  if(!h) return;
-  const newCount = Math.max(0,(h.likes||0)+(isLiked?-1:1));
-  await fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/likes.json`,{
-    method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(newCount)
-  });
-  h.likes = newCount;
+  const likes = Math.max(0,(h.likes||0)+(isLiked?-1:1));
   if(isLiked){ liked.splice(liked.indexOf(_hlActiveKey),1); } else { liked.push(_hlActiveKey); }
+  if(!isLiked && disliked.includes(_hlActiveKey)){
+    h.dislikes = Math.max(0,(h.dislikes||0)-1);
+    disliked.splice(disliked.indexOf(_hlActiveKey),1);
+    fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.dislikes)}).catch(()=>{});
+  }
+  h.likes = likes;
   localStorage.setItem('dls_liked_'+currentComp, JSON.stringify(liked));
-  document.getElementById('hl-like-count').textContent = newCount;
-  document.getElementById('hl-like-btn').classList.toggle('liked', !isLiked);
-  renderHlList();
+  localStorage.setItem('dls_disliked_'+currentComp, JSON.stringify(disliked));
+  fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(likes)}).catch(()=>{});
+  refreshActionUI(); renderHlList();
+}
+
+async function dislikeHighlight(){
+  if(!_hlActiveKey) return;
+  const h = _hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
+  const liked = getLikedKeys(), disliked = getDislikedKeys();
+  const isDisliked = disliked.includes(_hlActiveKey);
+  const dislikes = Math.max(0,(h.dislikes||0)+(isDisliked?-1:1));
+  if(isDisliked){ disliked.splice(disliked.indexOf(_hlActiveKey),1); } else { disliked.push(_hlActiveKey); }
+  if(!isDisliked && liked.includes(_hlActiveKey)){
+    h.likes = Math.max(0,(h.likes||0)-1);
+    liked.splice(liked.indexOf(_hlActiveKey),1);
+    fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.likes)}).catch(()=>{});
+  }
+  h.dislikes = dislikes;
+  localStorage.setItem('dls_liked_'+currentComp, JSON.stringify(liked));
+  localStorage.setItem('dls_disliked_'+currentComp, JSON.stringify(disliked));
+  fetch(`${FIREBASE_URL}/dls_highlights/${currentComp}/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(dislikes)}).catch(()=>{});
+  refreshActionUI(); renderHlList();
+}
+
+// Share a deep link that opens the app straight to this video
+async function shareHighlight(){
+  if(!_hlActiveKey) return;
+  const h = _hlItems.find(x=>x._key===_hlActiveKey);
+  const link = location.origin+location.pathname+'?hl='+encodeURIComponent(_hlActiveKey)+'&hc='+encodeURIComponent(currentComp);
+  const title = h ? (h.title||'DLS League Highlight') : 'DLS League Highlight';
+  if(navigator.share){
+    try{ await navigator.share({title, text:title+' — watch on DLS Football Hub', url:link}); return; }catch(e){ if(e.name==='AbortError') return; }
+  }
+  try{ await navigator.clipboard.writeText(link); alert('Link copied — paste it in your group chat to share.'); }
+  catch(e){ prompt('Copy this link to share:', link); }
+}
+
+// Download the video to the device
+async function downloadHighlight(){
+  if(!_hlActiveKey) return;
+  const h = _hlItems.find(x=>x._key===_hlActiveKey); if(!h||!h.videoUrl) return;
+  const btn = document.getElementById('hl-dl-btn'); const orig = btn.innerHTML;
+  btn.innerHTML = '&#11015; Downloading...'; btn.disabled = true;
+  try{
+    const res = await fetch(h.videoUrl); const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = ((h.title||'highlight').replace(/[^a-z0-9]+/gi,'_'))+'.mp4';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  }catch(e){ window.open(h.videoUrl,'_blank'); }
+  btn.innerHTML = orig; btn.disabled = false;
 }
 
 async function loadComments(key){
@@ -4057,6 +4133,9 @@ setInterval(()=>{
   await loadData();
   updateTimestamp();
   updateTicker();
+  // Shared highlight deep link (?hl=KEY&hc=COMP)
+  let pendingHL=null, pendingHC=null;
+  try{ const p=new URLSearchParams(location.search); pendingHL=p.get('hl'); pendingHC=p.get('hc'); }catch(e){}
   const saved = localStorage.getItem('dls_viewer_access');
   if(saved && COMP_CFG[saved]){
     selectComp(saved);
@@ -4066,6 +4145,11 @@ setInterval(()=>{
       showAppShell();
     } else {
       showTeamSelectScreen(saved);
+    }
+    // After the app is up, open the shared highlight if one was linked
+    if(pendingHL){
+      if(pendingHC && COMP_CFG[pendingHC]){ currentComp=pendingHC; }
+      setTimeout(()=>showHighlightsScreen(pendingHL), 400);
     }
   } else {
     showCodeGate();

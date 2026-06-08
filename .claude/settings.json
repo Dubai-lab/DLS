@@ -18,7 +18,8 @@
       "Bash(git ls-tree *)",
       "Bash(git commit -q -m 'Add Champions League PWA \\(cl-viewer\\) + events system; rotate VAPID/NOTIFY_SECRET; gitignore secrets & node_modules *)",
       "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\viewer.html\")",
-      "Bash(git commit -q -m 'Show selected team badge in league player top bar *)"
+      "Bash(git commit -q -m 'Show selected team badge in league player top bar *)",
+      "Bash(git commit -q -m 'Add Player Accounts tab to Champions League admin \\(release team claims\\) *)"
     ]
   }
 }

@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\index.html\")",
+      "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\cl-viewer.html\")",
+      "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\tournament.html\")",
+      "Bash(start \"\" \"c:\\\\Users\\\\eg821\\\\Desktop\\\\DLS\\\\league.html\")",
+      "Bash(ls -la netlify)",
+      "Bash(ls -la netlify/functions)",
+      "Bash(ls -la functions)",
+      "Bash(cat netlify.toml)",
+      "Bash(cat .env.example)",
+      "Bash(cat .gitignore)",
+      "Bash(git ls-files *)",
+      "Bash(git rm *)",
+      "Bash(node -e \"const wp=require\\('./netlify/functions/node_modules/web-push'\\); const k=wp.generateVAPIDKeys\\(\\); const crypto=require\\('crypto'\\); const secret=crypto.randomBytes\\(32\\).toString\\('hex'\\); console.log\\('VAPID_PUBLIC_KEY='+k.publicKey\\); console.log\\('VAPID_PRIVATE_KEY='+k.privateKey\\); console.log\\('NOTIFY_SECRET='+secret\\);\")"
     ]
   }
 }

@@ -869,17 +869,11 @@ function renderFixtures(){
     } else {
       const ph = isEditing && m.hs !== null ? m.hs : '';
       const pa = isEditing && m.as !== null ? m.as : '';
-      let hBtns='', aBtns='';
-      if(isEditing || !m.played){
-        const cnt = _pendingCards[key] || {hY:0,hR:0,aY:0,aR:0};
-        const hYc=cnt.hY||0, hRc=cnt.hR||0, aYc=cnt.aY||0, aRc=cnt.aR||0;
-        hBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'home','yellow')">&#127936; +150${hYc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'home','yellow')">${hYc}</span>`:''}</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'home','red')">&#127947; +300${hRc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'home','red')">${hRc}</span>`:''}</button>`;
-        aBtns = `<button class="btn-card-y" onclick="addCard(${LS.currentDay},${idx},'away','yellow')">&#127936; +150${aYc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'away','yellow')">${aYc}</span>`:''}</button><button class="btn-card-r" onclick="addCard(${LS.currentDay},${idx},'away','red')">&#127947; +300${aRc?`<span class="card-cnt" onclick="event.stopPropagation();decCard(${LS.currentDay},${idx},'away','red')">${aRc}</span>`:''}</button>`;
-      }
+      // Cards are now entered in the ⚙ Events modal (which also computes fines) —
+      // the inline +150/+300 buttons have been removed to avoid double entry.
       matchesHTML += `<div class="match-card${isEditing?' editing':''}">
         <div class="mc-home-g">
           <span class="mc-team home">${esc(m.home)}</span>
-          ${hBtns}
         </div>
         <div class="mc-score-area">
           <input class="sc-inp" id="sc-h-${LS.currentDay}-${idx}" type="number" min="0" max="99" placeholder="0" value="${ph}">
@@ -888,7 +882,6 @@ function renderFixtures(){
         </div>
         <div class="mc-away-g">
           <span class="mc-team away">${esc(m.away)}</span>
-          ${aBtns}
         </div>
         <button class="mc-save-btn" onclick="saveScore(${LS.currentDay},${idx})">Save</button>
         ${isEditing ? `<button class="mc-cancel-btn" onclick="cancelEdit(${LS.currentDay},${idx})">&#10005;</button>` : ''}
@@ -1399,7 +1392,7 @@ function copyMatchdayAnnouncement(){
 // ═══════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════
-const NOTIFY_SECRET = 'c68805dd4e0bd6a2025817c84db31527257c4e9a3b4ea0c618946a6bd42dd3b0';
+const NOTIFY_SECRET = '53ad841688bd47ac0b2e2648cc4a8b7aa1848f70080fbec8565ee5c31448f6b7';
 function notifyFixture(comp, compName, matchday){
   const storeKey = 'dls_last_notif_' + comp;
   const last = localStorage.getItem(storeKey);
@@ -1763,12 +1756,41 @@ function closeEventsModal(){
   _evDay = null; _evIdx = null;
 }
 
+// ── Build a roster of player names already used by a team (across ALL matchdays)
+//    so the admin can re-select the same player instead of re-typing a new name. ──
+function rosterFor(teamName){
+  const set=new Set();
+  (LS.matchdays||[]).forEach(md=>{
+    (md.matches||[]).forEach(mm=>{
+      const homeIs=mm.home===teamName, awayIs=mm.away===teamName;
+      if(!homeIs && !awayIs) return;
+      const side=homeIs?'h':'a';
+      (mm.events||[]).forEach(ev=>{
+        if(ev.team===side){ if(ev.player) set.add(ev.player); if(ev.assist) set.add(ev.assist); }
+      });
+      const lu=mm.lineup&&mm.lineup[side];
+      if(lu&&lu.players) lu.players.forEach(p=>{ if(p&&p.trim()) set.add(p.trim()); });
+    });
+  });
+  return [...set].sort((a,b)=>a.localeCompare(b));
+}
+function datalistHTML(id, names){
+  return `<datalist id="${id}">${names.map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>`;
+}
+
 function buildEvModalBody(m){
   const evts = m.events || [];
   const hGoals = evts.filter(e=>e.type==='goal'&&e.team==='h');
   const aGoals = evts.filter(e=>e.type==='goal'&&e.team==='a');
   const cardEvts = evts.filter(e=>e.type==='yellowcard'||e.type==='redcard');
   const lu = m.lineup || {};
+
+  // Player-name suggestion lists (one per team + a combined list for cards)
+  const homeRoster=rosterFor(m.home), awayRoster=rosterFor(m.away);
+  const allRoster=[...new Set([...homeRoster,...awayRoster])].sort((a,b)=>a.localeCompare(b));
+  const datalists = datalistHTML('dl-home-players',homeRoster)
+                  + datalistHTML('dl-away-players',awayRoster)
+                  + datalistHTML('dl-all-players',allRoster);
 
   // Pre-fill goal rows up to the score count
   const hCount = Math.max(hGoals.length, m.hs||0);
@@ -1788,7 +1810,8 @@ function buildEvModalBody(m){
   // Formation options
   const fmOpts = `<option value="">Formation...</option>${FORMATIONS.map(f=>`<option value="${f}">${f}</option>`).join('')}`;
 
-  return `
+  return datalists + `
+  <div class="ev-hint" style="font-size:.68rem;color:#8b949e;background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.5">&#128161; Tap a name field to pick a player you've entered before, or type a new name &mdash; new names are remembered automatically for next time.</div>
   <div class="ev-section">
     <div class="ev-sec-title">&#9917; Goals</div>
     <div class="ev-team-hdr"><span>${esc(m.home)}</span><span class="ev-goal-cnt">${m.hs||0} goal${(m.hs||0)!==1?'s':''}</span></div>
@@ -1832,10 +1855,11 @@ function buildEvModalBody(m){
 
 function goalRowHTML(side, ev){
   const noteOpts = ['','penalty','own goal','free kick'].map(n=>`<option value="${n}" ${ev.note===n?'selected':''}>${n||'—'}</option>`).join('');
+  const dl = side==='h'?'dl-home-players':'dl-away-players';
   return `<div class="ev-row" data-team="${side}" data-type="goal">
-    <input class="ev-inp ev-wide" placeholder="Scorer name" value="${esc(ev.player||'')}">
+    <input class="ev-inp ev-wide" list="${dl}" placeholder="Scorer name" value="${esc(ev.player||'')}">
     <input class="ev-inp ev-min" type="number" min="1" max="120" placeholder="Min" value="${ev.min||''}">
-    <input class="ev-inp ev-wide" placeholder="Assist (optional)" value="${esc(ev.assist||'')}">
+    <input class="ev-inp ev-wide" list="${dl}" placeholder="Assist (optional)" value="${esc(ev.assist||'')}">
     <select class="ev-sel" style="max-width:90px">${noteOpts}</select>
     <button class="ev-rm" onclick="this.closest('[data-type]').remove()">&#10005;</button>
   </div>`;
@@ -1853,7 +1877,7 @@ function cardEvtRowHTML(ev, m){
   return `<div class="ev-row" data-type="card">
     <select class="ev-sel" style="max-width:110px">${typeOpts}</select>
     <select class="ev-sel" style="max-width:130px">${teamOpts}</select>
-    <input class="ev-inp ev-wide" placeholder="Player name" value="${esc(ev.player||'')}">
+    <input class="ev-inp ev-wide" list="dl-all-players" placeholder="Player name" value="${esc(ev.player||'')}">
     <input class="ev-inp ev-min" type="number" min="1" max="120" placeholder="Min" value="${ev.min||''}">
     <button class="ev-rm" onclick="this.closest('[data-type]').remove()">&#10005;</button>
   </div>`;
@@ -1873,11 +1897,12 @@ function buildFmInputs(side, formation, players){
     const lbls=['DEF','MID','ATK','FWD','ATK'];
     return [n,lbls[Math.min(i,lbls.length-1)]];
   })];
+  const dl = side==='h'?'dl-home-players':'dl-away-players';
   let html='', pi=0;
   for(const [count,lbl] of rowDefs){
     html+=`<div class="fm-row"><span class="fm-pos-lbl">${lbl}</span>`;
     for(let j=0;j<count;j++){
-      html+=`<input class="fm-inp" placeholder="Player ${pi+1}" value="${esc(players[pi]||'')}" data-fm="${side}-${pi}">`;
+      html+=`<input class="fm-inp" list="${dl}" placeholder="Player ${pi+1}" value="${esc(players[pi]||'')}" data-fm="${side}-${pi}">`;
       pi++;
     }
     html+='</div>';
@@ -1925,6 +1950,14 @@ function saveEventsModal(){
   // Sort by minute
   events.sort((a,b)=>(a.min||0)-(b.min||0));
   m.events=events;
+
+  // Keep the fine system (m.cards) in sync — derive it from the card events so
+  // the admin only enters cards once here (no separate inline +150/+300 buttons).
+  m.cards = events.filter(e=>e.type==='yellowcard'||e.type==='redcard').map(e=>({
+    team: e.team==='h'?m.home:m.away,
+    type: e.type==='yellowcard'?'yellow':'red',
+    fine: e.type==='yellowcard'?150:300
+  }));
 
   // Formation
   m.lineup=m.lineup||{};

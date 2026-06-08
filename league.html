@@ -428,7 +428,21 @@ function checkLock(){
 
   <div style="margin-bottom:16px;padding:14px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px">
     <h3 style="font-size:.88rem;font-weight:800;color:#e6edf3;margin-bottom:6px">&#127909; Manage Highlights</h3>
-    <p style="font-size:.75rem;color:#8b949e;margin-bottom:10px">Delete highlight clips uploaded by players.</p>
+    <p style="font-size:.75rem;color:#8b949e;margin-bottom:10px">Upload an update clip for players, or delete clips.</p>
+
+    <!-- Admin upload an announcement/update clip (no team needed) -->
+    <div style="border:1px dashed rgba(0,200,83,.35);border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:.8rem;font-weight:800;color:#00c853;margin-bottom:8px">&#11014; Upload Update Clip <span style="font-size:.66rem;color:#8b949e;font-weight:400">— shows in the players' Highlights feed</span></div>
+      <input id="adm-hl-title" type="text" placeholder="Clip title (e.g. New Season Update)" maxlength="70" style="width:100%;padding:9px 11px;background:#0d1117;border:1px solid #30363d;border-radius:7px;color:#e6edf3;font-size:.82rem;outline:none;margin-bottom:8px">
+      <label for="adm-hl-file" style="display:block;text-align:center;padding:12px;background:rgba(0,200,83,.06);border:1px dashed rgba(0,200,83,.3);border-radius:7px;color:#00c853;font-size:.8rem;font-weight:700;cursor:pointer;margin-bottom:6px">&#128247; Choose video from device</label>
+      <input id="adm-hl-file" type="file" accept="video/*" style="display:none" onchange="admHlFileChange(this)">
+      <div id="adm-hl-fname" style="font-size:.72rem;color:#8b949e;text-align:center;margin-bottom:8px;word-break:break-all"></div>
+      <div id="adm-hl-prog-wrap" style="display:none;height:6px;background:#21262d;border-radius:3px;overflow:hidden;margin-bottom:6px"><div id="adm-hl-prog" style="height:100%;width:0;background:linear-gradient(90deg,#00c853,#00a844)"></div></div>
+      <div id="adm-hl-status" style="display:none;font-size:.72rem;color:#8b949e;text-align:center;margin-bottom:8px"></div>
+      <button onclick="adminUploadClip()" id="adm-hl-btn" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#00c853,#00a844);color:#fff;border:none;font-weight:800">&#11014; Upload Clip</button>
+      <div id="adm-hl-err" style="font-size:.74rem;color:#f87171;text-align:center;margin-top:6px;min-height:14px"></div>
+    </div>
+
     <button onclick="loadAdminHighlights()" class="btn btn-sm" style="background:#21262d;border:1px solid #30363d;color:#e6edf3;margin-bottom:10px">&#8635; Load Highlights</button>
     <div id="admin-hl-list"></div>
   </div>
@@ -1291,6 +1305,69 @@ async function deleteHighlight(key, videoUrl, thumbUrl, btn){
     if(tPath) await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/${encodeURIComponent(tPath)}`,{method:'DELETE'}).catch(()=>{});
     btn.closest('div[style]').remove();
   }catch(e){ btn.disabled=false; btn.textContent='Delete'; alert('Delete failed. Try again.'); }
+}
+
+// ── Admin: upload an update/announcement clip (no team selection) ──
+let _admFile=null;
+function admHlFileChange(input){
+  _admFile=input.files[0]||null;
+  document.getElementById('adm-hl-fname').textContent=_admFile?_admFile.name:'';
+}
+function admCaptureThumb(file){
+  return new Promise(resolve=>{
+    const vid=document.createElement('video'), canvas=document.createElement('canvas');
+    vid.preload='auto'; vid.muted=true; vid.playsInline=true;
+    vid.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0';
+    document.body.appendChild(vid);
+    let done=false;
+    const cleanup=()=>{ try{URL.revokeObjectURL(vid.src)}catch(e){} try{document.body.removeChild(vid)}catch(e){} };
+    const cap=()=>{ if(done) return; done=true; canvas.width=320; canvas.height=180;
+      try{ canvas.getContext('2d').drawImage(vid,0,0,320,180); canvas.toBlob(b=>{ cleanup(); resolve(b&&b.size>500?b:null); },'image/jpeg',0.8); }catch(e){ cleanup(); resolve(null); } };
+    vid.onseeked=cap; vid.ontimeupdate=()=>{ if(vid.currentTime>0) cap(); };
+    vid.onloadeddata=()=>{ vid.currentTime=0.5; }; vid.oncanplay=()=>{ if(!done) vid.currentTime=0.5; };
+    vid.onerror=()=>{ cleanup(); resolve(null); };
+    setTimeout(()=>{ if(!done){ cap(); setTimeout(()=>{ if(!done){cleanup();resolve(null);} },300); } },2000);
+    vid.src=URL.createObjectURL(file); vid.load();
+  });
+}
+async function adminUploadClip(){
+  const title=(document.getElementById('adm-hl-title').value||'').trim();
+  const errEl=document.getElementById('adm-hl-err');
+  errEl.textContent='';
+  if(!title){ errEl.textContent='Enter a clip title first.'; return; }
+  if(!_admFile){ errEl.textContent='Choose a video file first.'; return; }
+  const btn=document.getElementById('adm-hl-btn');
+  const progWrap=document.getElementById('adm-hl-prog-wrap'), prog=document.getElementById('adm-hl-prog'), status=document.getElementById('adm-hl-status');
+  btn.disabled=true; progWrap.style.display='block'; status.style.display='block';
+  const setP=(p,t)=>{ prog.style.width=p+'%'; status.textContent=t; };
+  try{
+    const fname=Date.now()+'_'+_admFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    setP(5,'Preparing...');
+    const thumbBlob=await Promise.race([admCaptureThumb(_admFile),new Promise(r=>setTimeout(()=>r(null),1500))]);
+    let thumbUrl='';
+    if(thumbBlob){
+      setP(15,'Uploading thumbnail...');
+      const tname='thumb_'+fname.replace(/\.[^.]+$/,'.jpg');
+      try{ const tr=await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o?uploadType=media&name=highlights/${tname}`,{method:'POST',headers:{'Content-Type':'image/jpeg'},body:thumbBlob});
+        if(tr.ok) thumbUrl=`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/highlights%2F${encodeURIComponent(tname)}?alt=media`; }catch(e){}
+    }
+    setP(25,'Uploading video — please wait...');
+    const upRes=await fetch(`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o?uploadType=media&name=highlights/${fname}`,{method:'POST',headers:{'Content-Type':_admFile.type||'video/mp4'},body:_admFile});
+    if(!upRes.ok) throw new Error(await upRes.text());
+    setP(90,'Saving...');
+    const videoUrl=`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/highlights%2F${encodeURIComponent(fname)}?alt=media`;
+    await fetch(`${FIREBASE_URL}/dls_highlights/${HL_COMP}.json`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title,team1:'',team2:'',admin:true,type:'update',videoUrl,thumbUrl,league:HL_COMP,date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),ts:Date.now(),likes:0})});
+    setP(100,'Done!');
+    toast('✓ Clip uploaded — players can watch it in Highlights.');
+    document.getElementById('adm-hl-title').value=''; document.getElementById('adm-hl-fname').textContent=''; document.getElementById('adm-hl-file').value=''; _admFile=null;
+    setTimeout(()=>{ progWrap.style.display='none'; status.style.display='none'; prog.style.width='0%'; },1200);
+    btn.disabled=false;
+    loadAdminHighlights();
+  }catch(e){
+    errEl.textContent='Upload failed. Check your connection and try again.';
+    btn.disabled=false; progWrap.style.display='none'; status.style.display='none';
+  }
 }
 
 // ═══════════════════════════════════════════

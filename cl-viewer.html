@@ -1480,9 +1480,14 @@ function renderHlList(){
     const thumb=h.thumbUrl?`<img src="${h.thumbUrl}" alt="">`:`<div class="hl-thumb-ph">&#127909;</div>`;
     const urlSafe=(h.videoUrl||'').replace(/'/g,"\\'");
     const titleSafe=(h.title||'Match Highlight').replace(/'/g,"\\'");
-    return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')">
+    const isUpdate=h.admin||h.type==='update';
+    const updateBadge=isUpdate
+      ? `<div style="display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.5px;color:#1a1400;background:#FFD700;border-radius:5px;padding:2px 7px;margin-bottom:4px">&#128226; OFFICIAL UPDATE</div>`
+      : '';
+    return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')" style="${isUpdate?'border-color:rgba(255,215,0,.45)':''}">
       <div class="hl-thumb">${thumb}<div class="hl-play-ov"><span>&#9654;</span></div></div>
       <div class="hl-card-info">
+        ${updateBadge}
         <div class="hl-card-vs">${esc(h.title||'Match Highlight')}</div>
         <div class="hl-card-date">${esc(h.date||'')}</div>
         <div class="hl-card-lk">&#10084; ${h.likes||0}</div>

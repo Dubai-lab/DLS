@@ -216,6 +216,43 @@ table.standings tr.eliminated td:first-child{border-left:3px solid #dc3545}
   .header h1{font-size:1.4rem;letter-spacing:2px}
   .btn{padding:11px 24px;font-size:.85rem}
 }
+
+/* ── Events button + modal ── */
+.fix-events-btn{padding:5px 9px;background:rgba(255,112,67,.08);border:1px solid rgba(255,112,67,.3);border-radius:5px;color:#ff7043;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0;display:inline-flex;align-items:center;gap:4px}
+.fix-events-btn:hover{background:rgba(255,112,67,.18)}
+.ev-dot{background:#ff7043;color:#0d1117;border-radius:10px;padding:0 5px;font-size:.62rem;font-weight:800;min-width:15px;text-align:center}
+.evm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:10000;display:flex;align-items:center;justify-content:center;padding:14px}
+.evm-overlay.hidden{display:none}
+.evm-box{background:#161b22;border:1px solid #30363d;border-radius:14px;width:100%;max-width:680px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.evm-hdr{background:#0f1923;border-bottom:1px solid #21262d;padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.evm-tag{font-size:.7rem;font-weight:800;color:#ff7043;letter-spacing:1px}
+.evm-title{flex:1;font-size:.92rem;font-weight:800;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evm-close{background:rgba(255,255,255,.06);border:1px solid #30363d;border-radius:7px;color:#8b949e;font-size:1rem;cursor:pointer;width:30px;height:30px;flex-shrink:0}
+.evm-body{flex:1;overflow-y:auto;padding:14px 16px}
+.evm-foot{background:#0f1923;border-top:1px solid #21262d;padding:10px 16px;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.evm-sec{margin-bottom:18px}
+.evm-sec-title{font-size:.74rem;font-weight:800;color:#e6edf3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #21262d}
+.evm-team-hdr{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;font-weight:700;color:#ff7043;margin:10px 0 6px}
+.evm-goal-cnt{font-size:.66rem;color:#8b949e;font-weight:600}
+.evm-row{display:flex;gap:6px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+.evm-inp{background:#0d1117;border:1px solid #30363d;border-radius:7px;color:#e6edf3;font-size:.8rem;padding:8px 10px;outline:none}
+.evm-inp:focus{border-color:#ff7043}
+.evm-wide{flex:1;min-width:110px}
+.evm-min{width:62px;flex-shrink:0}
+.evm-sel{background:#0d1117;border:1px solid #30363d;border-radius:7px;color:#e6edf3;font-size:.78rem;padding:8px;outline:none;flex-shrink:0}
+.evm-rm{background:rgba(220,53,69,.12);border:1px solid rgba(220,53,69,.3);border-radius:6px;color:#f87171;font-size:.8rem;cursor:pointer;width:30px;height:32px;flex-shrink:0}
+.evm-add{width:100%;padding:9px;background:rgba(255,112,67,.06);border:1px dashed rgba(255,112,67,.3);border-radius:8px;color:#ff7043;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:4px}
+.evm-add:hover{background:rgba(255,112,67,.12)}
+.evm-fm-block{background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:10px;margin-bottom:10px}
+.evm-fm-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.evm-fm-lbl{font-size:.78rem;font-weight:700;color:#e6edf3}
+.evm-fm-row{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.evm-fm-pos{font-size:.6rem;font-weight:800;color:#8b949e;width:30px;flex-shrink:0;letter-spacing:.5px}
+.evm-fm-inp{flex:1;min-width:0;background:#161b22;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:.74rem;padding:6px 8px;outline:none}
+.evm-fm-inp:focus{border-color:#ff7043}
+.evm-save{padding:9px 18px;background:linear-gradient(135deg,#ff7043,#e64a19);border:none;border-radius:8px;color:#2a1200;font-size:.82rem;font-weight:800;cursor:pointer}
+.evm-cancel-btn{padding:9px 16px;background:#21262d;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.82rem;font-weight:700;cursor:pointer}
+.evm-hint{font-size:.68rem;color:#8b949e;background:rgba(255,112,67,.06);border:1px solid rgba(255,112,67,.2);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -764,7 +801,8 @@ function buildGroupCard(g){
 function buildFixRow(g,f,aLogo){
   const isEditing=editingFix.has(`${g}-${f.id}`);
   if(f.played&&!isEditing){
-    return `<div class="fixture played"><div class="fix-team home" style="display:flex;align-items:center;justify-content:flex-end;gap:5px">${esc(f.home)}${aLogo(f.home)}</div><div class="fix-result">${f.hs} – ${f.as}</div><div class="fix-team away" style="display:flex;align-items:center;justify-content:flex-start;gap:5px">${aLogo(f.away)}${esc(f.away)}</div><span class="fix-check">&#10003;</span><button class="fix-edit" onclick="editGroupScore('${g}',${f.id})">&#9998;</button></div>`;
+    const evCount=(f.events||[]).length;
+    return `<div class="fixture played"><div class="fix-team home" style="display:flex;align-items:center;justify-content:flex-end;gap:5px">${esc(f.home)}${aLogo(f.home)}</div><div class="fix-result">${f.hs} – ${f.as}</div><div class="fix-team away" style="display:flex;align-items:center;justify-content:flex-start;gap:5px">${aLogo(f.away)}${esc(f.away)}</div><span class="fix-check">&#10003;</span><button class="fix-edit" onclick="editGroupScore('${g}',${f.id})">&#9998;</button><button class="fix-events-btn" onclick="openCLEvents('${g}',${f.id})">&#9883; Events${evCount?`<span class="ev-dot">${evCount}</span>`:''}</button></div>`;
   }
   const prefillH=(isEditing&&f.hs!==null)?f.hs:'';
   const prefillA=(isEditing&&f.as!==null)?f.as:'';
@@ -1270,5 +1308,228 @@ function toast(msg,type='success'){
     </div>
   </div>
 </div>
+
+<!-- ═══════ EVENTS MODAL (goals, assists, cards, line-ups) ═══════ -->
+<div class="evm-overlay hidden" id="evm-overlay">
+  <div class="evm-box">
+    <div class="evm-hdr">
+      <span class="evm-tag" id="evm-tag"></span>
+      <div class="evm-title" id="evm-title">Match Events</div>
+      <button class="evm-close" onclick="closeCLEvents()">&#10005;</button>
+    </div>
+    <div class="evm-body" id="evm-body"></div>
+    <div class="evm-foot">
+      <button class="evm-cancel-btn" onclick="closeCLEvents()">Cancel</button>
+      <button class="evm-save" onclick="saveCLEvents()">&#10003; Save Events</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  EUROPA LEAGUE — MATCH EVENTS MODAL
+//  Goals (scorer/assist/min/note), cards, formations & line-ups.
+//  Stored on each fixture as f.events[] and f.lineup{h,a} and published
+//  to players (cl-viewer.html reads them for the timeline + line-ups).
+// ═══════════════════════════════════════════
+const CL_FORMATIONS = ['4-3-3','4-4-2','4-2-3-1','3-5-2','4-5-1','5-3-2','3-4-3','4-1-4-1','5-4-1','4-3-2-1'];
+let _clEvG=null, _clEvId=null;
+
+function clRosterFor(teamName){
+  const set=new Set();
+  ['A','B','C','D'].forEach(g=>{
+    (S.fixtures[g]||[]).forEach(mm=>{
+      const homeIs=mm.home===teamName, awayIs=mm.away===teamName;
+      if(!homeIs&&!awayIs) return;
+      const side=homeIs?'h':'a';
+      (mm.events||[]).forEach(ev=>{ if(ev.team===side){ if(ev.player)set.add(ev.player); if(ev.assist)set.add(ev.assist); } });
+      const lu=mm.lineup&&mm.lineup[side];
+      if(lu&&lu.players) lu.players.forEach(p=>{ if(p&&p.trim()) set.add(p.trim()); });
+    });
+  });
+  return [...set].sort((a,b)=>a.localeCompare(b));
+}
+function clDatalist(id, names){
+  return `<datalist id="${id}">${names.map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>`;
+}
+function findCLFix(g,id){ return (S.fixtures[g]||[]).find(f=>f.id===id); }
+
+function openCLEvents(g,id){
+  _clEvG=g; _clEvId=id;
+  const f=findCLFix(g,id);
+  if(!f) return;
+  document.getElementById('evm-tag').textContent=`GROUP ${g} · MD${f.md||''}`;
+  document.getElementById('evm-title').textContent=`${f.home}  ${f.hs} – ${f.as}  ${f.away}`;
+  document.getElementById('evm-body').innerHTML=buildCLEvBody(f);
+  document.getElementById('evm-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+function closeCLEvents(){
+  document.getElementById('evm-overlay').classList.add('hidden');
+  document.body.style.overflow='';
+  _clEvG=null; _clEvId=null;
+}
+
+function buildCLEvBody(f){
+  const evts=f.events||[];
+  const hGoals=evts.filter(e=>e.type==='goal'&&e.team==='h');
+  const aGoals=evts.filter(e=>e.type==='goal'&&e.team==='a');
+  const cardEvts=evts.filter(e=>e.type==='yellowcard'||e.type==='redcard');
+  const lu=f.lineup||{};
+
+  const homeRoster=clRosterFor(f.home), awayRoster=clRosterFor(f.away);
+  const allRoster=[...new Set([...homeRoster,...awayRoster])].sort((a,b)=>a.localeCompare(b));
+  const datalists=clDatalist('cldl-home',homeRoster)+clDatalist('cldl-away',awayRoster)+clDatalist('cldl-all',allRoster);
+
+  const hCount=Math.max(hGoals.length, f.hs||0);
+  const aCount=Math.max(aGoals.length, f.as||0);
+  let hRows='',aRows='';
+  for(let i=0;i<hCount;i++) hRows+=clGoalRow('h',hGoals[i]||{});
+  for(let i=0;i<aCount;i++) aRows+=clGoalRow('a',aGoals[i]||{});
+  const cRows=cardEvts.map(e=>clCardRow(e,f)).join('');
+
+  return datalists + `
+  <div class="evm-hint">&#128161; Tap a name field to pick a player you entered before, or type a new name &mdash; new players are remembered automatically for next time.</div>
+  <div class="evm-sec">
+    <div class="evm-sec-title">&#9917; Goals</div>
+    <div class="evm-team-hdr"><span>${esc(f.home)}</span><span class="evm-goal-cnt">${f.hs||0} goal${(f.hs||0)!==1?'s':''}</span></div>
+    <div id="cl-goals-h">${hRows}</div>
+    <button class="evm-add" onclick="addCLGoal('h')">&#43; Add ${esc(f.home)} goal</button>
+    <div class="evm-team-hdr"><span>${esc(f.away)}</span><span class="evm-goal-cnt">${f.as||0} goal${(f.as||0)!==1?'s':''}</span></div>
+    <div id="cl-goals-a">${aRows}</div>
+    <button class="evm-add" onclick="addCLGoal('a')">&#43; Add ${esc(f.away)} goal</button>
+  </div>
+
+  <div class="evm-sec">
+    <div class="evm-sec-title">&#127936; Cards <span style="font-size:.6rem;color:#4a5568;font-weight:400;text-transform:none;letter-spacing:0">(timeline)</span></div>
+    <div id="cl-cards">${cRows}</div>
+    <button class="evm-add" onclick="addCLCard()">&#43; Add card</button>
+  </div>
+
+  <div class="evm-sec">
+    <div class="evm-sec-title">&#128101; Formations &amp; Line-ups</div>
+    <div class="evm-fm-block">
+      <div class="evm-fm-top"><span class="evm-fm-lbl">${esc(f.home)}</span>
+        <select class="evm-sel" id="cl-fm-h-sel" onchange="updateCLFm('h')" style="max-width:130px">
+          <option value="">Formation...</option>
+          ${CL_FORMATIONS.map(x=>`<option value="${x}" ${lu.h&&lu.h.formation===x?'selected':''}>${x}</option>`).join('')}
+        </select>
+      </div>
+      <div id="cl-fm-h-grid">${lu.h&&lu.h.formation?clFmInputs('h',lu.h.formation,lu.h.players||[]):''}</div>
+    </div>
+    <div class="evm-fm-block">
+      <div class="evm-fm-top"><span class="evm-fm-lbl">${esc(f.away)}</span>
+        <select class="evm-sel" id="cl-fm-a-sel" onchange="updateCLFm('a')" style="max-width:130px">
+          <option value="">Formation...</option>
+          ${CL_FORMATIONS.map(x=>`<option value="${x}" ${lu.a&&lu.a.formation===x?'selected':''}>${x}</option>`).join('')}
+        </select>
+      </div>
+      <div id="cl-fm-a-grid">${lu.a&&lu.a.formation?clFmInputs('a',lu.a.formation,lu.a.players||[]):''}</div>
+    </div>
+  </div>`;
+}
+
+function clGoalRow(side, ev){
+  const dl=side==='h'?'cldl-home':'cldl-away';
+  const noteOpts=['','penalty','own goal','free kick'].map(n=>`<option value="${n}" ${ev.note===n?'selected':''}>${n||'—'}</option>`).join('');
+  return `<div class="evm-row" data-team="${side}" data-type="goal">
+    <input class="evm-inp evm-wide" list="${dl}" placeholder="Scorer name" value="${esc(ev.player||'')}">
+    <input class="evm-inp evm-min" type="number" min="1" max="120" placeholder="Min" value="${ev.min||''}">
+    <input class="evm-inp evm-wide" list="${dl}" placeholder="Assist (optional)" value="${esc(ev.assist||'')}">
+    <select class="evm-sel" style="max-width:88px">${noteOpts}</select>
+    <button class="evm-rm" onclick="this.closest('[data-type]').remove()">&#10005;</button>
+  </div>`;
+}
+function addCLGoal(side){
+  const d=document.createElement('div');
+  d.innerHTML=clGoalRow(side,{});
+  document.getElementById('cl-goals-'+side).appendChild(d.firstElementChild);
+}
+
+function clCardRow(ev, f){
+  const typeOpts=['yellowcard','redcard'].map(t=>`<option value="${t}" ${ev.type===t?'selected':''}>${t==='yellowcard'?'🟨 Yellow':'🟥 Red'}</option>`).join('');
+  const teamOpts=`<option value="h" ${ev.team==='h'?'selected':''}>${esc(f.home)}</option><option value="a" ${ev.team==='a'?'selected':''}>${esc(f.away)}</option>`;
+  return `<div class="evm-row" data-type="card">
+    <select class="evm-sel" style="max-width:108px">${typeOpts}</select>
+    <select class="evm-sel" style="max-width:130px">${teamOpts}</select>
+    <input class="evm-inp evm-wide" list="cldl-all" placeholder="Player name" value="${esc(ev.player||'')}">
+    <input class="evm-inp evm-min" type="number" min="1" max="120" placeholder="Min" value="${ev.min||''}">
+    <button class="evm-rm" onclick="this.closest('[data-type]').remove()">&#10005;</button>
+  </div>`;
+}
+function addCLCard(){
+  if(_clEvG===null) return;
+  const f=findCLFix(_clEvG,_clEvId);
+  const d=document.createElement('div');
+  d.innerHTML=clCardRow({type:'yellowcard',team:'h',player:'',min:''},f);
+  document.getElementById('cl-cards').appendChild(d.firstElementChild);
+}
+
+function clFmInputs(side, formation, players){
+  const dl=side==='h'?'cldl-home':'cldl-away';
+  const parts=formation.split('-').map(Number).filter(n=>!isNaN(n)&&n>0);
+  const rowDefs=[[1,'GK'],...parts.map((n,i)=>{ const lbls=['DEF','MID','ATK','FWD','ATK']; return [n,lbls[Math.min(i,lbls.length-1)]]; })];
+  let html='', pi=0;
+  for(const [count,lbl] of rowDefs){
+    html+=`<div class="evm-fm-row"><span class="evm-fm-pos">${lbl}</span>`;
+    for(let j=0;j<count;j++){
+      html+=`<input class="evm-fm-inp" list="${dl}" placeholder="Player ${pi+1}" value="${esc(players[pi]||'')}" data-fm="${side}-${pi}">`;
+      pi++;
+    }
+    html+='</div>';
+  }
+  return html;
+}
+function updateCLFm(side){
+  const sel=document.getElementById('cl-fm-'+side+'-sel');
+  const grid=document.getElementById('cl-fm-'+side+'-grid');
+  if(!sel.value){ grid.innerHTML=''; return; }
+  const f=findCLFix(_clEvG,_clEvId);
+  const existing=(f.lineup&&f.lineup[side]&&f.lineup[side].players)||[];
+  grid.innerHTML=clFmInputs(side,sel.value,existing);
+}
+
+async function saveCLEvents(){
+  if(_clEvG===null||_clEvId===null) return;
+  const f=findCLFix(_clEvG,_clEvId);
+  if(!f) return;
+  const events=[];
+  document.querySelectorAll('#evm-body [data-type="goal"]').forEach(row=>{
+    const side=row.dataset.team;
+    const inps=row.querySelectorAll('input');
+    const sels=row.querySelectorAll('select');
+    const player=(inps[0]?.value||'').trim();
+    const min=parseInt(inps[1]?.value)||null;
+    const assist=(inps[2]?.value||'').trim()||null;
+    const note=sels[0]?.value||null;
+    if(player) events.push({type:'goal',team:side,player,min,assist,note:note||null});
+  });
+  document.querySelectorAll('#evm-body [data-type="card"]').forEach(row=>{
+    const sels=row.querySelectorAll('select');
+    const inps=row.querySelectorAll('input');
+    const type=sels[0]?.value||'yellowcard';
+    const team=sels[1]?.value||'h';
+    const player=(inps[0]?.value||'').trim()||null;
+    const min=parseInt(inps[1]?.value)||null;
+    events.push({type,team,player,min});
+  });
+  events.sort((a,b)=>(a.min||0)-(b.min||0));
+  f.events=events;
+  f.lineup=f.lineup||{};
+  ['h','a'].forEach(side=>{
+    const sel=document.getElementById('cl-fm-'+side+'-sel');
+    if(!sel||!sel.value){ return; }
+    const els=[...document.querySelectorAll(`#evm-body [data-fm^="${side}-"]`)];
+    els.sort((a,b)=>parseInt(a.dataset.fm.split('-')[1])-parseInt(b.dataset.fm.split('-')[1]));
+    f.lineup[side]={formation:sel.value,players:els.map(el=>el.value.trim())};
+  });
+  saveState();
+  renderGroups();
+  closeCLEvents();
+  toast('Events saved! Publishing to players...');
+  await publishEuropa();   // auto-publish so players see the timeline & line-ups
+}
+</script>
+
 </body>
 </html>

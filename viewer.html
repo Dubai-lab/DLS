@@ -903,7 +903,8 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 
 <!-- ═══════ TEAM SELECTION SCREEN ═══════ -->
 <div class="ts-screen hidden" id="ts-screen">
-  <div class="ts-topbar">
+  <div class="ts-topbar" style="position:relative">
+    <button onclick="tsLogout()" style="position:absolute;left:12px;top:14px;background:rgba(255,255,255,.08);border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-size:.72rem;font-weight:700;padding:7px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent">&#8617; Log out</button>
     <div class="ts-logo">&#9917;</div>
     <div class="ts-title">Select Your Team</div>
     <div class="ts-sub" id="ts-comp-label">DLS League &mdash; Season 2026</div>
@@ -912,6 +913,9 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
     <div class="ts-instructions">
       Tap your team to claim it. <strong>Each team can only be claimed by one player.</strong>
       Teams already taken are grayed out. If someone has your team, contact the admin.
+    </div>
+    <div style="text-align:center;margin-bottom:14px">
+      <button onclick="tsLogout()" style="background:none;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.76rem;font-weight:700;padding:9px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent">&#128682; Wrong league? Log out &amp; enter a different code</button>
     </div>
     <div class="ts-grid" id="ts-grid">
       <div class="ts-loading">Loading teams...</div>
@@ -1509,6 +1513,14 @@ function showCodeGate(){
 }
 function hideCodeGate(){
   document.getElementById('code-gate').classList.add('hidden');
+}
+// Log out from the team-select screen (e.g. entered the wrong league code)
+function tsLogout(){
+  if(!confirm('Log out and enter a different access code?')) return;
+  localStorage.removeItem('dls_viewer_access');
+  document.getElementById('ts-screen').classList.add('hidden');
+  document.body.style.overflow = '';
+  showCodeGate();
 }
 async function submitCode(){
   const input = document.getElementById('cg-input');

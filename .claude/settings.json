@@ -22,7 +22,9 @@
       "Bash(git commit -q -m 'Add Player Accounts tab to Champions League admin \\(release team claims\\) *)",
       "Bash(git commit -q -m 'Admin upload update clips to Highlights + Official Update badge in player apps *)",
       "Bash(git commit -q -m 'Highlights: YouTube-style like/dislike, share deep-link, download, view counts; remove WhatsApp button *)",
-      "Bash(git commit -q -m 'Highlights: guest watch mode for shared links \\(no code gate to view a shared clip\\) *)"
+      "Bash(git commit -q -m 'Highlights: guest watch mode for shared links \\(no code gate to view a shared clip\\) *)",
+      "Bash(grep -nA8 \"const ACC_COMPS\" league.html)",
+      "Bash(git commit -q -m 'League 2/3 + Europa admin events system; cl-viewer serves CL+Europa by code; team-select logout *)"
     ]
   }
 }

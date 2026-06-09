@@ -12,77 +12,78 @@
 <link rel="icon" href="cl_logo.jpeg">
 <link rel="apple-touch-icon" href="cl_logo.jpeg">
 <style>
+:root{--accent:#FFD700;--accent-d:#E6AC00;--accent-rgb:255,215,0;--accent-ink:#1a1400}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
 .hidden{display:none!important}
 
 /* ═══════ CODE GATE ═══════ */
-.code-gate{position:fixed;inset:0;background:linear-gradient(160deg,#1a1400,#0d1117 60%);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px}
+.code-gate{position:fixed;inset:0;background:linear-gradient(160deg,var(--accent-ink),#0d1117 60%);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px}
 .cg-box{width:100%;max-width:360px;text-align:center}
-.cg-trophy{font-size:3.2rem;filter:drop-shadow(0 0 18px rgba(255,215,0,.5))}
+.cg-trophy{font-size:3.2rem;filter:drop-shadow(0 0 18px rgba(var(--accent-rgb),.5))}
 .cg-title{font-size:1.25rem;font-weight:900;color:#e6edf3;letter-spacing:2px;text-transform:uppercase;margin-top:12px}
-.cg-title span{color:#FFD700}
+.cg-title span{color:var(--accent)}
 .cg-sub{font-size:.78rem;color:#8b949e;margin-top:8px}
 .cg-input{width:100%;margin-top:22px;padding:14px 16px;background:#161b22;border:1.5px solid #30363d;border-radius:12px;color:#e6edf3;font-size:1rem;text-align:center;letter-spacing:2px;outline:none;transition:border .2s}
-.cg-input:focus{border-color:#FFD700}
+.cg-input:focus{border-color:var(--accent)}
 .cg-input.shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-.cg-btn{width:100%;margin-top:14px;padding:14px;background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:12px;color:#1a1400;font-size:.95rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
+.cg-btn{width:100%;margin-top:14px;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent-d));border:none;border-radius:12px;color:var(--accent-ink);font-size:.95rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:transform .15s}
 .cg-btn:active{transform:scale(.97)}
 .cg-err{color:#f87171;font-size:.8rem;margin-top:12px;min-height:18px;font-weight:600}
 .cg-hint{color:#4a5568;font-size:.72rem;margin-top:14px;line-height:1.5}
 
 /* ═══════ TEAM SELECT ═══════ */
 .ts-screen{position:fixed;inset:0;background:#0d1117;z-index:9000;display:flex;flex-direction:column}
-.ts-topbar{background:linear-gradient(135deg,#1a1400,#0d1117);border-bottom:2px solid #FFD700;padding:20px 16px 16px;text-align:center;flex-shrink:0}
+.ts-topbar{background:linear-gradient(135deg,var(--accent-ink),#0d1117);border-bottom:2px solid var(--accent);padding:20px 16px 16px;text-align:center;flex-shrink:0;position:relative}
 .ts-logo{font-size:2rem}
 .ts-title{font-size:1.05rem;font-weight:900;color:#e6edf3;letter-spacing:2px;text-transform:uppercase;margin-top:6px}
-.ts-sub{font-size:.7rem;color:#FFD700;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+.ts-sub{font-size:.7rem;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-top:4px}
 .ts-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 14px 16px}
 .ts-instructions{font-size:.76rem;color:#8b949e;line-height:1.6;text-align:center;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:12px 14px;margin-bottom:16px}
 .ts-instructions strong{color:#e6edf3}
-.ts-group-label{font-size:.66rem;font-weight:800;color:#FFD700;letter-spacing:2px;text-transform:uppercase;margin:14px 4px 8px;display:flex;align-items:center;gap:8px}
-.ts-group-label::after{content:'';flex:1;height:1px;background:rgba(255,215,0,.2)}
+.ts-group-label{font-size:.66rem;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin:14px 4px 8px;display:flex;align-items:center;gap:8px}
+.ts-group-label::after{content:'';flex:1;height:1px;background:rgba(var(--accent-rgb),.2)}
 .ts-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .ts-team-card{display:flex;align-items:center;gap:10px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;padding:11px 12px;cursor:pointer;transition:all .18s;-webkit-tap-highlight-color:transparent}
 .ts-team-card:active{transform:scale(.97)}
-.ts-team-card.ts-mine{border-color:#FFD700;background:rgba(255,215,0,.08)}
+.ts-team-card.ts-mine{border-color:var(--accent);background:rgba(var(--accent-rgb),.08)}
 .ts-team-card.ts-taken{opacity:.42;cursor:not-allowed}
 .ts-team-badge{width:38px;height:38px;border-radius:50%;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;color:#e6edf3;flex-shrink:0;overflow:hidden}
 .ts-team-badge img{width:100%;height:100%;object-fit:cover}
-.ts-team-badge.ts-mine-badge{box-shadow:0 0 0 2px #FFD700}
+.ts-team-badge.ts-mine-badge{box-shadow:0 0 0 2px var(--accent)}
 .ts-team-info{flex:1;min-width:0}
 .ts-team-name{font-size:.82rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ts-team-status{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;display:block}
 .ts-stat-avail{color:#4ade80}
-.ts-stat-mine{color:#FFD700}
+.ts-stat-mine{color:var(--accent)}
 .ts-stat-taken{color:#f87171}
 .ts-loading{grid-column:1/-1;text-align:center;padding:40px 20px;color:#8b949e;font-size:.85rem}
 .ts-confirm-bar{flex-shrink:0;background:#161b22;border-top:1px solid #21262d;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateY(120%);transition:transform .25s;display:flex;align-items:center;gap:12px}
 .ts-confirm-bar.show{transform:translateY(0)}
 .ts-selected-preview{flex:1;font-size:.78rem;color:#8b949e;min-width:0}
-.ts-selected-preview strong{color:#FFD700;display:block;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ts-confirm-btn{background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:10px;padding:12px 18px;color:#1a1400;font-size:.82rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.ts-selected-preview strong{color:var(--accent);display:block;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ts-confirm-btn{background:linear-gradient(135deg,var(--accent),var(--accent-d));border:none;border-radius:10px;padding:12px 18px;color:var(--accent-ink);font-size:.82rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
 
 /* ═══════ NOTIFICATION PROMPT ═══════ */
-.notif-screen{position:fixed;inset:0;background:linear-gradient(160deg,#1a1400,#0d1117 60%);z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
-.notif-icon{font-size:3.5rem;filter:drop-shadow(0 0 16px rgba(255,215,0,.4))}
+.notif-screen{position:fixed;inset:0;background:linear-gradient(160deg,var(--accent-ink),#0d1117 60%);z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
+.notif-icon{font-size:3.5rem;filter:drop-shadow(0 0 16px rgba(var(--accent-rgb),.4))}
 .notif-title{font-size:1.3rem;font-weight:900;color:#e6edf3;margin-top:16px;letter-spacing:1px}
 .notif-desc{font-size:.85rem;color:#8b949e;margin-top:12px;line-height:1.7;max-width:300px}
-.notif-desc strong{color:#FFD700}
-.notif-allow-btn{width:100%;max-width:300px;margin-top:28px;padding:15px;background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:12px;color:#1a1400;font-size:.95rem;font-weight:800;cursor:pointer}
+.notif-desc strong{color:var(--accent)}
+.notif-allow-btn{width:100%;max-width:300px;margin-top:28px;padding:15px;background:linear-gradient(135deg,var(--accent),var(--accent-d));border:none;border-radius:12px;color:var(--accent-ink);font-size:.95rem;font-weight:800;cursor:pointer}
 .notif-skip-btn{margin-top:14px;background:none;border:none;color:#8b949e;font-size:.82rem;cursor:pointer;text-decoration:underline}
 
 /* ═══════ APP SHELL ═══════ */
 .app-shell{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
-.app-topbar{background:linear-gradient(135deg,#1a1400,#0d1117);border-bottom:2px solid #FFD700;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top,14px));display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.app-topbar{background:linear-gradient(135deg,var(--accent-ink),#0d1117);border-bottom:2px solid var(--accent);padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top,14px));display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
 .atb-left{flex:1;min-width:0}
-.atb-league{font-size:.62rem;font-weight:800;color:#FFD700;letter-spacing:2px;text-transform:uppercase}
+.atb-league{font-size:.62rem;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
 .atb-matchday{font-size:.92rem;font-weight:900;color:#e6edf3;margin-top:2px}
 .atb-actions{display:flex;gap:8px}
 .atb-icon-btn{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid #30363d;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .atb-icon-btn:active{background:rgba(255,255,255,.12)}
-.atb-myteam{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid #FFD700;background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:#e6edf3}
+.atb-myteam{width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--accent);background:#21262d;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:#e6edf3}
 .atb-myteam img{width:100%;height:100%;object-fit:cover}
 
 .app-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px}
@@ -91,24 +92,24 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .ln-section{padding:14px 14px 4px}
 .ln-card{border-radius:14px;padding:14px;margin-bottom:10px}
 .ln-card.social{background:linear-gradient(135deg,#111827,#0f1a2a);border:1.5px solid rgba(79,195,247,.3)}
-.ln-card.prize{background:linear-gradient(135deg,#1a1200,#111827);border:1.5px solid rgba(255,215,0,.3)}
+.ln-card.prize{background:linear-gradient(135deg,#1a1200,#111827);border:1.5px solid rgba(var(--accent-rgb),.3)}
 .ln-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .ln-tag{font-size:.58rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:20px}
 .ln-card.social .ln-tag{background:rgba(79,195,247,.15);color:#4fc3f7}
-.ln-card.prize .ln-tag{background:rgba(255,215,0,.15);color:#FFD700}
+.ln-card.prize .ln-tag{background:rgba(var(--accent-rgb),.15);color:var(--accent)}
 .ln-days{font-size:.6rem;color:#8b949e;margin-left:auto;font-weight:600}
 .ln-card-title{font-size:.95rem;font-weight:800;color:#e6edf3;margin-bottom:4px}
 .ln-card-desc{font-size:.78rem;color:#8b949e;line-height:1.5}
 .ln-card-img{width:100%;border-radius:10px;margin-top:10px;display:block}
 .ln-card-btn{display:inline-block;margin-top:12px;padding:9px 18px;border-radius:9px;font-size:.78rem;font-weight:800;text-decoration:none;letter-spacing:.5px}
 .ln-card.social .ln-card-btn{background:#4fc3f7;color:#06121f}
-.ln-card.prize .ln-card-btn{background:#FFD700;color:#1a1400}
+.ln-card.prize .ln-card-btn{background:var(--accent);color:var(--accent-ink)}
 
 /* ── Featured match card ── */
-.feat-card{background:linear-gradient(135deg,#161b22,#1a1400);border:1.5px solid rgba(255,215,0,.3);border-radius:16px;padding:16px;margin:14px 14px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.feat-card{background:linear-gradient(135deg,#161b22,var(--accent-ink));border:1.5px solid rgba(var(--accent-rgb),.3);border-radius:16px;padding:16px;margin:14px 14px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .feat-card:active{transform:scale(.99)}
 .feat-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.feat-label-row>span:first-child{font-size:.62rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase}
+.feat-label-row>span:first-child{font-size:.62rem;font-weight:800;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
 .feat-played-tag{font-size:.58rem;font-weight:800;color:#4ade80;background:rgba(74,222,128,.12);padding:3px 9px;border-radius:20px;letter-spacing:.5px}
 .feat-pending-tag{font-size:.58rem;font-weight:800;color:#f59e0b;background:rgba(245,158,11,.12);padding:3px 9px;border-radius:20px;letter-spacing:.5px}
 .feat-teams{display:flex;align-items:center;gap:8px}
@@ -117,17 +118,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .feat-badge img{width:100%;height:100%;object-fit:cover}
 .feat-tname{font-size:.8rem;font-weight:700;color:#e6edf3;text-align:center;line-height:1.2;word-break:break-word}
 .feat-score-mid{flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:0 6px}
-.feat-score{font-size:1.8rem;font-weight:900;color:#FFD700;white-space:nowrap}
+.feat-score{font-size:1.8rem;font-weight:900;color:var(--accent);white-space:nowrap}
 .feat-vs{font-size:1rem;font-weight:800;color:#8b949e;letter-spacing:2px}
 .feat-tap-hint{text-align:center;font-size:.66rem;color:#8b949e;margin-top:12px}
 
 /* ── My group stats card ── */
 .mystat-card{background:#161b22;border:1px solid #21262d;border-radius:16px;padding:16px;margin:14px 14px 0}
 .mystat-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.mystat-badge{width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid #FFD700;display:flex;align-items:center;justify-content:center;background:#21262d;font-size:.85rem;font-weight:900;color:#e6edf3}
+.mystat-badge{width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;background:#21262d;font-size:.85rem;font-weight:900;color:#e6edf3}
 .mystat-badge img{width:100%;height:100%;object-fit:cover}
 .mystat-name{font-size:.95rem;font-weight:800;color:#e6edf3}
-.mystat-grp{font-size:.66rem;color:#FFD700;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.mystat-grp{font-size:.66rem;color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
 .mystat-row{display:flex;gap:8px}
 .mystat-cell{flex:1;background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:10px 4px;text-align:center}
 .mystat-val{font-size:1.15rem;font-weight:900;color:#e6edf3}
@@ -137,13 +138,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .mystat-qual.out{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.25)}
 
 /* ── Road to final banner ── */
-.road-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1a1400,#2a1f00);border:1.5px solid rgba(255,215,0,.35);border-radius:16px;padding:16px;margin:14px 14px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.road-banner{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--accent-ink),#2a1f00);border:1.5px solid rgba(var(--accent-rgb),.35);border-radius:16px;padding:16px;margin:14px 14px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .road-banner:active{transform:scale(.99)}
-.road-icon{font-size:2rem;filter:drop-shadow(0 0 10px rgba(255,215,0,.4))}
+.road-icon{font-size:2rem;filter:drop-shadow(0 0 10px rgba(var(--accent-rgb),.4))}
 .road-txt{flex:1}
-.road-title{font-size:.9rem;font-weight:900;color:#FFD700;letter-spacing:.5px}
+.road-title{font-size:.9rem;font-weight:900;color:var(--accent);letter-spacing:.5px}
 .road-sub{font-size:.7rem;color:#8b949e;margin-top:2px}
-.road-arrow{font-size:1.4rem;color:#FFD700}
+.road-arrow{font-size:1.4rem;color:var(--accent)}
 
 /* ── Section title ── */
 .home-sec-title{font-size:.68rem;font-weight:800;color:#8b949e;letter-spacing:2px;text-transform:uppercase;padding:18px 18px 8px}
@@ -151,12 +152,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 /* ── MD pills ── */
 .md-pills{display:flex;gap:8px;padding:0 14px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .md-pill{flex-shrink:0;padding:7px 16px;background:rgba(255,255,255,.05);border:1px solid #30363d;border-radius:20px;color:#8b949e;font-size:.74rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap}
-.md-pill.active{background:rgba(255,215,0,.14);border-color:#FFD700;color:#FFD700}
+.md-pill.active{background:rgba(var(--accent-rgb),.14);border-color:var(--accent);color:var(--accent)}
 
 /* ── Today fixtures ── */
 .today-fix{display:flex;align-items:center;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:12px;padding:11px 12px;margin:7px 14px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .today-fix:active{transform:scale(.99)}
-.tf-grp{font-size:.58rem;font-weight:800;color:#FFD700;width:26px;flex-shrink:0;text-align:center}
+.tf-grp{font-size:.58rem;font-weight:800;color:var(--accent);width:26px;flex-shrink:0;text-align:center}
 .tf-teams{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
 .tf-team-row{display:flex;align-items:center;gap:8px}
 .tf-badge{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -165,7 +166,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .tf-name.tf-winner{color:#4ade80;font-weight:800}
 .tf-name.tf-loser{color:#8b949e}
 .tf-score-col{display:flex;flex-direction:column;gap:6px;flex-shrink:0;text-align:center}
-.tf-sc{font-size:.85rem;font-weight:900;color:#FFD700;line-height:1.3}
+.tf-sc{font-size:.85rem;font-weight:900;color:var(--accent);line-height:1.3}
 .tf-vs{font-size:.66rem;font-weight:700;color:#8b949e;flex-shrink:0}
 .tf-arrow{font-size:1.1rem;color:#4a5568;flex-shrink:0}
 
@@ -174,21 +175,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 /* ═══════ BOTTOM NAV ═══════ */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0f1419;border-top:1px solid #21262d;display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:100}
 .nav-item{flex:1;background:none;border:none;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#4a5568;font-size:.62rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .15s}
-.nav-item.active{color:#FFD700}
+.nav-item.active{color:var(--accent)}
 .nav-ico{font-size:1.25rem}
 
 /* ═══════ TOAST ═══════ */
-.cl-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1f27;border:1px solid #FFD700;color:#e6edf3;padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:600;z-index:11000;opacity:0;transition:all .3s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.cl-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1f27;border:1px solid var(--accent);color:#e6edf3;padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:600;z-index:11000;opacity:0;transition:all .3s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .cl-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══════ TAB HEADERS ═══════ */
 .tab-hdr{padding:16px 16px 4px}
-.tab-hdr-lbl{font-size:.62rem;font-weight:800;color:#FFD700;letter-spacing:2px;text-transform:uppercase}
+.tab-hdr-lbl{font-size:.62rem;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
 .tab-hdr-title{font-size:1.3rem;font-weight:900;color:#e6edf3;margin-top:2px}
 
 /* ═══════ GROUPS TAB ═══════ */
 .grp-card{background:#161b22;border:1px solid #21262d;border-radius:14px;overflow:hidden;margin:12px 14px 0}
-.grp-head{background:linear-gradient(135deg,#FFD700,#E6AC00);color:#1a1400;padding:9px 14px;font-weight:900;font-size:.85rem;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between}
+.grp-head{background:linear-gradient(135deg,var(--accent),var(--accent-d));color:var(--accent-ink);padding:9px 14px;font-weight:900;font-size:.85rem;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between}
 .grp-head-badge{font-size:.6rem;font-weight:800;background:rgba(26,20,0,.2);padding:2px 8px;border-radius:20px;letter-spacing:.5px}
 .grp-table{width:100%;border-collapse:collapse;font-size:.78rem}
 .grp-table th{background:#0d1117;color:#8b949e;padding:7px 5px;text-align:center;font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #21262d}
@@ -201,37 +202,37 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .grp-badge{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .grp-badge img{width:100%;height:100%;object-fit:cover}
 .grp-club-name{font-weight:600;color:#e6edf3;font-size:.76rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px;text-align:left}
-.grp-pts{font-weight:900;color:#FFD700}
+.grp-pts{font-weight:900;color:var(--accent)}
 .grp-q td:first-child{border-left:3px solid #28a745}
-.grp-me{background:rgba(255,215,0,.06)}
-.grp-me .grp-club-name{color:#FFD700;font-weight:800}
+.grp-me{background:rgba(var(--accent-rgb),.06)}
+.grp-me .grp-club-name{color:var(--accent);font-weight:800}
 .grp-legend{display:flex;gap:14px;padding:14px 18px 4px;flex-wrap:wrap}
 .grp-leg{display:flex;align-items:center;gap:6px;font-size:.66rem;color:#8b949e}
 .grp-leg-dot{width:10px;height:10px;border-radius:2px}
 
 /* ═══════ FIXTURES TAB ═══════ */
-.fx-group-label{font-size:.66rem;font-weight:800;color:#FFD700;letter-spacing:2px;text-transform:uppercase;padding:16px 18px 4px;display:flex;align-items:center;gap:8px}
-.fx-group-label::after{content:'';flex:1;height:1px;background:rgba(255,215,0,.15)}
+.fx-group-label{font-size:.66rem;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase;padding:16px 18px 4px;display:flex;align-items:center;gap:8px}
+.fx-group-label::after{content:'';flex:1;height:1px;background:rgba(var(--accent-rgb),.15)}
 
 /* ═══════ MATCH DETAIL SCREEN ═══════ */
 .md-screen{position:fixed;inset:0;background:#0d1117;z-index:10000;display:flex;flex-direction:column}
-.md-topbar{background:#1a1400;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
+.md-topbar{background:var(--accent-ink);padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
 .md-back{background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#e6edf3;font-size:1.1rem;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.md-topbar-title{flex:1;text-align:center;font-size:.6rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.md-scoreline{background:#1a1400;padding:16px 16px 14px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-shrink:0;border-bottom:1px solid #21262d}
+.md-topbar-title{flex:1;text-align:center;font-size:.6rem;font-weight:800;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.md-scoreline{background:var(--accent-ink);padding:16px 16px 14px;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-shrink:0;border-bottom:1px solid #21262d}
 .md-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
-.md-badge{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(255,215,0,.2);flex-shrink:0}
+.md-badge{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid rgba(var(--accent-rgb),.2);flex-shrink:0}
 .md-badge img{width:100%;height:100%;object-fit:cover}
 .md-tname{font-size:.8rem;font-weight:700;color:#e6edf3;text-align:center;line-height:1.3;max-width:96px;word-break:break-word}
 .md-score-mid{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;padding:0 4px}
-.md-score-num{font-size:2.3rem;font-weight:900;color:#FFD700;letter-spacing:2px;line-height:1;white-space:nowrap}
+.md-score-num{font-size:2.3rem;font-weight:900;color:var(--accent);letter-spacing:2px;line-height:1;white-space:nowrap}
 .md-ft{font-size:.66rem;font-weight:700;color:#8b949e;letter-spacing:1px;text-transform:uppercase}
 .md-vs{font-size:.9rem;font-weight:800;color:#8b949e;letter-spacing:2px}
 .md-upcoming{display:flex;align-items:center;gap:4px;font-size:.62rem;font-weight:800;color:#f59e0b;margin-top:2px}
 .md-wa{font-size:.6rem;color:#25d366;font-weight:700;margin-top:3px;letter-spacing:.5px}
 .md-tabs{display:flex;background:#161b22;border-bottom:1px solid #21262d;flex-shrink:0;padding:0 16px}
 .md-tab{flex:1;padding:11px 8px;background:none;border:none;border-bottom:3px solid transparent;color:#8b949e;font-size:.8rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:1px;-webkit-tap-highlight-color:transparent}
-.md-tab.active{color:#FFD700;border-bottom-color:#FFD700}
+.md-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .md-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .md-panel{display:none;padding-bottom:40px}
 .md-panel.active{display:block}
@@ -249,7 +250,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .tl-icorow.away{flex-direction:row-reverse}
 .tl-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.4rem;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
 .tl-dot img{width:100%;height:100%;object-fit:cover}
-.tl-pname{font-size:.82rem;font-weight:800;color:#FFD700;line-height:1.2}
+.tl-pname{font-size:.82rem;font-weight:800;color:var(--accent);line-height:1.2}
 .tl-sub{font-size:.64rem;color:#8b949e}
 .tl-yc{width:11px;height:15px;border-radius:2px;background:#ffc107;flex-shrink:0}
 .tl-rc{width:11px;height:15px;border-radius:2px;background:#dc3545;flex-shrink:0}
@@ -257,7 +258,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .tl-half-line{flex:1;height:1px;background:#30363d}
 .tl-half-tag{background:#21262d;border:1px solid #30363d;border-radius:20px;padding:5px 14px;font-size:.68rem;font-weight:800;color:#8b949e;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
 .tl-half-score{color:#e6edf3;font-weight:900}
-.tl-ft-tag{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);border-radius:20px;padding:5px 14px;font-size:.68rem;font-weight:800;color:#FFD700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.tl-ft-tag{background:rgba(var(--accent-rgb),.1);border:1px solid rgba(var(--accent-rgb),.25);border-radius:20px;padding:5px 14px;font-size:.68rem;font-weight:800;color:var(--accent);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
 /* lineups */
 .lu-section{padding:10px 12px}
 .lu-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 4px}
@@ -276,15 +277,15 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 
 /* ═══════ TEAM OVERVIEW SCREEN ═══════ */
 .tov-screen{position:fixed;inset:0;background:#0d1117;z-index:10000;display:flex;flex-direction:column}
-.tov-topbar{background:#1a1400;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
+.tov-topbar{background:var(--accent-ink);padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
 .tov-back{background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#e6edf3;font-size:1.1rem;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tov-topbar-lbl{flex:1;text-align:center;font-size:.62rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase}
+.tov-topbar-lbl{flex:1;text-align:center;font-size:.62rem;font-weight:800;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
 .tov-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:30px}
-.tov-hero{background:linear-gradient(135deg,#1a1400,#0d1117);padding:22px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;border-bottom:1px solid #21262d}
-.tov-hero-badge{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:#fff;overflow:hidden;border:3px solid #FFD700;box-shadow:0 0 18px rgba(255,215,0,.3)}
+.tov-hero{background:linear-gradient(135deg,var(--accent-ink),#0d1117);padding:22px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;border-bottom:1px solid #21262d}
+.tov-hero-badge{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:#fff;overflow:hidden;border:3px solid var(--accent);box-shadow:0 0 18px rgba(var(--accent-rgb),.3)}
 .tov-hero-badge img{width:100%;height:100%;object-fit:cover}
 .tov-hero-name{font-size:1.15rem;font-weight:900;color:#e6edf3;text-align:center}
-.tov-hero-grp{font-size:.68rem;font-weight:700;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase}
+.tov-hero-grp{font-size:.68rem;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
 .tov-stats{display:flex;gap:8px;padding:16px 14px 4px}
 .tov-stat{flex:1;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:11px 4px;text-align:center}
 .tov-stat-val{font-size:1.2rem;font-weight:900;color:#e6edf3}
@@ -305,7 +306,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .tov-res-oppbadge{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .tov-res-oppbadge img{width:100%;height:100%;object-fit:cover}
 .tov-res-oppname{font-size:.8rem;font-weight:600;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tov-res-score{font-size:.95rem;font-weight:900;color:#FFD700;flex-shrink:0}
+.tov-res-score{font-size:.95rem;font-weight:900;color:var(--accent);flex-shrink:0}
 .tov-squad{width:100%;border-collapse:collapse;font-size:.8rem}
 .tov-squad th{background:#0d1117;color:#8b949e;padding:7px 6px;font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #21262d}
 .tov-squad th.pl-th{text-align:left;padding-left:12px}
@@ -314,21 +315,21 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 
 /* ═══════ KNOCKOUT SCREEN ═══════ */
 .ko-screen{position:fixed;inset:0;background:#0d1117;z-index:10000;display:flex;flex-direction:column}
-.ko-topbar{background:#1a1400;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
+.ko-topbar{background:var(--accent-ink);padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
 .ko-back{background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#e6edf3;font-size:1.1rem;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ko-topbar-lbl{flex:1;text-align:center;font-size:.62rem;font-weight:800;color:#FFD700;letter-spacing:1.5px;text-transform:uppercase}
+.ko-topbar-lbl{flex:1;text-align:center;font-size:.62rem;font-weight:800;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
 .ko-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 40px}
 .ko-note{font-size:.74rem;color:#8b949e;text-align:center;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:11px 14px;margin-bottom:18px;line-height:1.5}
-.ko-round-title{font-size:.7rem;font-weight:800;color:#FFD700;letter-spacing:2px;text-transform:uppercase;margin:6px 0 10px;text-align:center}
+.ko-round-title{font-size:.7rem;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin:6px 0 10px;text-align:center}
 .ko-match{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:12px 14px;margin-bottom:10px}
 .ko-seed{font-size:.58rem;font-weight:800;color:#8b949e;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-align:center}
 .ko-side{display:flex;align-items:center;gap:9px;padding:5px 0}
 .ko-side-badge{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .ko-side-badge img{width:100%;height:100%;object-fit:cover}
 .ko-side-name{flex:1;font-size:.84rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ko-side-name.win{color:#FFD700;font-weight:900}
+.ko-side-name.win{color:var(--accent);font-weight:900}
 .ko-side-name.tbd{color:#4a5568;font-style:italic}
-.ko-side-score{font-size:1rem;font-weight:900;color:#FFD700;flex-shrink:0}
+.ko-side-score{font-size:1rem;font-weight:900;color:var(--accent);flex-shrink:0}
 .ko-divider{height:1px;background:#21262d;margin:2px 0}
 /* design-accurate bracket */
 .ko-proj-banner{display:flex;align-items:center;gap:9px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:11px 14px;margin-bottom:18px}
@@ -338,14 +339,14 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .ko-qf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ko-qf-card{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:10px 10px}
 .ko-qf-row{display:flex;align-items:center;gap:7px}
-.ko-qf-seed{font-size:.56rem;font-weight:800;color:#1a1400;background:#FFD700;border-radius:5px;padding:2px 5px;flex-shrink:0;min-width:20px;text-align:center;letter-spacing:.5px}
+.ko-qf-seed{font-size:.56rem;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:5px;padding:2px 5px;flex-shrink:0;min-width:20px;text-align:center;letter-spacing:.5px}
 .ko-qf-seed.tbd{background:#30363d;color:#8b949e}
 .ko-qf-badge{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .ko-qf-badge img{width:100%;height:100%;object-fit:cover}
 .ko-qf-name{flex:1;font-size:.74rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ko-qf-name.win{color:#FFD700;font-weight:900}
+.ko-qf-name.win{color:var(--accent);font-weight:900}
 .ko-qf-name.tbd{color:#4a5568;font-style:italic;font-weight:600}
-.ko-qf-score{font-size:.82rem;font-weight:900;color:#FFD700;flex-shrink:0}
+.ko-qf-score{font-size:.82rem;font-weight:900;color:var(--accent);flex-shrink:0}
 .ko-qf-vs{text-align:center;font-size:.6rem;font-weight:800;color:#4a5568;letter-spacing:1px;padding:4px 0}
 .ko-sf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
 .ko-sf-card{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:14px 10px;text-align:center}
@@ -354,22 +355,22 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .ko-sf-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
 .ko-sf-badge{width:20px;height:20px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .ko-sf-badge img{width:100%;height:100%;object-fit:cover}
-.ko-down-arrow{text-align:center;font-size:1.3rem;color:#FFD700;margin:8px 0}
-.ko-final-card{background:linear-gradient(135deg,#1a1400,#2a1f00);border:1.5px solid rgba(255,215,0,.45);border-radius:16px;padding:22px 16px;text-align:center}
-.ko-final-trophy{font-size:2rem;filter:drop-shadow(0 0 12px rgba(255,215,0,.45))}
-.ko-final-title{font-size:1.15rem;font-weight:900;color:#FFD700;letter-spacing:2px;margin-top:6px}
+.ko-down-arrow{text-align:center;font-size:1.3rem;color:var(--accent);margin:8px 0}
+.ko-final-card{background:linear-gradient(135deg,var(--accent-ink),#2a1f00);border:1.5px solid rgba(var(--accent-rgb),.45);border-radius:16px;padding:22px 16px;text-align:center}
+.ko-final-trophy{font-size:2rem;filter:drop-shadow(0 0 12px rgba(var(--accent-rgb),.45))}
+.ko-final-title{font-size:1.15rem;font-weight:900;color:var(--accent);letter-spacing:2px;margin-top:6px}
 .ko-final-venue{font-size:.72rem;color:#8b949e;margin-top:4px}
 .ko-final-teams{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
 .ko-final-team{display:flex;flex-direction:column;align-items:center;gap:6px}
-.ko-final-tbadge{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,215,0,.4);display:flex;align-items:center;justify-content:center}
+.ko-final-tbadge{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid rgba(var(--accent-rgb),.4);display:flex;align-items:center;justify-content:center}
 .ko-final-tbadge img{width:100%;height:100%;object-fit:cover}
 .ko-final-tname{font-size:.72rem;font-weight:700;color:#e6edf3;max-width:80px;text-align:center}
 .ko-final-vs{font-size:.9rem;font-weight:900;color:#8b949e}
-.ko-champ-banner{text-align:center;margin-top:16px;padding:18px;background:linear-gradient(135deg,#2a1f00,#1a1400);border:1.5px solid #FFD700;border-radius:14px}
+.ko-champ-banner{text-align:center;margin-top:16px;padding:18px;background:linear-gradient(135deg,#2a1f00,var(--accent-ink));border:1.5px solid var(--accent);border-radius:14px}
 
 /* ═══════ SETTINGS / HIGHLIGHTS reuse generic full screen ═══════ */
 .fs-screen{position:fixed;inset:0;background:#0d1117;z-index:10000;display:flex;flex-direction:column}
-.fs-topbar{background:#1a1400;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
+.fs-topbar{background:var(--accent-ink);padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top,12px));display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid #21262d}
 .fs-back{background:rgba(255,255,255,.08);border:none;border-radius:8px;color:#e6edf3;font-size:.85rem;font-weight:700;cursor:pointer;padding:7px 12px;flex-shrink:0}
 .fs-title{flex:1;text-align:center;font-size:.85rem;font-weight:800;color:#e6edf3;letter-spacing:1.5px;text-transform:uppercase}
 .fs-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px}
@@ -385,18 +386,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .set-item-sub{font-size:.7rem;color:#8b949e;margin-top:2px}
 .set-arrow{font-size:1.1rem;color:#4a5568}
 .set-about{background:#161b22;border:1px solid #21262d;border-radius:12px;padding:20px 16px;text-align:center;margin-top:8px}
-.set-about-icon{font-size:2.6rem;filter:drop-shadow(0 0 12px rgba(255,215,0,.35))}
+.set-about-icon{font-size:2.6rem;filter:drop-shadow(0 0 12px rgba(var(--accent-rgb),.35))}
 .set-about-name{font-size:1rem;font-weight:900;color:#e6edf3;letter-spacing:1px;margin-top:8px}
-.set-about-tag{font-size:.66rem;color:#FFD700;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.set-about-tag{font-size:.66rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
 .set-about-sub{font-size:.7rem;color:#8b949e;margin-top:6px}
 
 /* ── Highlights ── */
 .hl-search-wrap{display:flex;align-items:center;gap:8px;background:#161b22;border:1px solid #30363d;border-radius:10px;padding:9px 12px;margin:12px 16px}
 .hl-search-ico{font-size:.9rem}
 .hl-search-input{flex:1;background:none;border:none;color:#e6edf3;font-size:.85rem;outline:none}
-.hl-upload-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:10px;color:#1a1400;font-size:.85rem;font-weight:800;padding:12px;margin:0 16px 4px;width:calc(100% - 32px);cursor:pointer}
+.hl-upload-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,var(--accent),var(--accent-d));border:none;border-radius:10px;color:var(--accent-ink);font-size:.85rem;font-weight:800;padding:12px;margin:0 16px 4px;width:calc(100% - 32px);cursor:pointer}
 .hl-card{display:flex;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:12px;padding:10px;margin:8px 16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.hl-card.hl-active{border-color:#FFD700}
+.hl-card.hl-active{border-color:var(--accent)}
 .hl-thumb{position:relative;width:110px;height:66px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#0d1117}
 .hl-thumb img{width:100%;height:100%;object-fit:cover}
 .hl-thumb-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.6rem}
@@ -423,11 +424,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .hl-modal-box{background:#161b22;border:1px solid #30363d;border-radius:18px;width:100%;max-width:380px;padding:20px}
 .hl-modal-title{font-size:1rem;font-weight:900;color:#e6edf3;text-align:center;margin-bottom:16px}
 .hl-select{width:100%;margin-bottom:10px;padding:12px;background:#0d1117;border:1px solid #30363d;border-radius:10px;color:#e6edf3;font-size:.85rem;outline:none}
-.hl-file-label{display:block;text-align:center;padding:16px;background:rgba(255,215,0,.06);border:1.5px dashed rgba(255,215,0,.35);border-radius:10px;color:#FFD700;font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:8px}
+.hl-file-label{display:block;text-align:center;padding:16px;background:rgba(var(--accent-rgb),.06);border:1.5px dashed rgba(var(--accent-rgb),.35);border-radius:10px;color:var(--accent);font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:8px}
 .hl-file-name{font-size:.74rem;color:#8b949e;text-align:center;margin-bottom:8px;word-break:break-all}
 .hl-progress-wrap{display:none;height:6px;background:#21262d;border-radius:3px;overflow:hidden;margin-bottom:8px}
-.hl-progress-bar{height:100%;width:0;background:linear-gradient(90deg,#FFD700,#E6AC00);transition:width .3s}
-.hl-submit-btn{width:100%;padding:13px;background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:10px;color:#1a1400;font-size:.88rem;font-weight:800;cursor:pointer}
+.hl-progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-d));transition:width .3s}
+.hl-submit-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent-d));border:none;border-radius:10px;color:var(--accent-ink);font-size:.88rem;font-weight:800;cursor:pointer}
 .hl-err{color:#f87171;font-size:.76rem;text-align:center;margin-top:8px;min-height:16px}
 .hl-cancel-btn{width:100%;margin-top:8px;padding:11px;background:none;border:1px solid #30363d;border-radius:10px;color:#8b949e;font-size:.82rem;font-weight:700;cursor:pointer}
 </style>
@@ -438,25 +439,29 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 <div class="code-gate" id="code-gate">
   <div class="cg-box">
     <div class="cg-trophy">&#127942;</div>
-    <div class="cg-title">DLS <span>Champion League</span></div>
+    <div class="cg-title" id="cg-app-title">DLS <span>Champion League</span></div>
     <div class="cg-sub">Enter your access code to continue</div>
     <input type="text" class="cg-input" id="cg-input" placeholder="ACCESS CODE" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" onkeydown="if(event.key==='Enter')submitCode()">
     <button class="cg-btn" onclick="submitCode()">&#9654; Enter</button>
     <div class="cg-err" id="cg-err"></div>
-    <div class="cg-hint">This is the Champions League app.<br>Contact your admin if you don't have a code.</div>
+    <div class="cg-hint" id="cg-app-hint">This is the Champions League app.<br>Contact your admin if you don't have a code.</div>
   </div>
 </div>
 
 <!-- ═══════ TEAM SELECT ═══════ -->
 <div class="ts-screen hidden" id="ts-screen">
   <div class="ts-topbar">
+    <button onclick="tsLogout()" style="position:absolute;left:12px;top:14px;background:rgba(255,255,255,.08);border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-size:.72rem;font-weight:700;padding:7px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent">&#8617; Log out</button>
     <div class="ts-logo">&#127942;</div>
     <div class="ts-title">Select Your Team</div>
-    <div class="ts-sub">Champions League &middot; Season 2026</div>
+    <div class="ts-sub" id="ts-app-sub">Champions League &middot; Season 2026</div>
   </div>
   <div class="ts-body">
     <div class="ts-instructions">
-      Only <strong>Champions League teams</strong> can be claimed. Tap your team &mdash; <strong>each team is one player only.</strong> Taken teams are greyed out.
+      Only <strong>teams in this competition</strong> can be claimed. Tap your team &mdash; <strong>each team is one player only.</strong> Taken teams are greyed out.
+    </div>
+    <div style="text-align:center;margin-bottom:14px">
+      <button onclick="tsLogout()" style="background:none;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.76rem;font-weight:700;padding:9px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent">&#128682; Wrong competition? Log out &amp; enter a different code</button>
     </div>
     <div id="ts-grid-wrap"><div class="ts-loading">&#9203; Loading teams...</div></div>
   </div>
@@ -470,7 +475,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 <div class="notif-screen hidden" id="notif-screen">
   <div class="notif-icon">&#128276;</div>
   <div class="notif-title">Stay in the Loop</div>
-  <div class="notif-desc">Get <strong>match reminders</strong> and result alerts for <strong id="notif-team-name"></strong> so you never miss a Champions League game.</div>
+  <div class="notif-desc">Get <strong>match reminders</strong> and result alerts for <strong id="notif-team-name"></strong> so you never miss a game.</div>
   <button class="notif-allow-btn" onclick="allowNotifications()">&#10003; Allow Notifications</button>
   <button class="notif-skip-btn" onclick="skipNotifications()">Skip for now</button>
 </div>
@@ -479,7 +484,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 <div class="app-shell hidden" id="app-shell">
   <div class="app-topbar">
     <div class="atb-left">
-      <div class="atb-league">UEFA &middot; DLS Champions League</div>
+      <div class="atb-league" id="atb-league-label">UEFA &middot; DLS Champions League</div>
       <div class="atb-matchday" id="atb-matchday">Loading...</div>
     </div>
     <div class="atb-actions">
@@ -585,7 +590,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
     <div class="set-lbl">About</div>
     <div class="set-about">
       <div class="set-about-icon">&#127942;</div>
-      <div class="set-about-name">DLS Champion League</div>
+      <div class="set-about-name" id="set-about-name">DLS Champion League</div>
       <div class="set-about-tag">Season 2026</div>
       <div class="set-about-sub">Group stage &middot; Knockouts &middot; Grand Final</div>
     </div>
@@ -601,9 +606,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
   <div class="fs-body" id="hl-feed" style="padding:0 0 30px">
     <button class="hl-upload-cta" id="hl-upload-cta" style="margin-top:14px" onclick="openUploadModal()">&#43; Upload a Highlight</button>
-    <div id="hl-guest-bar" style="display:none;margin:12px 16px 0;padding:11px 14px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.3);border-radius:10px;text-align:center">
-      <div style="font-size:.78rem;color:#e6edf3;font-weight:700;margin-bottom:6px">&#127942; DLS Champion League</div>
-      <button onclick="guestEnterApp()" style="background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:8px;color:#1a1400;font-size:.78rem;font-weight:800;padding:8px 16px;cursor:pointer">Enter your code to open the full app</button>
+    <div id="hl-guest-bar" style="display:none;margin:12px 16px 0;padding:11px 14px;background:rgba(var(--accent-rgb),.06);border:1px solid rgba(var(--accent-rgb),.3);border-radius:10px;text-align:center">
+      <div style="font-size:.78rem;color:#e6edf3;font-weight:700;margin-bottom:6px" id="guest-app-name">&#127942; DLS Champion League</div>
+      <button onclick="guestEnterApp()" style="background:linear-gradient(135deg,var(--accent),var(--accent-d));border:none;border-radius:8px;color:var(--accent-ink);font-size:.78rem;font-weight:800;padding:8px 16px;cursor:pointer">Enter your code to open the full app</button>
     </div>
     <div class="hl-search-wrap">
       <span class="hl-search-ico">&#128269;</span>
@@ -635,7 +640,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
       <label class="hl-file-label" for="hl-file-input">&#128247; Tap to choose video from gallery</label>
       <input type="file" id="hl-file-input" accept="video/*" style="display:none" onchange="onHlFileChange(this)">
       <div class="hl-file-name" id="hl-file-name" style="display:none"></div>
-      <div id="hl-size-warn" style="display:none;font-size:.72rem;color:#FFD700;margin-bottom:8px;text-align:center"></div>
+      <div id="hl-size-warn" style="display:none;font-size:.72rem;color:var(--accent);margin-bottom:8px;text-align:center"></div>
       <div class="hl-progress-wrap" id="hl-progress-wrap"><div class="hl-progress-bar" id="hl-progress-bar"></div></div>
       <div id="hl-progress-label" style="display:none;font-size:.72rem;color:#8b949e;text-align:center;margin-bottom:8px"></div>
       <button class="hl-submit-btn" id="hl-submit-btn" onclick="uploadHighlight()">&#8679; Upload Highlight</button>
@@ -643,8 +648,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
       <button class="hl-cancel-btn" onclick="closeUploadModal()">Cancel</button>
     </div>
     <div id="hl-upload-success" style="display:none;text-align:center;padding:14px 6px">
-      <div style="font-size:3rem;filter:drop-shadow(0 0 14px rgba(255,215,0,.5))">&#10004;&#65039;</div>
-      <div style="font-size:1.05rem;font-weight:800;color:#FFD700;margin:10px 0 6px">Upload Complete!</div>
+      <div style="font-size:3rem;filter:drop-shadow(0 0 14px rgba(var(--accent-rgb),.5))">&#10004;&#65039;</div>
+      <div style="font-size:1.05rem;font-weight:800;color:var(--accent);margin:10px 0 6px">Upload Complete!</div>
       <div id="hl-success-label" style="font-size:.8rem;color:#8b949e;margin-bottom:18px;line-height:1.5"></div>
       <button class="hl-submit-btn" onclick="closeUploadModal()">&#10003; Done</button>
     </div>
@@ -659,7 +664,32 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 // ═══════════════════════════════════════════
 const FIREBASE_URL = 'https://dls-hub-62226-default-rtdb.firebaseio.com';
 const VAPID_PUBLIC_KEY = 'BKviYQ5E2djTnwZcvDqT1mfmyS46cYIzrgzcdBHve4aqqRomzvxOTquBQ-PZoPXIAAuct3Tp1fNfPkltN5dV-rU';
-const COMP = 'cl';
+
+// This single PWA serves BOTH Champions League and Europa League — the access
+// code the player enters decides which one (set in submitCode / init).
+let COMP = 'cl';
+const COMP_META = {
+  cl:     { name:'Champion League', full:'Champions League', bar:'UEFA · DLS Champions League', accent:'#FFD700', accentD:'#E6AC00', rgb:'255,215,0',  ink:'#1a1400', icon:'&#127942;' },
+  europa: { name:'Europa League',   full:'Europa League',    bar:'UEFA · DLS Europa League',    accent:'#ff7043', accentD:'#e64a19', rgb:'255,112,67', ink:'#2a1200', icon:'&#11088;' }
+};
+function applyTheme(){
+  const m = COMP_META[COMP] || COMP_META.cl;
+  const r = document.documentElement.style;
+  r.setProperty('--accent', m.accent);
+  r.setProperty('--accent-d', m.accentD);
+  r.setProperty('--accent-rgb', m.rgb);
+  r.setProperty('--accent-ink', m.ink);
+  document.title = 'DLS '+m.name;
+  // Update the prominent static labels
+  const set=(id,html)=>{ const el=document.getElementById(id); if(el) el.innerHTML=html; };
+  set('cg-app-title', 'DLS <span>'+m.name+'</span>');
+  set('cg-app-hint', 'This is the '+m.full+' app.<br>Contact your admin if you don\'t have a code.');
+  set('ts-app-sub', m.full+' &middot; Season 2026');
+  set('atb-league-label', m.bar);
+  set('tov-topbar-lbl', m.full);
+  set('set-about-name', 'DLS '+m.name);
+  set('guest-app-name', m.icon+' DLS '+m.name);
+}
 
 let clPub      = null;   // /dls_pub_cl.json
 let leaguePub  = null;   // for logos fallback
@@ -722,7 +752,7 @@ function teamGroup(team){
 // ═══════════════════════════════════════════
 async function loadData(){
   const paths=[
-    ['/dls_pub_cl.json',      d=>{clPub=d;}],
+    ['/dls_pub_'+COMP+'.json', d=>{clPub=d;}],   // active competition (cl or europa)
     ['/dls_pub_league.json',  d=>{leaguePub=d;}],
     ['/dls_pub_league2.json', d=>{league2Pub=d;}],
     ['/dls_codes.json',       d=>{codesPub=d;}],
@@ -757,23 +787,32 @@ async function submitCode(){
   }
   btn.innerHTML='&#9654; Enter'; btn.disabled=false;
   if(!codesPub){ errEl.textContent='Could not verify. Check your connection.'; return; }
-  // ONLY the CL code is accepted in this app
-  const clCode = codesPub['cl'];
-  if(!clCode || code !== clCode){
+  // This app accepts EITHER the Champions League or the Europa League code
+  const clCode = codesPub['cl'], euCode = codesPub['europa'];
+  let matched = null;
+  if(clCode && code===clCode) matched='cl';
+  else if(euCode && code===euCode) matched='europa';
+  if(!matched){
     input.classList.add('shake');
     setTimeout(()=>input.classList.remove('shake'),400);
     errEl.textContent = (Object.values(codesPub).includes(code))
-      ? 'That code is for a different app. Use your Champions League code.'
+      ? 'That code is for a different app. Use your Champions League or Europa code.'
       : 'Wrong code. Try again.';
     return;
   }
-  localStorage.setItem('cl_viewer_access','cl');
+  // Switch the whole app to the matched competition
+  COMP = matched;
+  localStorage.setItem('cl_viewer_access', COMP);
+  applyTheme();
+  btn.textContent='Loading...'; btn.disabled=true;
+  await loadData();   // reload the active competition's published data
+  btn.innerHTML='&#9654; Enter'; btn.disabled=false;
   document.getElementById('code-gate').classList.add('hidden');
-  const savedTeam=localStorage.getItem('dls_selected_team_cl');
+  const savedTeam=localStorage.getItem(('dls_selected_team_'+COMP));
   if(savedTeam && clTeams().includes(savedTeam)){
     showAppShell();
   } else {
-    if(savedTeam) localStorage.removeItem('dls_selected_team_cl'); // team no longer in CL
+    if(savedTeam) localStorage.removeItem(('dls_selected_team_'+COMP));
     showTeamSelect();
   }
 }
@@ -792,13 +831,13 @@ async function showTeamSelect(skipClaimCheck=false){
 
   const wrap=document.getElementById('ts-grid-wrap');
   if(!clPub || !clPub.groups){
-    wrap.innerHTML='<div class="ts-loading">&#127942; The Champions League draw hasn\'t been published yet.<br>Check back once the admin sets up the groups.</div>';
+    wrap.innerHTML='<div class="ts-loading">&#127942; The draw hasn\'t been published yet.<br>Check back once the admin sets up the groups.</div>';
     return;
   }
 
   // fetch existing claims
   let claims={};
-  try{ const r=await fetch(FIREBASE_URL+'/dls_team_claims/cl.json'); claims=(r.ok?await r.json():null)||{}; }catch(e){}
+  try{ const r=await fetch(FIREBASE_URL+('/dls_team_claims/'+COMP+'.json')); claims=(r.ok?await r.json():null)||{}; }catch(e){}
   const myDeviceId=getDeviceId();
 
   // auto-resume if this device already claimed a team
@@ -807,7 +846,7 @@ async function showTeamSelect(skipClaimCheck=false){
     if(mineSlug){
       const realName=clTeams().find(t=>slugTeam(t)===mineSlug);
       if(realName){
-        localStorage.setItem('dls_selected_team_cl',realName);
+        localStorage.setItem(('dls_selected_team_'+COMP),realName);
         document.getElementById('ts-screen').classList.add('hidden');
         showAppShell();
         return;
@@ -863,12 +902,12 @@ function selectCard(team){
 function confirmTeam(){
   if(!_selectedTeam) return;
   const team=_selectedTeam, slug=slugTeam(team), deviceId=getDeviceId();
-  localStorage.setItem('dls_selected_team_cl',team);
-  fetch(FIREBASE_URL+'/dls_team_claims/cl/'+slug+'.json',{
+  localStorage.setItem(('dls_selected_team_'+COMP),team);
+  fetch(FIREBASE_URL+('/dls_team_claims/'+COMP+'/')+slug+'.json',{
     method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(deviceId)
   }).catch(()=>{});
   document.getElementById('ts-screen').classList.add('hidden');
-  if(!localStorage.getItem('dls_notif_done_cl')){
+  if(!localStorage.getItem(('dls_notif_done_'+COMP))){
     document.getElementById('notif-team-name').textContent=team;
     document.getElementById('notif-screen').classList.remove('hidden');
   } else {
@@ -881,8 +920,8 @@ function confirmTeam(){
 // ═══════════════════════════════════════════
 async function allowNotifications(){
   document.getElementById('notif-screen').classList.add('hidden');
-  localStorage.setItem('dls_notif_done_cl','1');
-  const team=localStorage.getItem('dls_selected_team_cl');
+  localStorage.setItem(('dls_notif_done_'+COMP),'1');
+  const team=localStorage.getItem(('dls_selected_team_'+COMP));
   if('Notification' in window && Notification.permission==='default'){
     try{ await Notification.requestPermission(); }catch(e){}
   }
@@ -891,18 +930,18 @@ async function allowNotifications(){
       const sw=await navigator.serviceWorker.ready;
       const sub=await sw.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
       if(team){
-        await fetch(FIREBASE_URL+'/dls_push/cl/'+slugTeam(team)+'.json',{
+        await fetch(FIREBASE_URL+('/dls_push/'+COMP+'/')+slugTeam(team)+'.json',{
           method:'PUT', headers:{'Content-Type':'application/json'},
           body:JSON.stringify({sub:JSON.stringify(sub),team,ts:Date.now()})
         });
-        localStorage.setItem('dls_notif_cl',team);
+        localStorage.setItem(('dls_notif_'+COMP),team);
       }
     }catch(e){}
   }
   showAppShell();
 }
 function skipNotifications(){
-  localStorage.setItem('dls_notif_done_cl','1');
+  localStorage.setItem(('dls_notif_done_'+COMP),'1');
   document.getElementById('notif-screen').classList.add('hidden');
   showAppShell();
 }
@@ -911,28 +950,28 @@ function skipNotifications(){
 //  SETTINGS (minimal for now)
 // ═══════════════════════════════════════════
 function openSettings(){
-  const team=localStorage.getItem('dls_selected_team_cl')||'None';
+  const team=localStorage.getItem(('dls_selected_team_'+COMP))||'None';
   document.getElementById('set-team-name').textContent=team;
-  const notif=localStorage.getItem('dls_notif_cl');
+  const notif=localStorage.getItem(('dls_notif_'+COMP));
   document.getElementById('set-notif-sub').textContent = notif ? ('Active for '+notif) : 'Get reminders & results';
   document.getElementById('settings-screen').classList.remove('hidden');
 }
 function closeSettings(){ document.getElementById('settings-screen').classList.add('hidden'); }
 
 function changeTeam(){
-  const team=localStorage.getItem('dls_selected_team_cl');
+  const team=localStorage.getItem(('dls_selected_team_'+COMP));
   if(!team) return;
   if(!confirm('Release '+team+'?\n\nThis frees the team for another player. You will pick a new team next.')) return;
-  localStorage.removeItem('dls_selected_team_cl');
-  localStorage.removeItem('dls_notif_cl');
-  localStorage.removeItem('dls_notif_done_cl');
-  fetch(FIREBASE_URL+'/dls_team_claims/cl/'+slugTeam(team)+'.json',{method:'DELETE'}).catch(()=>{});
+  localStorage.removeItem(('dls_selected_team_'+COMP));
+  localStorage.removeItem(('dls_notif_'+COMP));
+  localStorage.removeItem(('dls_notif_done_'+COMP));
+  fetch(FIREBASE_URL+('/dls_team_claims/'+COMP+'/')+slugTeam(team)+'.json',{method:'DELETE'}).catch(()=>{});
   closeSettings();
   showTeamSelect(true);
 }
 function reEnableNotifs(){
-  localStorage.removeItem('dls_notif_done_cl');
-  const team=localStorage.getItem('dls_selected_team_cl');
+  localStorage.removeItem(('dls_notif_done_'+COMP));
+  const team=localStorage.getItem(('dls_selected_team_'+COMP));
   if(!team){ clToast('Select a team first'); return; }
   closeSettings();
   document.getElementById('notif-team-name').textContent=team;
@@ -942,6 +981,13 @@ function switchLeague(){
   if(!confirm('Log out and return to the access code screen?')) return;
   localStorage.removeItem('cl_viewer_access');
   closeSettings();
+  showCodeGate();
+}
+// Log out from the team-select screen (e.g. entered the wrong competition code)
+function tsLogout(){
+  if(!confirm('Log out and enter a different access code?')) return;
+  localStorage.removeItem('cl_viewer_access');
+  document.getElementById('ts-screen').classList.add('hidden');
   showCodeGate();
 }
 
@@ -969,7 +1015,7 @@ let _fxMD=null;
 function renderFixtures(){
   const wrap=document.getElementById('tab-fixtures');
   if(!clPub?.fixtures){ wrap.innerHTML='<div class="home-empty">No fixtures published yet.</div>'; return; }
-  const myTeam=localStorage.getItem('dls_selected_team_cl')||'';
+  const myTeam=localStorage.getItem(('dls_selected_team_'+COMP))||'';
   const myGroup=teamGroup(myTeam);
 
   // Player must have a team in a group to see "their" fixtures
@@ -977,7 +1023,7 @@ function renderFixtures(){
     wrap.innerHTML=`<div class="tab-hdr"><div class="tab-hdr-lbl">Group Stage</div><div class="tab-hdr-title">Fixtures</div></div>
       <div class="home-empty"><div style="font-size:2.2rem;margin-bottom:10px">&#127942;</div>
       <div style="font-size:.92rem;font-weight:700;color:#e6edf3;margin-bottom:6px">Pick your team first</div>
-      <div>Once you select a Champions League team,<br>you'll see your group's fixtures here.</div></div>`;
+      <div>Once you select your team,<br>you'll see your group's fixtures here.</div></div>`;
     return;
   }
 
@@ -1005,7 +1051,7 @@ function fixCardHTML(m,g,myTeam){
   const scoreCol=m.played
     ? `<div class="tf-score-col"><div class="tf-sc">${m.hs}</div><div class="tf-sc">${m.as}</div></div>`
     : `<div class="tf-vs">vs</div>`;
-  return `<div class="today-fix" style="${isMine?'border-color:rgba(255,215,0,.4)':''}" onclick="openMatchDetail('${esc(m.home).replace(/'/g,"\\'")}','${esc(m.away).replace(/'/g,"\\'")}')">
+  return `<div class="today-fix" style="${isMine?'border-color:rgba(var(--accent-rgb),.4)':''}" onclick="openMatchDetail('${esc(m.home).replace(/'/g,"\\'")}','${esc(m.away).replace(/'/g,"\\'")}')">
     <div class="tf-grp">${g}</div>
     <div class="tf-teams">
       <div class="tf-team-row"><div class="tf-badge">${badgeHTML(m.home,22)}</div><div class="tf-name ${hWin?'tf-winner':aWin?'tf-loser':''}">${esc(m.home)}</div></div>
@@ -1022,14 +1068,14 @@ function fixCardHTML(m,g,myTeam){
 function renderGroups(){
   const wrap=document.getElementById('tab-groups');
   if(!clPub?.standings){ wrap.innerHTML='<div class="home-empty">No group tables yet.</div>'; return; }
-  const myTeam=localStorage.getItem('dls_selected_team_cl')||'';
+  const myTeam=localStorage.getItem(('dls_selected_team_'+COMP))||'';
   const myGroup=teamGroup(myTeam);
 
   if(!myGroup){
     wrap.innerHTML=`<div class="tab-hdr"><div class="tab-hdr-lbl">Group Stage</div><div class="tab-hdr-title">My Group</div></div>
       <div class="home-empty"><div style="font-size:2.2rem;margin-bottom:10px">&#128202;</div>
       <div style="font-size:.92rem;font-weight:700;color:#e6edf3;margin-bottom:6px">Pick your team first</div>
-      <div>Once you select a Champions League team,<br>you'll see your group table here.</div></div>`;
+      <div>Once you select your team,<br>you'll see your group table here.</div></div>`;
     return;
   }
 
@@ -1059,7 +1105,7 @@ function renderGroups(){
     </table>
   </div>`;
   html+=`<div class="grp-legend"><div class="grp-leg"><div class="grp-leg-dot" style="background:#28a745"></div>Top 2 qualify for knockouts</div></div>`;
-  html+=`<div style="text-align:center;color:#8b949e;font-size:.74rem;padding:10px 24px;line-height:1.5">You see your own group only. Once the<br>knockout stage begins, follow it in <strong style="color:#FFD700">Road to the Final</strong>.</div><div style="height:20px"></div>`;
+  html+=`<div style="text-align:center;color:#8b949e;font-size:.74rem;padding:10px 24px;line-height:1.5">You see your own group only. Once the<br>knockout stage begins, follow it in <strong style="color:var(--accent)">Road to the Final</strong>.</div><div style="height:20px"></div>`;
   wrap.innerHTML=html;
 }
 
@@ -1093,7 +1139,7 @@ function renderPlayers(mode){
   mode=_plMode;
   const wrap=document.getElementById('tab-players');
   const players=aggregatePlayers();
-  const header=`<div class="tab-hdr"><div class="tab-hdr-lbl">Champions League</div><div class="tab-hdr-title">Players</div></div>`;
+  const header=`<div class="tab-hdr"><div class="tab-hdr-lbl">${(COMP_META[COMP]||COMP_META.cl).full}</div><div class="tab-hdr-title">Players</div></div>`;
   const tabs=`<div class="md-pills" style="padding:8px 14px 4px">
     <button class="md-pill ${mode==='goals'?'active':''}" onclick="renderPlayers('goals')">Goals</button>
     <button class="md-pill ${mode==='assists'?'active':''}" onclick="renderPlayers('assists')">Assists</button>
@@ -1101,7 +1147,7 @@ function renderPlayers(mode){
   if(!players.length){
     wrap.innerHTML=header+tabs+`<div class="hl-empty"><div style="font-size:2.5rem;margin-bottom:10px">&#128100;</div>
       <div style="font-size:.92rem;font-weight:700;color:#e6edf3;margin-bottom:6px">Stats Coming Soon</div>
-      <div>Goal scorers &amp; assists appear here once<br>the admin enters match events in the<br>Champions League admin page.</div></div>`;
+      <div>Goal scorers &amp; assists appear here once<br>the admin enters match events in the<br>admin page.</div></div>`;
     return;
   }
   const valOf=p=>mode==='goals'?p.goals:p.assists;
@@ -1111,21 +1157,21 @@ function renderPlayers(mode){
     return;
   }
   const maxV=sorted[0]._v||1;
-  function badge(team,sz){ return `<div style="width:${sz}px;height:${sz}px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,215,0,.25)">${badgeHTML(team,sz)}</div>`; }
+  function badge(team,sz){ return `<div style="width:${sz}px;height:${sz}px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:2px solid rgba(var(--accent-rgb),.25)">${badgeHTML(team,sz)}</div>`; }
 
   // ── Podium (top 3): 2nd left, 1st centre raised, 3rd right ──
   const top3=sorted.slice(0,3);
   function podSlot(p,rank){
     if(!p) return `<div style="flex:1;max-width:104px"></div>`;
     const h=rank===1?92:rank===2?70:58;
-    const bg=rank===1?'linear-gradient(180deg,#FFE566,#E6AC00)':rank===2?'linear-gradient(180deg,#c8ccd1,#8a9097)':'linear-gradient(180deg,#d8884a,#a85a28)';
+    const bg=rank===1?'linear-gradient(180deg,#FFE566,var(--accent-d))':rank===2?'linear-gradient(180deg,#c8ccd1,#8a9097)':'linear-gradient(180deg,#d8884a,#a85a28)';
     const sz=rank===1?52:42;
     const last=(p.name||'').split(' ').slice(-1)[0];
     return `<div style="flex:1;max-width:104px;display:flex;flex-direction:column;align-items:center;gap:4px">
       ${badge(p.team,sz)}
       <div style="font-size:.7rem;font-weight:700;color:#e6edf3;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;padding:0 2px">${esc(last)}</div>
-      <div style="width:100%;height:${h}px;border-radius:8px 8px 3px 3px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;${rank===1?'box-shadow:0 4px 18px rgba(255,215,0,.35)':''}">
-        <div style="font-size:1.4rem;font-weight:900;color:${rank===2?'#1a1f27':'#1a1400'};line-height:1">${p._v}</div>
+      <div style="width:100%;height:${h}px;border-radius:8px 8px 3px 3px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;${rank===1?'box-shadow:0 4px 18px rgba(var(--accent-rgb),.35)':''}">
+        <div style="font-size:1.4rem;font-weight:900;color:${rank===2?'#1a1f27':'var(--accent-ink)'};line-height:1">${p._v}</div>
         <div style="font-size:.6rem;font-weight:800;color:${rank===2?'rgba(26,31,39,.7)':'rgba(26,20,0,.7)'};margin-top:2px">${rank===1?'🥇':rank===2?'🥈':'🥉'}</div>
       </div>
     </div>`;
@@ -1139,8 +1185,8 @@ function renderPlayers(mode){
     ${badge(p.team,30)}
     <div style="flex:1;min-width:0"><div style="font-size:.85rem;font-weight:700;color:#e6edf3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
     <div style="font-size:.64rem;color:#8b949e;margin-top:2px">${esc(teamAbbr(p.team))} &middot; Group ${teamGroup(p.team)||'-'}</div></div>
-    <div style="width:52px;height:4px;background:#21262d;border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${Math.round(p._v/maxV*100)}%;background:linear-gradient(90deg,#FFD700,#E6AC00)"></div></div>
-    <div style="font-size:.95rem;font-weight:900;color:#FFD700;min-width:22px;text-align:right;flex-shrink:0">${p._v}</div>
+    <div style="width:52px;height:4px;background:#21262d;border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${Math.round(p._v/maxV*100)}%;background:linear-gradient(90deg,var(--accent),var(--accent-d))"></div></div>
+    <div style="font-size:.95rem;font-weight:900;color:var(--accent);min-width:22px;text-align:right;flex-shrink:0">${p._v}</div>
   </div>`).join('');
 
   const lbl=mode==='goals'?'Top Scorers':'Top Assists';
@@ -1218,7 +1264,7 @@ function renderMDTimeline(m,home,away){
   fh.forEach(e=>html+=tlEventRow(e,home,away));
   html+=`<div class="tl-half"><div class="tl-half-line"></div><div class="tl-half-tag">HT &nbsp;<span class="tl-half-score">${htH} - ${htA}</span></div><div class="tl-half-line"></div></div>`;
   sh.forEach(e=>html+=tlEventRow(e,home,away));
-  if(m.played) html+=`<div class="tl-half"><div class="tl-half-line"></div><div class="tl-ft-tag">FT &nbsp;<span class="tl-half-score" style="color:#FFD700">${m.hs} - ${m.as}</span></div><div class="tl-half-line"></div></div>`;
+  if(m.played) html+=`<div class="tl-half"><div class="tl-half-line"></div><div class="tl-ft-tag">FT &nbsp;<span class="tl-half-score" style="color:var(--accent)">${m.hs} - ${m.as}</span></div><div class="tl-half-line"></div></div>`;
   panel.innerHTML=html;
 }
 function renderMDLineups(m,home,away){
@@ -1270,7 +1316,7 @@ function openTOV(team){
   const gs=groupStandingRow(team);
   const r=gs?gs.row:{};
   const logos=clLogos(), phones=clPub?.phones||{};
-  const myTeam=localStorage.getItem('dls_selected_team_cl')||'';
+  const myTeam=localStorage.getItem(('dls_selected_team_'+COMP))||'';
   const logo=logos[team];
   const heroBadge=logo?`<div class="tov-hero-badge"><img src="${logo}" alt=""></div>`:`<div class="tov-hero-badge" style="background:${teamColor(team)}">${teamAbbr(team)}</div>`;
   const gd=(r.gd!=null)?(r.gd>0?'+'+r.gd:r.gd):'-';
@@ -1314,7 +1360,7 @@ function openTOV(team){
     <span style="font-size:1.2rem">&#128172;</span><div><div class="tov-wa-title">Contact on WhatsApp</div><div class="tov-wa-sub">Tap to arrange your match</div></div></a>`:'';
 
   const squadHTML=squadRows.length?`<table class="tov-squad"><thead><tr><th class="pl-th">Player</th><th>G</th><th>A</th></tr></thead><tbody>
-    ${squadRows.map(([nm,s])=>`<tr><td class="pl-td">${esc(nm)}</td><td style="color:#FFD700;font-weight:800">${s.g}</td><td>${s.a}</td></tr>`).join('')}
+    ${squadRows.map(([nm,s])=>`<tr><td class="pl-td">${esc(nm)}</td><td style="color:var(--accent);font-weight:800">${s.g}</td><td>${s.a}</td></tr>`).join('')}
     </tbody></table>`:`<div style="text-align:center;color:#8b949e;font-size:.78rem;padding:16px">No player stats recorded yet.</div>`;
 
   document.getElementById('tov-body').innerHTML=`
@@ -1414,7 +1460,7 @@ function openKO(){
         const t=m[side];
         if(!t) return '';
         const win=m.winner&&m.winner===t;
-        return `<div class="ko-sf-row"><div class="ko-sf-badge">${badgeHTML(t,20)}</div><span class="ko-sf-sub" style="margin-top:0;${win?'color:#FFD700;font-weight:900':''}">${esc(t)}${hasScore?` (${side==='home'?m.hs:m.as})`:''}</span></div>`;
+        return `<div class="ko-sf-row"><div class="ko-sf-badge">${badgeHTML(t,20)}</div><span class="ko-sf-sub" style="margin-top:0;${win?'color:var(--accent);font-weight:900':''}">${esc(t)}${hasScore?` (${side==='home'?m.hs:m.as})`:''}</span></div>`;
       }).join('');
       return `<div class="ko-sf-card"><div class="ko-sf-title">${title}</div>${inner}</div>`;
     }
@@ -1434,9 +1480,9 @@ function openKO(){
       <div class="ko-final-trophy">&#127942;</div>
       <div class="ko-final-title">THE FINAL</div>
       <div class="ko-final-teams">
-        <div class="ko-final-team"><div class="ko-final-tbadge">${f.home?badgeHTML(f.home,46):''}</div><div class="ko-final-tname" style="${f.winner&&f.winner===f.home?'color:#FFD700':''}">${esc(f.home||'TBD')}${fHasScore?` ${f.hs}`:''}</div></div>
+        <div class="ko-final-team"><div class="ko-final-tbadge">${f.home?badgeHTML(f.home,46):''}</div><div class="ko-final-tname" style="${f.winner&&f.winner===f.home?'color:var(--accent)':''}">${esc(f.home||'TBD')}${fHasScore?` ${f.hs}`:''}</div></div>
         <div class="ko-final-vs">vs</div>
-        <div class="ko-final-team"><div class="ko-final-tbadge">${f.away?badgeHTML(f.away,46):''}</div><div class="ko-final-tname" style="${f.winner&&f.winner===f.away?'color:#FFD700':''}">${esc(f.away||'TBD')}${fHasScore?` ${f.as}`:''}</div></div>
+        <div class="ko-final-team"><div class="ko-final-tbadge">${f.away?badgeHTML(f.away,46):''}</div><div class="ko-final-tname" style="${f.winner&&f.winner===f.away?'color:var(--accent)':''}">${esc(f.away||'TBD')}${fHasScore?` ${f.as}`:''}</div></div>
       </div>
     </div>`;
   } else {
@@ -1448,7 +1494,7 @@ function openKO(){
   }
 
   if(f.winner){
-    html+=`<div class="ko-champ-banner"><div style="font-size:2.2rem">&#127942;</div><div style="font-size:.68rem;color:#8b949e;letter-spacing:2px;text-transform:uppercase;margin-top:4px">Champion</div><div style="font-size:1.1rem;font-weight:900;color:#FFD700;margin-top:2px">${esc(f.winner)}</div></div>`;
+    html+=`<div class="ko-champ-banner"><div style="font-size:2.2rem">&#127942;</div><div style="font-size:.68rem;color:#8b949e;letter-spacing:2px;text-transform:uppercase;margin-top:4px">Champion</div><div style="font-size:1.1rem;font-weight:900;color:var(--accent);margin-top:2px">${esc(f.winner)}</div></div>`;
   }
 
   html+='<div style="height:24px"></div>';
@@ -1491,7 +1537,7 @@ async function loadHighlights(){
   document.getElementById('hl-empty').style.display='none';
   document.getElementById('hl-cards').innerHTML='<div class="hl-empty">Loading...</div>';
   try{
-    const res=await fetch(`${FIREBASE_URL}/dls_highlights/cl.json`);
+    const res=await fetch(`${FIREBASE_URL}/dls_highlights/${COMP}.json`);
     const data=res.ok?await res.json():null;
     _hlItems=data?Object.entries(data).filter(([k,v])=>v&&v.videoUrl).map(([k,v])=>({...v,_key:k})).sort((a,b)=>(b.ts||0)-(a.ts||0)):[];
     renderHlList();
@@ -1508,10 +1554,10 @@ function renderHlList(){
     const urlSafe=(h.videoUrl||'').replace(/'/g,"\\'");
     const isUpdate=h.admin||h.type==='update';
     const updateBadge=isUpdate
-      ? `<div style="display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.5px;color:#1a1400;background:#FFD700;border-radius:5px;padding:2px 7px;margin-bottom:4px">&#128226; OFFICIAL UPDATE</div>`
+      ? `<div style="display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.5px;color:var(--accent-ink);background:var(--accent);border-radius:5px;padding:2px 7px;margin-bottom:4px">&#128226; OFFICIAL UPDATE</div>`
       : '';
     const views=h.views||0;
-    return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')" style="${isUpdate?'border-color:rgba(255,215,0,.45)':''}">
+    return `<div class="hl-card ${h._key===_hlActiveKey?'hl-active':''}" onclick="selectHighlight('${h._key}')" style="${isUpdate?'border-color:rgba(var(--accent-rgb),.45)':''}">
       <div class="hl-thumb">${thumb}<div class="hl-play-ov"><span>&#9654;</span></div></div>
       <div class="hl-card-info">
         ${updateBadge}
@@ -1523,9 +1569,9 @@ function renderHlList(){
   }).join('');
 }
 // ── local per-device state ──
-function getLikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_liked_cl')||'[]'); }catch(e){ return []; } }
-function getDislikedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_disliked_cl')||'[]'); }catch(e){ return []; } }
-function getViewedKeys(){ try{ return JSON.parse(localStorage.getItem('dls_viewed_cl')||'[]'); }catch(e){ return []; } }
+function getLikedKeys(){ try{ return JSON.parse(localStorage.getItem(('dls_liked_'+COMP))||'[]'); }catch(e){ return []; } }
+function getDislikedKeys(){ try{ return JSON.parse(localStorage.getItem(('dls_disliked_'+COMP))||'[]'); }catch(e){ return []; } }
+function getViewedKeys(){ try{ return JSON.parse(localStorage.getItem(('dls_viewed_'+COMP))||'[]'); }catch(e){ return []; } }
 
 function refreshActionUI(){
   const h=_hlItems.find(x=>x._key===_hlActiveKey); if(!h) return;
@@ -1556,8 +1602,8 @@ async function bumpView(key){
   const h=_hlItems.find(x=>x._key===key); if(!h) return;
   const newCount=(h.views||0)+1;
   h.views=newCount;
-  viewed.push(key); localStorage.setItem('dls_viewed_cl',JSON.stringify(viewed));
-  fetch(`${FIREBASE_URL}/dls_highlights/cl/${key}/views.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(newCount)}).catch(()=>{});
+  viewed.push(key); localStorage.setItem(('dls_viewed_'+COMP),JSON.stringify(viewed));
+  fetch(`${FIREBASE_URL}/dls_highlights/${COMP}/${key}/views.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(newCount)}).catch(()=>{});
 }
 
 async function likeHighlight(){
@@ -1572,12 +1618,12 @@ async function likeHighlight(){
   if(!isLiked && disliked.includes(_hlActiveKey)){
     h.dislikes=Math.max(0,(h.dislikes||0)-1);
     disliked.splice(disliked.indexOf(_hlActiveKey),1);
-    fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.dislikes)}).catch(()=>{});
+    fetch(`${FIREBASE_URL}/dls_highlights/${COMP}/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.dislikes)}).catch(()=>{});
   }
   h.likes=likes;
-  localStorage.setItem('dls_liked_cl',JSON.stringify(liked));
-  localStorage.setItem('dls_disliked_cl',JSON.stringify(disliked));
-  fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(likes)}).catch(()=>{});
+  localStorage.setItem(('dls_liked_'+COMP),JSON.stringify(liked));
+  localStorage.setItem(('dls_disliked_'+COMP),JSON.stringify(disliked));
+  fetch(`${FIREBASE_URL}/dls_highlights/${COMP}/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(likes)}).catch(()=>{});
   refreshActionUI(); renderHlList();
 }
 
@@ -1591,12 +1637,12 @@ async function dislikeHighlight(){
   if(!isDisliked && liked.includes(_hlActiveKey)){
     h.likes=Math.max(0,(h.likes||0)-1);
     liked.splice(liked.indexOf(_hlActiveKey),1);
-    fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.likes)}).catch(()=>{});
+    fetch(`${FIREBASE_URL}/dls_highlights/${COMP}/${_hlActiveKey}/likes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(h.likes)}).catch(()=>{});
   }
   h.dislikes=dislikes;
-  localStorage.setItem('dls_liked_cl',JSON.stringify(liked));
-  localStorage.setItem('dls_disliked_cl',JSON.stringify(disliked));
-  fetch(`${FIREBASE_URL}/dls_highlights/cl/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(dislikes)}).catch(()=>{});
+  localStorage.setItem(('dls_liked_'+COMP),JSON.stringify(liked));
+  localStorage.setItem(('dls_disliked_'+COMP),JSON.stringify(disliked));
+  fetch(`${FIREBASE_URL}/dls_highlights/${COMP}/${_hlActiveKey}/dislikes.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(dislikes)}).catch(()=>{});
   refreshActionUI(); renderHlList();
 }
 
@@ -1604,10 +1650,10 @@ async function dislikeHighlight(){
 async function shareHighlight(){
   if(!_hlActiveKey) return;
   const h=_hlItems.find(x=>x._key===_hlActiveKey);
-  const link=location.origin+location.pathname+'?hl='+encodeURIComponent(_hlActiveKey);
-  const title=h?(h.title||'DLS Champions League Highlight'):'DLS Champions League Highlight';
+  const link=location.origin+location.pathname+'?hl='+encodeURIComponent(_hlActiveKey)+'&hc='+COMP;
+  const title=h?(h.title||('DLS '+(COMP_META[COMP]||COMP_META.cl).full+' Highlight')):'DLS Highlight';
   if(navigator.share){
-    try{ await navigator.share({title, text:title+' — watch on DLS Champion League', url:link}); return; }catch(e){ if(e.name==='AbortError') return; }
+    try{ await navigator.share({title, text:title+' — watch on DLS '+(COMP_META[COMP]||COMP_META.cl).name, url:link}); return; }catch(e){ if(e.name==='AbortError') return; }
   }
   try{ await navigator.clipboard.writeText(link); clToast('Link copied — paste it in your group'); }
   catch(e){ prompt('Copy this link to share:', link); }
@@ -1649,7 +1695,7 @@ async function captureThumb(file){
 }
 function openUploadModal(){
   const teams=clTeams();
-  const myTeam=localStorage.getItem('dls_selected_team_cl')||'';
+  const myTeam=localStorage.getItem(('dls_selected_team_'+COMP))||'';
   document.getElementById('hl-team1').innerHTML='<option value="">Select Team 1...</option>'+teams.map(t=>`<option ${t===myTeam?'selected':''}>${esc(t)}</option>`).join('');
   document.getElementById('hl-team2').innerHTML='<option value="">Select Team 2...</option>'+teams.map(t=>`<option>${esc(t)}</option>`).join('');
   document.getElementById('hl-file-name').style.display='none';
@@ -1706,8 +1752,8 @@ async function uploadHighlight(){
     if(!upRes.ok){ throw new Error(await upRes.text()); }
     setUploadProgress(90,'Saving...');
     const videoUrl=`https://firebasestorage.googleapis.com/v0/b/${HL_BUCKET}/o/highlights%2F${encodeURIComponent(fname)}?alt=media`;
-    await fetch(`${FIREBASE_URL}/dls_highlights/cl.json`,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({team1:t1,team2:t2,title:`${t1} vs ${t2}`,videoUrl,thumbUrl,league:'cl',date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),ts:Date.now(),likes:0})});
+    await fetch(`${FIREBASE_URL}/dls_highlights/${COMP}.json`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({team1:t1,team2:t2,title:`${t1} vs ${t2}`,videoUrl,thumbUrl,league:COMP,date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),ts:Date.now(),likes:0})});
     setUploadProgress(100,'Done!');
     document.getElementById('hl-upload-form').style.display='none';
     document.getElementById('hl-upload-success').style.display='block';
@@ -1728,12 +1774,12 @@ function showAppShell(){
   document.getElementById('notif-screen').classList.add('hidden');
   document.getElementById('app-shell').classList.remove('hidden');
   // top bar
-  const myTeam=localStorage.getItem('dls_selected_team_cl')||'';
+  const myTeam=localStorage.getItem(('dls_selected_team_'+COMP))||'';
   const mdEl=document.getElementById('atb-matchday');
   if(clPub){
     if(clPub.phase==='knockout') mdEl.textContent='Knockout Stage';
     else mdEl.textContent='Matchday '+(clPub.activeMD||1);
-  } else { mdEl.textContent='Champions League'; }
+  } else { mdEl.textContent=(COMP_META[COMP]||COMP_META.cl).full; }
   document.getElementById('atb-myteam').innerHTML=myTeam?badgeHTML(myTeam,40):'';
   switchTab('home');
   // If the player arrived via a shared highlight link, open it straight away
@@ -1818,12 +1864,12 @@ function findFeatured(myTeam){
 
 function renderHome(){
   const wrap=document.getElementById('home-content');
-  const myTeam=localStorage.getItem('dls_selected_team_cl')||'';
+  const myTeam=localStorage.getItem(('dls_selected_team_'+COMP))||'';
 
   if(!clPub || !clPub.groups){
     wrap.innerHTML=newsHTML()+`<div class="home-empty">
       <div style="font-size:2.5rem;margin-bottom:12px">&#127942;</div>
-      <div style="font-size:1rem;font-weight:800;color:#e6edf3;margin-bottom:6px">No Champions League data yet</div>
+      <div style="font-size:1rem;font-weight:800;color:#e6edf3;margin-bottom:6px">No ${(COMP_META[COMP]||COMP_META.cl).full} data yet</div>
       <div>The admin hasn't published the groups.<br>Check back soon.</div>
     </div>`;
     return;
@@ -1925,17 +1971,22 @@ function renderHome(){
 //  INIT
 // ═══════════════════════════════════════════
 (async()=>{
-  await loadData();
-  // Shared highlight deep link (?hl=KEY)
-  try{ const hp=new URLSearchParams(location.search).get('hl'); if(hp) _pendingHL=hp; }catch(e){}
+  // Shared highlight deep link (?hl=KEY&hc=COMP) — hc tells us which competition
+  let pendingHC=null;
+  try{ const p=new URLSearchParams(location.search); if(p.get('hl')) _pendingHL=p.get('hl'); pendingHC=p.get('hc'); }catch(e){}
+  // Decide the active competition BEFORE loading data
   const access=localStorage.getItem('cl_viewer_access');
-  if(access==='cl'){
+  if(access==='cl'||access==='europa') COMP=access;
+  else if(pendingHC==='cl'||pendingHC==='europa') COMP=pendingHC;
+  applyTheme();
+  await loadData();
+  if(access==='cl'||access==='europa'){
     document.getElementById('code-gate').classList.add('hidden');
-    const savedTeam=localStorage.getItem('dls_selected_team_cl');
+    const savedTeam=localStorage.getItem(('dls_selected_team_'+COMP));
     if(savedTeam && clTeams().includes(savedTeam)){
       showAppShell();
     } else {
-      if(savedTeam) localStorage.removeItem('dls_selected_team_cl');
+      if(savedTeam) localStorage.removeItem(('dls_selected_team_'+COMP));
       showTeamSelect();
     }
   } else if(_pendingHL){

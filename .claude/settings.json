@@ -25,7 +25,8 @@
       "Bash(git commit -q -m 'Highlights: guest watch mode for shared links \\(no code gate to view a shared clip\\) *)",
       "Bash(grep -nA8 \"const ACC_COMPS\" league.html)",
       "Bash(git commit -q -m 'League 2/3 + Europa admin events system; cl-viewer serves CL+Europa by code; team-select logout *)",
-      "Bash(git commit -q -m 'Use styled in-app prompt for logout/change-team instead of native browser confirm *)"
+      "Bash(git commit -q -m 'Use styled in-app prompt for logout/change-team instead of native browser confirm *)",
+      "Bash(git commit -q -m 'Fix team-select top bar overlapping phone status bar \\(safe-area inset\\) *)"
     ]
   }
 }

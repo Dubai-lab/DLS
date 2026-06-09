@@ -600,7 +600,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
     <div style="width:60px;flex-shrink:0"></div>
   </div>
   <div class="fs-body" id="hl-feed" style="padding:0 0 30px">
-    <button class="hl-upload-cta" style="margin-top:14px" onclick="openUploadModal()">&#43; Upload a Highlight</button>
+    <button class="hl-upload-cta" id="hl-upload-cta" style="margin-top:14px" onclick="openUploadModal()">&#43; Upload a Highlight</button>
+    <div id="hl-guest-bar" style="display:none;margin:12px 16px 0;padding:11px 14px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.3);border-radius:10px;text-align:center">
+      <div style="font-size:.78rem;color:#e6edf3;font-weight:700;margin-bottom:6px">&#127942; DLS Champion League</div>
+      <button onclick="guestEnterApp()" style="background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:8px;color:#1a1400;font-size:.78rem;font-weight:800;padding:8px 16px;cursor:pointer">Enter your code to open the full app</button>
+    </div>
     <div class="hl-search-wrap">
       <span class="hl-search-ico">&#128269;</span>
       <input type="search" class="hl-search-input" id="hl-search" placeholder="Search by team name..." oninput="filterHighlights(this.value)" autocomplete="off">
@@ -1458,9 +1462,12 @@ function closeKO(){ document.getElementById('ko-screen').classList.add('hidden')
 // ═══════════════════════════════════════════
 const HL_BUCKET='dls-hub-62226.firebasestorage.app';
 let _hlFile=null,_hlItems=[],_hlActiveKey=null,_hlFilter='';
-let _pendingHL=null, _hlDeepLinkDone=false;   // shared ?hl= deep link
+let _pendingHL=null, _hlDeepLinkDone=false, _guestMode=false;   // shared ?hl= deep link
 async function openHighlights(autoKey){
   document.getElementById('highlights-screen').classList.remove('hidden');
+  // Guests (arrived via a shared link, not logged in) can watch but not upload
+  const up=document.getElementById('hl-upload-cta'); if(up) up.style.display=_guestMode?'none':'';
+  const gb=document.getElementById('hl-guest-bar'); if(gb) gb.style.display=_guestMode?'block':'none';
   await loadHighlights();
   if(autoKey){
     const exists=_hlItems.find(x=>x._key===autoKey);
@@ -1468,7 +1475,15 @@ async function openHighlights(autoKey){
     else clToast('That highlight is no longer available');
   }
 }
-function closeHighlights(){ document.getElementById('highlights-screen').classList.add('hidden'); }
+function closeHighlights(){
+  document.getElementById('highlights-screen').classList.add('hidden');
+  if(_guestMode) showCodeGate();   // guests go back to the login screen
+}
+function guestEnterApp(){
+  _guestMode=false;
+  document.getElementById('highlights-screen').classList.add('hidden');
+  showCodeGate();
+}
 async function loadHighlights(){
   _hlActiveKey=null; _hlFilter='';
   const si=document.getElementById('hl-search'); if(si) si.value='';
@@ -1923,6 +1938,11 @@ function renderHome(){
       if(savedTeam) localStorage.removeItem('dls_selected_team_cl');
       showTeamSelect();
     }
+  } else if(_pendingHL){
+    // Arrived via a shared highlight link without logging in — watch it directly
+    _guestMode=true; _hlDeepLinkDone=true;
+    document.getElementById('code-gate').classList.add('hidden');
+    openHighlights(_pendingHL);
   } else {
     showCodeGate();
   }

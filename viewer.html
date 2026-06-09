@@ -1023,9 +1023,9 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 <!-- ═══════ HIGHLIGHTS SCREEN ═══════ -->
 <div class="highlights-screen hidden" id="highlights-screen">
   <div class="hl-topbar">
-    <button class="hl-back-btn" onclick="showHomeScreen()">&#8592; Back</button>
+    <button class="hl-back-btn" onclick="hlBack()">&#8592; Back</button>
     <span style="flex:1;font-size:.85rem;font-weight:800;color:#e6edf3;letter-spacing:2px;text-transform:uppercase;text-align:center">Highlights</span>
-    <button class="hl-upload-btn" onclick="openUploadModal()">&#43; Upload</button>
+    <button class="hl-upload-btn" id="hl-upload-btn" onclick="openUploadModal()">&#43; Upload</button>
   </div>
   <div class="hl-search-wrap">
     <span class="hl-search-ico">&#128269;</span>
@@ -2400,13 +2400,23 @@ function showLiveScreen(){
   document.getElementById('twitch-iframe').src =
     'https://player.twitch.tv/?channel=dubai_tech&parent=' + host + '&autoplay=true';
 }
+let _guestMode = false;   // arrived via a shared highlight link, not logged in
 async function showHighlightsScreen(autoKey){
   document.getElementById('app-shell').classList.add('hidden');
   document.getElementById('highlights-screen').classList.remove('hidden');
+  const up = document.getElementById('hl-upload-btn'); if(up) up.style.display = _guestMode ? 'none' : '';
   await loadHighlights();
   if(autoKey){
     const exists = _hlItems.find(x=>x._key===autoKey);
     if(exists) selectHighlight(autoKey);
+  }
+}
+function hlBack(){
+  if(_guestMode){
+    document.getElementById('highlights-screen').classList.add('hidden');
+    showCodeGate();
+  } else {
+    showHomeScreen();
   }
 }
 // showLeagueScreen now handled by Fixtures/Table tabs — keep for backwards compat
@@ -4151,6 +4161,12 @@ setInterval(()=>{
       if(pendingHC && COMP_CFG[pendingHC]){ currentComp=pendingHC; }
       setTimeout(()=>showHighlightsScreen(pendingHL), 400);
     }
+  } else if(pendingHL){
+    // Arrived via a shared highlight link without logging in — watch it directly
+    _guestMode = true;
+    if(pendingHC && COMP_CFG[pendingHC]){ selectComp(pendingHC); }
+    hideCodeGate();
+    showHighlightsScreen(pendingHL);
   } else {
     showCodeGate();
   }

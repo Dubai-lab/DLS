@@ -32,7 +32,8 @@
       "Bash(grep -nE \"switchTab\\\\\\('table'\\\\\\)\\\\\">|idx=\\\\{teams:0,fixtures:1,table:2\\\\}|<section id=\\\\\"table\\\\\"|renderTable\\\\\\(\\\\\\);|</body>\" league3.html)",
       "Bash(grep -nE \"switchTab\\\\\\('knockout'\\\\\\)|idx=\\\\{setup:0,groups:1,knockout:2\\\\}|<section id=\\\\\"knockout\\\\\"|id=\\\\\"toast\\\\\"|evm-hint\\\\{\" europa.html)",
       "Bash(grep -nE \"switchTab\\\\\\('knockout'\\\\\\)\\\\\">|idx=\\\\{setup:0,groups:1,knockout:2\\\\}|<!-- Toast|</body>\" europa.html)",
-      "Bash(git commit -q -m 'Decentralize Player Accounts: each admin manages only its own competition *)"
+      "Bash(git commit -q -m 'Decentralize Player Accounts: each admin manages only its own competition *)",
+      "Bash(git commit -q -m 'Fix code-gate button showing literal &#9654; entity \\(use innerHTML not textContent\\) *)"
     ]
   }
 }

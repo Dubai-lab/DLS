@@ -1543,7 +1543,7 @@ async function submitCode(){
       codesPub = r.ok ? await r.json() : null;
     } catch(e){}
   }
-  if(btn){ btn.textContent='&#9654; Access League'; btn.disabled=false; }
+  if(btn){ btn.innerHTML='&#9654; Access League'; btn.disabled=false; }
   if(!codesPub){ errEl.textContent='Could not verify. Check your connection.'; return; }
   const entries = Object.entries(codesPub);
   const match = entries.find(([,v])=>v===code);

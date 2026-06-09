@@ -253,6 +253,28 @@ table.standings tr.eliminated td:first-child{border-left:3px solid #dc3545}
 .evm-save{padding:9px 18px;background:linear-gradient(135deg,#ff7043,#e64a19);border:none;border-radius:8px;color:#2a1200;font-size:.82rem;font-weight:800;cursor:pointer}
 .evm-cancel-btn{padding:9px 16px;background:#21262d;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.82rem;font-weight:700;cursor:pointer}
 .evm-hint{font-size:.68rem;color:#8b949e;background:rgba(255,112,67,.06);border:1px solid rgba(255,112,67,.2);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.5}
+
+/* ── Player Accounts ── */
+.acc-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.acc-topbar h2{font-size:1.15rem;color:#e6edf3;font-weight:800}
+.acc-topbar p{font-size:.76rem;color:#8b949e;margin-top:3px}
+.acc-refresh-btn{background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 16px;color:#e6edf3;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.acc-refresh-btn:hover{border-color:#ff7043;color:#ff7043}
+.acc-grp-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:2px solid #21262d;margin:18px 0 10px}
+.acc-grp-name{font-size:.82rem;font-weight:800;color:#ff7043;letter-spacing:1px;text-transform:uppercase}
+.acc-grp-count{font-size:.72rem;color:#8b949e;background:#21262d;border-radius:10px;padding:3px 10px}
+.acc-row{display:flex;align-items:center;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:11px 14px;margin-bottom:6px}
+.acc-row.claimed{border-color:rgba(255,112,67,.3)}
+.acc-row.unclaimed{opacity:.55}
+.acc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.acc-dot-on{background:#ff7043;box-shadow:0 0 6px rgba(255,112,67,.5)}
+.acc-dot-off{background:#30363d}
+.acc-team-name{font-size:.88rem;font-weight:700;color:#e6edf3;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-device{font-size:.64rem;color:#4a5568;font-family:monospace;letter-spacing:.5px;flex-shrink:0}
+.acc-release-btn{padding:5px 12px;background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);border-radius:6px;color:#f87171;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.acc-release-btn:hover{background:rgba(220,53,69,.25);border-color:#dc3545}
+.acc-loading{text-align:center;padding:32px;color:#8b949e;font-size:.85rem}
+.acc-empty{text-align:center;padding:28px;color:#4a5568;font-size:.82rem;font-style:italic}
 </style>
 </head>
 <body>
@@ -300,6 +322,7 @@ function checkLock(){
   <button class="nav-btn active" onclick="switchTab('setup')">&#9881; Setup</button>
   <button class="nav-btn" onclick="switchTab('groups')">&#9646; Group Stage</button>
   <button class="nav-btn" onclick="switchTab('knockout')">&#11088; Knockout</button>
+  <button class="nav-btn" onclick="switchTab('accounts')">&#128100; Player Accounts</button>
 </nav>
 <div style="background:#161b22;border-bottom:1px solid #21262d;padding:5px 20px;text-align:right;font-size:.75rem">
   <span id="cloud-status" style="color:#8b949e">☁️ Cloud Backup Ready</span>
@@ -451,6 +474,12 @@ function checkLock(){
   </div>
 </section>
 
+<section id="accounts" class="section">
+  <div id="accounts-content">
+    <div class="acc-loading">&#128100; Loading player accounts...</div>
+  </div>
+</section>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -544,11 +573,12 @@ function switchTab(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const idx={setup:0,groups:1,knockout:2}[id];
+  const idx={setup:0,groups:1,knockout:2,accounts:3}[id];
   document.querySelectorAll('.nav-btn')[idx].classList.add('active');
   if(id==='setup')    renderSetup();
   if(id==='groups')   renderGroups();
   if(id==='knockout') renderKnockout();
+  if(id==='accounts') renderEUAccounts();
 }
 
 // ═══════════════════════════════════════════
@@ -1528,6 +1558,89 @@ async function saveCLEvents(){
   closeCLEvents();
   toast('Events saved! Publishing to players...');
   await publishEuropa();   // auto-publish so players see the timeline & line-ups
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+//  PLAYER ACCOUNTS — Europa League only
+// ═══════════════════════════════════════════
+function accSlug(name){ return (name||'').toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,''); }
+
+async function renderEUAccounts(){
+  const wrap=document.getElementById('accounts-content');
+  wrap.innerHTML='<div class="acc-loading">&#128100; Loading player accounts...</div>';
+
+  const haveGroups = S.groups && ['A','B','C','D'].some(g=>(S.groups[g]||[]).length);
+  let claims={};
+  try{
+    const r=await fetch(FIREBASE_URL+'/dls_team_claims/europa.json');
+    claims=(r.ok?await r.json():null)||{};
+  }catch(e){}
+
+  let html=`<div class="acc-topbar">
+    <div>
+      <h2>&#128100; Player Accounts</h2>
+      <p>Release a player's account so the rightful player can re-claim their Europa League team.</p>
+    </div>
+    <button class="acc-refresh-btn" onclick="renderEUAccounts()">&#8635; Refresh</button>
+  </div>`;
+
+  if(!haveGroups){
+    html+=`<div class="acc-empty">Draw the groups first — once teams are assigned, their player accounts appear here.</div>`;
+    wrap.innerHTML=html;
+    return;
+  }
+
+  const shown=new Set();
+  ['A','B','C','D'].forEach(g=>{
+    const teams=S.groups[g]||[];
+    if(!teams.length) return;
+    const grpClaimed=teams.filter(t=>claims[accSlug(t)]).length;
+    html+=`<div class="acc-grp-hdr"><span class="acc-grp-name">Group ${g}</span><span class="acc-grp-count">${grpClaimed} / ${teams.length} claimed</span></div>`;
+    teams.forEach(team=>{
+      const slug=accSlug(team); shown.add(slug);
+      const claim=claims[slug];
+      const deviceId=typeof claim==='string'?claim:(claim&&claim.devices&&claim.devices[0])||null;
+      html+=accRowEU(team,slug,!!claim,deviceId?deviceId.slice(0,16)+'…':'');
+    });
+  });
+
+  const orphans=Object.entries(claims).filter(([slug])=>!shown.has(slug));
+  if(orphans.length){
+    html+=`<div class="acc-grp-hdr"><span class="acc-grp-name" style="color:#f87171">Unknown / Removed Teams</span><span class="acc-grp-count">${orphans.length}</span></div>`;
+    orphans.forEach(([slug,claim])=>{
+      const deviceId=typeof claim==='string'?claim:(claim&&claim.devices&&claim.devices[0])||null;
+      html+=accRowEU(slug,slug,true,deviceId?deviceId.slice(0,16)+'…':'');
+    });
+  }
+  wrap.innerHTML=html;
+}
+
+function accRowEU(teamName, slug, isClaimed, shortDeviceId){
+  if(isClaimed){
+    return `<div class="acc-row claimed">
+      <div class="acc-dot acc-dot-on"></div>
+      <div class="acc-team-name">${esc(teamName)}</div>
+      <div class="acc-device" title="Device ID">${shortDeviceId}</div>
+      <button class="acc-release-btn" onclick="releaseEUAccount('${slug}','${esc(teamName).replace(/'/g,"\\'")}')">&#128274; Release</button>
+    </div>`;
+  }
+  return `<div class="acc-row unclaimed">
+    <div class="acc-dot acc-dot-off"></div>
+    <div class="acc-team-name">${esc(teamName)}</div>
+    <div class="acc-device" style="color:#21262d">Unclaimed</div>
+    <button class="acc-release-btn" style="opacity:0;pointer-events:none">—</button>
+  </div>`;
+}
+
+async function releaseEUAccount(slug, teamName){
+  if(!confirm(`Release "${teamName}" from the Europa League?\n\nThis removes their account so the rightful player can re-claim the team.`)) return;
+  try{
+    const res=await fetch(FIREBASE_URL+'/dls_team_claims/europa/'+slug+'.json',{method:'DELETE'});
+    if(res.ok){ toast(`✓ "${teamName}" released — player can now re-claim their team.`); renderEUAccounts(); }
+    else toast('Failed to release. Check your connection.','error');
+  }catch(e){ toast('Network error. Try again.','error'); }
 }
 </script>
 

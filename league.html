@@ -1656,12 +1656,10 @@ function confirmSeasonEnd(){
 //  PLAYER ACCOUNTS MANAGEMENT
 // ═══════════════════════════════════════════
 
+// This admin manages ONLY its own division's player accounts.
+// (League 2/3, Champions League and Europa each have their own Player Accounts page.)
 const ACC_COMPS = [
   { key:'league1', label:'DLS League',       sub:'Division 1',         color:'#00c853' },
-  { key:'league2', label:'DLS League 2',     sub:'Division 2',         color:'#4fc3f7' },
-  { key:'league3', label:'DLS League 3',     sub:'Division 3',         color:'#ab47bc' },
-  { key:'cl',      label:'Champions League', sub:'Div 1 & 2 Top 8',    color:'#FFD700' },
-  { key:'europa',  label:'Europa League',    sub:'Division 3 Top 16',  color:'#ff7043' },
 ];
 
 // Fetch published team lists for each comp so we can show real names

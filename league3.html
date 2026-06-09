@@ -270,6 +270,29 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .mc-events-btn{padding:4px 8px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:5px;color:#ffc107;font-size:.7rem;cursor:pointer;transition:all .2s;flex-shrink:0;font-weight:700}
 .mc-events-btn:hover{background:rgba(255,193,7,.18)}
 .ev-has-dot{display:inline-flex;align-items:center;justify-content:center;background:#ffc107;color:#0d1117;border-radius:50%;width:13px;height:13px;font-size:.52rem;font-weight:800;margin-left:3px;vertical-align:middle}
+
+/* ── Player Accounts ── */
+.acc-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.acc-topbar h2{font-size:1.2rem;color:#e6edf3;font-weight:800}
+.acc-topbar p{font-size:.78rem;color:#8b949e;margin-top:3px}
+.acc-refresh-btn{background:#21262d;border:1px solid #30363d;border-radius:8px;padding:8px 16px;color:#e6edf3;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.acc-refresh-btn:hover{border-color:#ab47bc;color:#ab47bc}
+.acc-league-block{margin-bottom:24px}
+.acc-league-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;border-bottom:2px solid #21262d;margin-bottom:10px}
+.acc-league-name{font-size:.82rem;font-weight:800;color:#e6edf3;letter-spacing:1px;text-transform:uppercase}
+.acc-league-count{font-size:.72rem;color:#8b949e;background:#21262d;border-radius:10px;padding:3px 10px}
+.acc-empty{text-align:center;padding:20px;color:#4a5568;font-size:.8rem;font-style:italic}
+.acc-row{display:flex;align-items:center;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:11px 14px;margin-bottom:6px;transition:border-color .15s}
+.acc-row.claimed{border-color:rgba(171,71,188,.3)}
+.acc-row.unclaimed{opacity:.55}
+.acc-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.acc-dot-on{background:#ab47bc;box-shadow:0 0 6px rgba(171,71,188,.5)}
+.acc-dot-off{background:#30363d}
+.acc-team-name{font-size:.88rem;font-weight:700;color:#e6edf3;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-device{font-size:.65rem;color:#4a5568;font-family:monospace;letter-spacing:.5px;flex-shrink:0}
+.acc-release-btn{padding:5px 12px;background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);border-radius:6px;color:#f87171;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.acc-release-btn:hover{background:rgba(220,53,69,.25);border-color:#dc3545}
+.acc-loading{text-align:center;padding:32px;color:#8b949e;font-size:.85rem}
 </style>
 </head>
 <body>
@@ -317,6 +340,7 @@ function checkLock(){
   <button class="nav-btn active" onclick="switchTab('teams')">&#9881; Teams</button>
   <button class="nav-btn" onclick="switchTab('fixtures')">&#128197; Matchdays</button>
   <button class="nav-btn" onclick="switchTab('table')">&#128202; Table</button>
+  <button class="nav-btn" onclick="switchTab('accounts')">&#128100; Player Accounts</button>
 </nav>
 <div style="text-align:right;padding:5px 16px;font-size:.72rem;background:#0d1117;border-bottom:1px solid #21262d">
   <span id="cloud-status" style="color:#4a5568">☁️ Cloud Backup Active</span>
@@ -403,6 +427,12 @@ function checkLock(){
   <div id="table-content"></div>
 </section>
 
+<section id="accounts" class="section">
+  <div id="accounts-content">
+    <div class="acc-loading">&#128100; Loading player accounts...</div>
+  </div>
+</section>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -471,11 +501,12 @@ function switchTab(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const idx={teams:0,fixtures:1,table:2}[id];
+  const idx={teams:0,fixtures:1,table:2,accounts:3}[id];
   document.querySelectorAll('.nav-btn')[idx].classList.add('active');
   if(id==='teams')    renderTeams();
   if(id==='fixtures') renderFixtures();
   if(id==='table')    renderTable();
+  if(id==='accounts') renderAccounts();
 }
 
 function renderTeams(){
@@ -1411,6 +1442,88 @@ function saveEventsModal(){
   closeEventsModal();
   renderFixtures();
   toast(`Events saved for ${m.home} vs ${m.away}. Publish to send to players.`);
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+//  PLAYER ACCOUNTS — Division 3 only
+// ═══════════════════════════════════════════
+function accSlugify(name){ return (name||'').toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,''); }
+
+async function renderAccounts(){
+  const wrap=document.getElementById('accounts-content');
+  wrap.innerHTML='<div class="acc-loading">&#128100; Loading player accounts...</div>';
+
+  let teams=[], claims={};
+  try{
+    const r=await fetch(FIREBASE_URL+'/dls_pub_league3.json');
+    const d=r.ok?await r.json():null;
+    teams=(d?.table||[]).map(t=>t.team).filter(Boolean);
+  }catch(e){}
+  try{
+    const r=await fetch(FIREBASE_URL+'/dls_team_claims/league3.json');
+    claims=(r.ok?await r.json():null)||{};
+  }catch(e){}
+
+  const claimedCount=Object.keys(claims).length;
+  let html=`<div class="acc-topbar">
+    <div>
+      <h2>&#128100; Player Accounts</h2>
+      <p>Release a Division 3 player's account so the rightful player can re-claim their team.</p>
+    </div>
+    <button class="acc-refresh-btn" onclick="renderAccounts()">&#8635; Refresh</button>
+  </div>`;
+  html+=`<div class="acc-league-block">
+    <div class="acc-league-hdr">
+      <span class="acc-league-name" style="color:#ab47bc">DLS League 3 <span style="font-size:.65rem;color:#8b949e;font-weight:600;text-transform:none;letter-spacing:0">Division 3</span></span>
+      <span class="acc-league-count">${claimedCount} / ${teams.length||'?'} claimed</span>
+    </div>`;
+
+  if(!teams.length && !claimedCount){
+    html+=`<div class="acc-empty">No data published yet. Publish the division first.</div>`;
+  } else {
+    const shown=new Set();
+    teams.forEach(teamName=>{
+      const slug=accSlugify(teamName); shown.add(slug);
+      const claim=claims[slug];
+      const deviceId=typeof claim==='string'?claim:(claim&&claim.devices&&claim.devices[0])||null;
+      html+=accRow(teamName,slug,!!claim,deviceId?deviceId.slice(0,16)+'…':'');
+    });
+    Object.entries(claims).forEach(([slug,claim])=>{
+      if(shown.has(slug)) return;
+      const deviceId=typeof claim==='string'?claim:(claim&&claim.devices&&claim.devices[0])||null;
+      html+=accRow(slug,slug,true,deviceId?deviceId.slice(0,16)+'…':'');
+    });
+  }
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
+function accRow(teamName, slug, isClaimed, shortDeviceId){
+  if(isClaimed){
+    return `<div class="acc-row claimed">
+      <div class="acc-status-dot acc-dot-on"></div>
+      <div class="acc-team-name">${esc(teamName)}</div>
+      <div class="acc-device" title="Device ID">${shortDeviceId}</div>
+      <button class="acc-release-btn" onclick="releaseAccount('${slug}','${esc(teamName).replace(/'/g,"\\'")}')">&#128274; Release</button>
+    </div>`;
+  }
+  return `<div class="acc-row unclaimed">
+    <div class="acc-status-dot acc-dot-off"></div>
+    <div class="acc-team-name">${esc(teamName)}</div>
+    <div class="acc-device" style="color:#21262d">Unclaimed</div>
+    <button class="acc-release-btn" style="opacity:0;pointer-events:none">—</button>
+  </div>`;
+}
+
+async function releaseAccount(slug, teamName){
+  if(!confirm(`Release "${teamName}" from Division 3?\n\nThis removes their account so the rightful player can re-claim the team.`)) return;
+  try{
+    const res=await fetch(FIREBASE_URL+'/dls_team_claims/league3/'+slug+'.json',{method:'DELETE'});
+    if(res.ok){ toast(`✓ "${teamName}" released — player can now re-claim their team.`); renderAccounts(); }
+    else toast('Failed to release. Try again.','error');
+  }catch(e){ toast('Network error. Try again.','error'); }
 }
 </script>
 </body>

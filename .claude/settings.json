@@ -26,7 +26,13 @@
       "Bash(grep -nA8 \"const ACC_COMPS\" league.html)",
       "Bash(git commit -q -m 'League 2/3 + Europa admin events system; cl-viewer serves CL+Europa by code; team-select logout *)",
       "Bash(git commit -q -m 'Use styled in-app prompt for logout/change-team instead of native browser confirm *)",
-      "Bash(git commit -q -m 'Fix team-select top bar overlapping phone status bar \\(safe-area inset\\) *)"
+      "Bash(git commit -q -m 'Fix team-select top bar overlapping phone status bar \\(safe-area inset\\) *)",
+      "Bash(grep -nE \"switchTab\\\\\\('table'\\\\\\)|idx=\\\\{teams:0,fixtures:1,table:2\\\\}|id=\\\\\"table\\\\\" class=\\\\\"section\\\\\"|<section id=\\\\\"table\\\\\"\" league2.html)",
+      "Bash(grep -nE \"ev-has-dot\\\\{|switchTab\\\\\\('table'\\\\\\)|idx=\\\\{teams:0,fixtures:1,table:2\\\\}|<section id=\\\\\"table\\\\\"|</body>\" league3.html)",
+      "Bash(grep -nE \"switchTab\\\\\\('table'\\\\\\)\\\\\">|idx=\\\\{teams:0,fixtures:1,table:2\\\\}|<section id=\\\\\"table\\\\\"|renderTable\\\\\\(\\\\\\);|</body>\" league3.html)",
+      "Bash(grep -nE \"switchTab\\\\\\('knockout'\\\\\\)|idx=\\\\{setup:0,groups:1,knockout:2\\\\}|<section id=\\\\\"knockout\\\\\"|id=\\\\\"toast\\\\\"|evm-hint\\\\{\" europa.html)",
+      "Bash(grep -nE \"switchTab\\\\\\('knockout'\\\\\\)\\\\\">|idx=\\\\{setup:0,groups:1,knockout:2\\\\}|<!-- Toast|</body>\" europa.html)",
+      "Bash(git commit -q -m 'Decentralize Player Accounts: each admin manages only its own competition *)"
     ]
   }
 }

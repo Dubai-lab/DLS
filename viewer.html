@@ -1516,11 +1516,19 @@ function hideCodeGate(){
 }
 // Log out from the team-select screen (e.g. entered the wrong league code)
 function tsLogout(){
-  if(!confirm('Log out and enter a different access code?')) return;
-  localStorage.removeItem('dls_viewer_access');
-  document.getElementById('ts-screen').classList.add('hidden');
-  document.body.style.overflow = '';
-  showCodeGate();
+  showAppPrompt({
+    icon: '&#128682;',
+    title: 'Log Out',
+    message: 'Log out and return to the access code screen so you can enter a different league code?',
+    confirmText: 'Log Out',
+    confirmClass: 'danger',
+    onConfirm: ()=>{
+      localStorage.removeItem('dls_viewer_access');
+      document.getElementById('ts-screen').classList.add('hidden');
+      document.body.style.overflow = '';
+      showCodeGate();
+    }
+  });
 }
 async function submitCode(){
   const input = document.getElementById('cg-input');

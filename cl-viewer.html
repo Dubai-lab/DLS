@@ -182,6 +182,22 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
 .cl-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1f27;border:1px solid var(--accent);color:#e6edf3;padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:600;z-index:11000;opacity:0;transition:all .3s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 .cl-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── Custom prompt ── */
+.app-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
+.app-prompt-overlay.hidden{display:none}
+.app-prompt-box{background:#1a1f27;border:1px solid #30363d;border-radius:18px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.app-prompt-icon{font-size:2.4rem;text-align:center;padding:24px 20px 8px}
+.app-prompt-title{font-size:1rem;font-weight:900;color:#e6edf3;text-align:center;padding:0 20px 8px;letter-spacing:.3px}
+.app-prompt-msg{font-size:.82rem;color:#8b949e;text-align:center;padding:0 24px 24px;line-height:1.6}
+.app-prompt-msg strong{color:#e6edf3}
+.app-prompt-actions{display:flex;border-top:1px solid #21262d}
+.app-prompt-cancel{flex:1;padding:14px;background:none;border:none;border-right:1px solid #21262d;color:#8b949e;font-size:.88rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app-prompt-cancel:active{background:rgba(255,255,255,.04)}
+.app-prompt-confirm{flex:1;padding:14px;background:none;border:none;color:#e6edf3;font-size:.88rem;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app-prompt-confirm.danger{color:#f87171}
+.app-prompt-confirm.gold{color:var(--accent)}
+.app-prompt-confirm:active{background:rgba(255,255,255,.04)}
+
 /* ═══════ TAB HEADERS ═══════ */
 .tab-hdr{padding:16px 16px 4px}
 .tab-hdr-lbl{font-size:.62rem;font-weight:800;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
@@ -656,6 +672,19 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
+<!-- ═══════ CUSTOM PROMPT ═══════ -->
+<div class="app-prompt-overlay hidden" id="app-prompt-overlay">
+  <div class="app-prompt-box">
+    <div class="app-prompt-icon" id="app-prompt-icon">&#10067;</div>
+    <div class="app-prompt-title" id="app-prompt-title"></div>
+    <div class="app-prompt-msg" id="app-prompt-msg"></div>
+    <div class="app-prompt-actions">
+      <button class="app-prompt-cancel" id="app-prompt-cancel" onclick="appPromptCancel()">Cancel</button>
+      <button class="app-prompt-confirm" id="app-prompt-confirm" onclick="appPromptConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="cl-toast" id="cl-toast"></div>
 
 <script>
@@ -961,13 +990,19 @@ function closeSettings(){ document.getElementById('settings-screen').classList.a
 function changeTeam(){
   const team=localStorage.getItem(('dls_selected_team_'+COMP));
   if(!team) return;
-  if(!confirm('Release '+team+'?\n\nThis frees the team for another player. You will pick a new team next.')) return;
-  localStorage.removeItem(('dls_selected_team_'+COMP));
-  localStorage.removeItem(('dls_notif_'+COMP));
-  localStorage.removeItem(('dls_notif_done_'+COMP));
-  fetch(FIREBASE_URL+('/dls_team_claims/'+COMP+'/')+slugTeam(team)+'.json',{method:'DELETE'}).catch(()=>{});
-  closeSettings();
-  showTeamSelect(true);
+  showAppPrompt({
+    icon:'&#128260;', title:'Change Team',
+    message:'Release <strong>'+esc(team)+'</strong>? This frees the team for another player, and you will pick a new team next.',
+    confirmText:'Yes, Change', confirmClass:'danger',
+    onConfirm:()=>{
+      localStorage.removeItem(('dls_selected_team_'+COMP));
+      localStorage.removeItem(('dls_notif_'+COMP));
+      localStorage.removeItem(('dls_notif_done_'+COMP));
+      fetch(FIREBASE_URL+('/dls_team_claims/'+COMP+'/')+slugTeam(team)+'.json',{method:'DELETE'}).catch(()=>{});
+      closeSettings();
+      showTeamSelect(true);
+    }
+  });
 }
 function reEnableNotifs(){
   localStorage.removeItem(('dls_notif_done_'+COMP));
@@ -978,17 +1013,47 @@ function reEnableNotifs(){
   document.getElementById('notif-screen').classList.remove('hidden');
 }
 function switchLeague(){
-  if(!confirm('Log out and return to the access code screen?')) return;
-  localStorage.removeItem('cl_viewer_access');
-  closeSettings();
-  showCodeGate();
+  showAppPrompt({
+    icon:'&#128682;', title:'Log Out',
+    message:'Log out and return to the access code screen?',
+    confirmText:'Log Out', confirmClass:'danger',
+    onConfirm:()=>{ localStorage.removeItem('cl_viewer_access'); closeSettings(); showCodeGate(); }
+  });
 }
 // Log out from the team-select screen (e.g. entered the wrong competition code)
 function tsLogout(){
-  if(!confirm('Log out and enter a different access code?')) return;
-  localStorage.removeItem('cl_viewer_access');
-  document.getElementById('ts-screen').classList.add('hidden');
-  showCodeGate();
+  showAppPrompt({
+    icon:'&#128682;', title:'Log Out',
+    message:'Log out and return to the access code screen so you can enter a different competition code?',
+    confirmText:'Log Out', confirmClass:'danger',
+    onConfirm:()=>{
+      localStorage.removeItem('cl_viewer_access');
+      document.getElementById('ts-screen').classList.add('hidden');
+      showCodeGate();
+    }
+  });
+}
+
+// ── Custom prompt system ──
+let _promptOnConfirm=null;
+function showAppPrompt({ icon='&#10067;', title='', message='', confirmText='Confirm', cancelText='Cancel', confirmClass='gold', onConfirm=null }={}){
+  document.getElementById('app-prompt-icon').innerHTML=icon;
+  document.getElementById('app-prompt-title').textContent=title;
+  document.getElementById('app-prompt-msg').innerHTML=message;
+  const cb=document.getElementById('app-prompt-confirm');
+  cb.textContent=confirmText; cb.className='app-prompt-confirm '+confirmClass;
+  document.getElementById('app-prompt-cancel').textContent=cancelText;
+  _promptOnConfirm=onConfirm;
+  document.getElementById('app-prompt-overlay').classList.remove('hidden');
+}
+function appPromptConfirm(){
+  document.getElementById('app-prompt-overlay').classList.add('hidden');
+  const fn=_promptOnConfirm; _promptOnConfirm=null;
+  if(typeof fn==='function') fn();
+}
+function appPromptCancel(){
+  document.getElementById('app-prompt-overlay').classList.add('hidden');
+  _promptOnConfirm=null;
 }
 
 // ═══════════════════════════════════════════

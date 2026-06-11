@@ -344,36 +344,13 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 
 <!-- ── LOCK OVERLAY ── -->
 <div id="lock-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0d1117;z-index:99999;display:flex;align-items:center;justify-content:center">
-  <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%">
-    <div style="font-size:3rem;margin-bottom:14px">&#128274;</div>
-    <h2 style="color:#00c853;font-size:1.2rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Admin Only</h2>
-    <p style="color:#8b949e;font-size:.82rem;margin-bottom:22px">Enter the admin passcode to access the DLS League panel</p>
-    <input type="password" id="lock-input" placeholder="Enter passcode..."
-      style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 14px;color:#e6edf3;font-size:.95rem;outline:none;margin-bottom:8px;text-align:center;letter-spacing:3px;transition:border-color .2s"
-      onkeydown="if(event.key==='Enter')checkLock()">
-    <div id="lock-error" style="color:#dc3545;font-size:.75rem;min-height:18px;margin-bottom:10px"></div>
-    <button onclick="checkLock()" style="width:100%;background:linear-gradient(135deg,#00c853,#00a844);color:#fff;border:none;border-radius:8px;padding:12px;font-size:.92rem;font-weight:800;cursor:pointer;text-transform:uppercase;letter-spacing:2px">&#128275; Unlock</button>
+  <div style="text-align:center">
+    <div style="font-size:2.6rem">&#128274;</div>
+    <div style="color:#8b949e;font-size:.85rem;margin-top:10px;letter-spacing:1px">Checking access&hellip;</div>
   </div>
 </div>
-<script>
-(function(){
-  if(sessionStorage.getItem('dls_auth')==='true')
-    document.getElementById('lock-overlay').style.display='none';
-})();
-function checkLock(){
-  const inp=document.getElementById('lock-input');
-  const err=document.getElementById('lock-error');
-  if(inp.value==='dlsadmin@123'){
-    sessionStorage.setItem('dls_auth','true');
-    document.getElementById('lock-overlay').style.display='none';
-  } else {
-    err.textContent='Wrong passcode. Try again.';
-    inp.style.borderColor='#dc3545';
-    inp.value=''; inp.focus();
-    setTimeout(()=>{ inp.style.borderColor='#30363d'; err.textContent=''; },2000);
-  }
-}
-</script>
+<script src="admin-auth.js"></script>
+<script>aaGuard('league1');</script>
 
 <header class="header">
   <a class="back-link" href="index.html">&#8592; Home</a>

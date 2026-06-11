@@ -34,7 +34,8 @@
       "Bash(grep -nE \"switchTab\\\\\\('knockout'\\\\\\)\\\\\">|idx=\\\\{setup:0,groups:1,knockout:2\\\\}|<!-- Toast|</body>\" europa.html)",
       "Bash(git commit -q -m 'Decentralize Player Accounts: each admin manages only its own competition *)",
       "Bash(git commit -q -m 'Fix code-gate button showing literal &#9654; entity \\(use innerHTML not textContent\\) *)",
-      "Bash(git commit -q -m 'League News: add Edit and one-click Renew for announcements \\(reuse expired news\\) *)"
+      "Bash(git commit -q -m 'League News: add Edit and one-click Renew for announcements \\(reuse expired news\\) *)",
+      "Bash(git commit -q -m 'Add role-based admin access control \\(owner + per-league managers\\) *)"
     ]
   }
 }

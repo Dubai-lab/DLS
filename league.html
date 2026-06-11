@@ -292,6 +292,13 @@ tr.cut-rel td{border-top:2px solid rgba(220,53,69,.35)!important}
 .news-item-thumb{width:56px;height:40px;object-fit:cover;border-radius:6px;border:1px solid #21262d;flex-shrink:0;align-self:center}
 .news-del-btn{background:none;border:1px solid rgba(220,53,69,.3);border-radius:6px;padding:5px 12px;color:#f87171;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0;align-self:flex-start;white-space:nowrap}
 .news-del-btn:hover{background:rgba(220,53,69,.15);border-color:#dc3545}
+.news-edit-btn{background:none;border:1px solid rgba(79,195,247,.35);border-radius:6px;padding:5px 12px;color:#4fc3f7;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}
+.news-edit-btn:hover{background:rgba(79,195,247,.15);border-color:#4fc3f7}
+.news-renew-btn{background:none;border:1px solid rgba(0,200,83,.4);border-radius:6px;padding:5px 12px;color:#00c853;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}
+.news-renew-btn:hover{background:rgba(0,200,83,.15);border-color:#00c853}
+.news-edit-banner{display:none;align-items:center;gap:8px;background:rgba(79,195,247,.08);border:1px solid rgba(79,195,247,.3);border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:.78rem;color:#4fc3f7;font-weight:700}
+.news-edit-banner.show{display:flex}
+.news-cancel-edit{margin-left:auto;background:none;border:1px solid #30363d;border-radius:6px;color:#8b949e;font-size:.72rem;font-weight:700;padding:4px 10px;cursor:pointer}
 .news-empty{text-align:center;padding:32px;color:#4a5568;font-size:.85rem}
 
 /* ── Events Modal ── */
@@ -503,7 +510,11 @@ function checkLock(){
 
   <!-- Add new card -->
   <div class="news-add-card">
-    <h3>&#43; New Announcement</h3>
+    <h3 id="news-form-title">&#43; New Announcement</h3>
+    <div class="news-edit-banner" id="news-edit-banner">
+      <span>&#9998; Editing an existing announcement</span>
+      <button class="news-cancel-edit" onclick="cancelEditNews()">Cancel</button>
+    </div>
     <div class="news-type-row">
       <button class="news-type-btn social active" id="news-type-social" onclick="setNewsType('social')">&#127760; Social</button>
       <button class="news-type-btn prize" id="news-type-prize" onclick="setNewsType('prize')">&#127942; Prize</button>
@@ -2059,6 +2070,8 @@ function saveEventsModal(){
 
 let _newsType = 'social';
 let _newsImgData = '';
+let _editingNewsId = null;   // when set, saveNews UPDATES this item instead of creating a new one
+let _newsCache = {};         // id -> full item, so Edit can reload all fields
 
 function setNewsType(type){
   _newsType = type;
@@ -2096,6 +2109,7 @@ async function renderNews(){
       wrap.innerHTML = '<div class="news-empty">&#128240; No announcements yet. Add one above.</div>';
       return;
     }
+    _newsCache = data;   // keep full items for Edit
     const now = Date.now();
     const items = Object.entries(data)
       .map(([id, v]) => ({...v, id}))
@@ -2126,7 +2140,11 @@ async function renderNews(){
           ${urlInfo}
         </div>
         ${thumbHTML}
-        <button class="news-del-btn" onclick="deleteNews('${item.id}')">&#128465; Delete</button>
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;align-self:flex-start">
+          ${expired ? `<button class="news-renew-btn" onclick="renewNews('${item.id}')">&#9851; Renew</button>` : ''}
+          <button class="news-edit-btn" onclick="editNews('${item.id}')">&#9998; Edit</button>
+          <button class="news-del-btn" onclick="deleteNews('${item.id}')">&#128465; Delete</button>
+        </div>
       </div>`;
     }).join('');
   } catch(e){
@@ -2156,33 +2174,95 @@ async function saveNews(){
   };
 
   const btn = document.querySelector('.news-save-btn');
-  btn.textContent = 'Posting...'; btn.disabled = true;
+  const editing = !!_editingNewsId;
+  btn.textContent = editing ? 'Updating...' : 'Posting...'; btn.disabled = true;
   try{
-    const r = await fetch(FIREBASE_URL + '/dls_league_news.json', {
-      method: 'POST',
+    // Update an existing announcement (PUT to its id) or create a new one (POST)
+    const url = editing
+      ? FIREBASE_URL + '/dls_league_news/' + _editingNewsId + '.json'
+      : FIREBASE_URL + '/dls_league_news.json';
+    const r = await fetch(url, {
+      method: editing ? 'PUT' : 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(item),
     });
     if(!r.ok) throw new Error('HTTP ' + r.status);
 
-    // Reset form
-    document.getElementById('news-title').value = '';
-    document.getElementById('news-desc').value = '';
-    document.getElementById('news-action-label').value = '';
-    document.getElementById('news-action-url').value = '';
-    document.getElementById('news-days').value = '7';
-    _newsImgData = '';
-    const prev = document.getElementById('news-img-preview');
-    prev.src = ''; prev.classList.remove('show');
-    document.getElementById('news-img-file').value = '';
-
-    btn.textContent = '&#128278; Post Announcement'; btn.disabled = false;
-    toast('Announcement posted! &#10003;');
+    resetNewsForm();
+    toast(editing ? 'Announcement updated & renewed! &#10003;' : 'Announcement posted! &#10003;');
     renderNews();
   } catch(e){
-    btn.textContent = '&#128278; Post Announcement'; btn.disabled = false;
+    btn.disabled = false;
+    btn.innerHTML = editing ? '&#128260; Update Announcement' : '&#128278; Post Announcement';
     toast('Failed to save: ' + e.message, 'error');
   }
+}
+
+// Reset the form back to "create new" mode
+function resetNewsForm(){
+  _editingNewsId = null;
+  document.getElementById('news-title').value = '';
+  document.getElementById('news-desc').value = '';
+  document.getElementById('news-action-label').value = '';
+  document.getElementById('news-action-url').value = '';
+  document.getElementById('news-days').value = '7';
+  _newsImgData = '';
+  const prev = document.getElementById('news-img-preview');
+  prev.src = ''; prev.classList.remove('show');
+  document.getElementById('news-img-file').value = '';
+  setNewsType('social');
+  document.getElementById('news-edit-banner').classList.remove('show');
+  document.getElementById('news-form-title').innerHTML = '&#43; New Announcement';
+  const btn = document.querySelector('.news-save-btn');
+  btn.innerHTML = '&#128278; Post Announcement'; btn.disabled = false;
+}
+
+// Load an existing announcement into the form to edit / renew it
+function editNews(id){
+  const item = _newsCache[id];
+  if(!item) return;
+  _editingNewsId = id;
+  setNewsType(item.type === 'prize' ? 'prize' : 'social');
+  document.getElementById('news-title').value = item.title || '';
+  document.getElementById('news-desc').value = item.desc || '';
+  document.getElementById('news-action-label').value = item.actionLabel || '';
+  document.getElementById('news-action-url').value = item.actionUrl || '';
+  // Suggest the original display duration (days between created & expiry)
+  const origDays = (item.createdAt && item.expiresAt)
+    ? Math.max(1, Math.round((item.expiresAt - item.createdAt) / 86400000)) : 7;
+  document.getElementById('news-days').value = origDays;
+  // Restore prize image
+  _newsImgData = item.imageData || '';
+  const prev = document.getElementById('news-img-preview');
+  if(_newsImgData){ prev.src = _newsImgData; prev.classList.add('show'); }
+  else { prev.src=''; prev.classList.remove('show'); }
+  // Switch UI to edit mode
+  document.getElementById('news-edit-banner').classList.add('show');
+  document.getElementById('news-form-title').innerHTML = '&#9998; Edit Announcement';
+  const btn = document.querySelector('.news-save-btn');
+  btn.innerHTML = '&#128260; Update Announcement';
+  document.querySelector('.news-add-card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function cancelEditNews(){ resetNewsForm(); }
+
+// One-click renew: re-publish an item starting now with its original duration
+async function renewNews(id){
+  const item = _newsCache[id];
+  if(!item) return;
+  const days = (item.createdAt && item.expiresAt)
+    ? Math.max(1, Math.round((item.expiresAt - item.createdAt) / 86400000)) : 7;
+  if(!confirm(`Renew "${item.title}" for ${days} more day${days!==1?'s':''}?`)) return;
+  const now = Date.now();
+  const updated = { ...item, createdAt: now, expiresAt: now + days * 86400000 };
+  delete updated.id;
+  try{
+    const r = await fetch(FIREBASE_URL + '/dls_league_news/' + id + '.json', {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(updated)
+    });
+    if(r.ok){ toast('Renewed for '+days+' day'+(days!==1?'s':'')+'! &#10003;'); renderNews(); }
+    else toast('Renew failed. Try again.', 'error');
+  } catch(e){ toast('Network error. Try again.', 'error'); }
 }
 
 async function deleteNews(id){

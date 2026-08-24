@@ -5,8 +5,13 @@
      node scripts/make-assets.mjs
 
    Writes assets/icon.png, assets/splash.png and assets/splash-dark.png, which
-   `npx capacitor-assets generate` then fans out into every Android density and
-   iOS size. Both steps run from `npm run assets`.
+   `capacitor-assets generate` then fans out into every Android density and iOS
+   size. Both steps run from `npm run assets`.
+
+   That command passes --android --ios deliberately. Left to itself the
+   generator also emits PWA icons and a www/manifest.json, which would make the
+   site installable again - the PWA was removed on purpose and sw.js is a
+   tombstone specifically to undo it.
 
    The crest is defined here rather than read from www/logo.svg because the two
    have different jobs: the web mark sits on a dark page and can be small, while

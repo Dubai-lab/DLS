@@ -734,10 +734,7 @@ function matchHTML(m, plain, ctx) {
 function submitRowHTML(ref, m, existing) {
   if (existing && existing.status === 'pending') {
     return `<div class="sub-row waiting">
-      <span>&#9203;</span> Result sent${
-        existing.claimed_home != null
-          ? ` &middot; ${existing.claimed_home}–${existing.claimed_away}` : ''
-      } &middot; waiting for the admin
+      <span>&#9203;</span> Screenshot sent &middot; waiting for the admin
     </div>`;
   }
   if (existing && existing.status === 'rejected') {
@@ -808,18 +805,26 @@ function cupFixturesHTML() {
 }
 
 function bracketHTML() {
-  return (pub.ko || []).map(round => `
+  const team = myTeam();
+
+  return (pub.ko || []).map((round, r) => `
     <div class="round-block">
       <div class="round-title">${esc(round.name)}</div>
-      ${round.matches.map(m => `
-        <div class="tie">
+      ${round.matches.map((m, i) => {
+        const mine = team && (m.home === team || m.away === team);
+        // A tie is playable once both sides are known and no winner is set.
+        const open = mine && m.home && m.away && !m.winner;
+        const ref = open ? `ko:${r}/m:${i}` : null;
+        return `<div class="tie">
           <div class="tie-side ${m.winner && m.winner === m.home ? 'won' : ''} ${m.home ? '' : 'tbd'}">
             ${m.home ? teamLabel(m.home, false) : '<span>To be decided</span>'}${typeof m.hs === 'number' ? `<b>${m.hs}</b>` : ''}
           </div>
           <div class="tie-side ${m.winner && m.winner === m.away ? 'won' : ''} ${m.away ? '' : 'tbd'}">
             ${m.away ? teamLabel(m.away, false) : '<span>To be decided</span>'}${typeof m.as === 'number' ? `<b>${m.as}</b>` : ''}
           </div>
-        </div>`).join('')}
+          ${open ? submitRowHTML(ref, m, mySubmissions[ref]) : ''}
+        </div>`;
+      }).join('')}
     </div>`).join('');
 }
 
@@ -975,16 +980,12 @@ function openUpload(ref) {
 
   $('sheet-box').innerHTML = `
     <div style="font-weight:800;font-size:1.02rem;margin-bottom:4px">Upload your result</div>
-    <div style="color:var(--muted);font-size:.8rem;margin-bottom:16px">
-      Your admin checks the screenshot before the table changes.
+    <div style="color:var(--muted);font-size:.8rem;margin-bottom:6px">
+      ${esc(m.home)} v ${esc(m.away)}
     </div>
-
-    <div class="score-entry">
-      <span class="score-side">${esc(m.home)}</span>
-      <input type="number" min="0" max="99" id="u-home" inputmode="numeric" aria-label="${esc(m.home)} score">
-      <em>–</em>
-      <input type="number" min="0" max="99" id="u-away" inputmode="numeric" aria-label="${esc(m.away)} score">
-      <span class="score-side right">${esc(m.away)}</span>
+    <div style="color:var(--faint);font-size:.76rem;margin-bottom:16px">
+      Send the full-time screenshot. Your admin reads the score off it — you do
+      not need to type it. Your opponent can upload theirs too.
     </div>
 
     <div class="shot-grid" id="shot-grid"></div>
@@ -1029,18 +1030,11 @@ function renderShots() {
 }
 
 async function sendResult(m) {
-  const home = $('u-home').value.trim();
-  const away = $('u-away').value.trim();
   const msg = $('u-msg');
 
   if (!pendingShots.length) {
     msg.style.color = 'var(--red)';
     msg.textContent = 'Add at least one screenshot.';
-    return;
-  }
-  if (home === '' || away === '') {
-    msg.style.color = 'var(--red)';
-    msg.textContent = 'Enter the score you are reporting.';
     return;
   }
 
@@ -1054,8 +1048,6 @@ async function sendResult(m) {
       competitionId: active.id,
       matchRef: uploadRef,
       team: myTeam(),
-      claimedHome: Number(home),
-      claimedAway: Number(away),
       files: pendingShots
     });
     closeSheet();

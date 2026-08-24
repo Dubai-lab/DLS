@@ -129,6 +129,10 @@
   .sub-shots img { width: 100%; height: 100%; object-fit: cover; }
   .sub-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .sub-actions .score { margin-right: auto; }
+  .sub-team { border-top: 1px solid var(--line); padding-top: 12px; margin-bottom: 12px; }
+  .sub-team-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: .84rem; }
+  .sub-team-head .ok { color: var(--green); }
+  .sub-team-head .missing { color: var(--faint); font-size: .6rem; }
 </style>
 </head>
 <body>
@@ -627,123 +631,151 @@ function renderSubmissions() {
   const body = $('results-body');
   if (!submissions.length) {
     body.innerHTML = `<div class="empty"><strong>Nothing submitted yet</strong>
-      Results players upload from the app appear here.</div>`;
+      Screenshots players upload from the app appear here, grouped by fixture.</div>`;
     return;
   }
 
-  // Pending first: those are the ones needing a decision.
-  const order = [...submissions].sort((a, b) =>
-    (a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1));
+  // Grouped by fixture rather than one card per upload: both players may send a
+  // screenshot for the same match, and you want them side by side with one
+  // score box - not two rows describing the same game.
+  const byFixture = new Map();
+  for (const s of submissions) {
+    if (!byFixture.has(s.match_ref)) byFixture.set(s.match_ref, []);
+    byFixture.get(s.match_ref).push(s);
+  }
 
-  body.innerHTML = order.map(s => {
-    const found = matchFromRef(s.match_ref);
-    const label = found
-      ? `${esc(found.match.home)} v ${esc(found.match.away)}`
+  const groups = [...byFixture.entries()].map(([ref, rows]) => ({
+    ref, rows,
+    found: matchFromRef(ref),
+    open: rows.some(r => r.status === 'pending'),
+    newest: rows.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b)
+  })).sort((a, b) =>
+    (a.open ? 0 : 1) - (b.open ? 0 : 1) ||
+    new Date(b.newest.created_at) - new Date(a.newest.created_at));
+
+  body.innerHTML = groups.map(g => {
+    const m = g.found && g.found.match;
+    const title = m
+      ? `${esc(m.home)} <span style="color:var(--faint);font-weight:600">v</span> ${esc(m.away)}`
       : `<span style="color:var(--red)">fixture no longer exists</span>`;
-    const when = new Date(s.created_at).toLocaleString(undefined,
-      { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    const claim = (s.claimed_home != null)
-      ? `reported ${s.claimed_home}&ndash;${s.claimed_away}` : 'no score given';
-    const pending = s.status === 'pending';
 
-    return `<div class="sub ${pending ? '' : 'done'}">
+    // Who has and has not sent one - the thing you actually want to know.
+    const roster = (m ? [m.home, m.away] : []).map(side => ({
+      side,
+      sent: g.rows.filter(r => (r.team || '').toLowerCase() === side.toLowerCase())
+    }));
+
+    const when = new Date(g.newest.created_at).toLocaleString(undefined,
+      { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+    return `<div class="sub ${g.open ? '' : 'done'}">
       <div class="sub-head">
         <div>
-          <div class="sub-fixture">${label}</div>
-          <div class="sub-meta">${esc(s.team || 'unknown team')} &middot; ${esc(when)}${
-            pending ? '' : ' &middot; ' + esc(s.status)}</div>
+          <div class="sub-fixture">${title}</div>
+          <div class="sub-meta">last upload ${esc(when)}${g.open ? '' : ' &middot; ' + esc(g.newest.status)}</div>
         </div>
-        <span class="sub-claim">${claim}</span>
+        <span class="sub-claim">${g.rows.length} upload${g.rows.length === 1 ? '' : 's'}</span>
       </div>
 
-      <div class="sub-shots" data-shots="${esc(s.id)}">
-        ${(s.image_paths || []).map(() =>
-          `<a><div class="empty" style="padding:0;border:none;font-size:.68rem">…</div></a>`).join('')}
-      </div>
+      ${roster.map(({ side, sent }) => `
+        <div class="sub-team">
+          <div class="sub-team-head">
+            <span class="${sent.length ? 'ok' : 'missing'}">${sent.length ? '&#10003;' : '&#9679;'}</span>
+            <strong>${esc(side)}</strong>
+            <span class="sub-meta">${sent.length ? 'uploaded' : 'has not uploaded'}</span>
+          </div>
+          ${sent.length ? `<div class="sub-shots" data-shots="${esc(sent.map(x => x.id).join(','))}"></div>` : ''}
+        </div>`).join('')}
 
-      ${pending && found ? `<div class="sub-actions">
+      ${g.open && m ? `<div class="sub-actions">
         <div class="score">
-          <input type="number" min="0" max="99" id="rh-${esc(s.id)}" value="${s.claimed_home ?? ''}">
-          <em>–</em>
-          <input type="number" min="0" max="99" id="ra-${esc(s.id)}" value="${s.claimed_away ?? ''}">
+          <input type="number" min="0" max="99" id="rh-${esc(g.ref)}" placeholder="0">
+          <em>&ndash;</em>
+          <input type="number" min="0" max="99" id="ra-${esc(g.ref)}" placeholder="0">
         </div>
-        <button class="btn btn-primary" data-accept="${esc(s.id)}"
-                style="padding:9px 18px;font-size:.8rem">Accept &amp; apply</button>
-        <button class="btn btn-ghost" data-reject="${esc(s.id)}"
-                style="padding:9px 16px;font-size:.8rem;border-color:rgba(248,113,113,.4);color:var(--red)">Reject</button>
+        <button class="btn btn-primary" data-accept="${esc(g.ref)}"
+                style="padding:9px 18px;font-size:.8rem">Enter score &amp; publish</button>
+        <button class="btn btn-ghost" data-reject="${esc(g.ref)}"
+                style="padding:9px 16px;font-size:.8rem;border-color:rgba(248,113,113,.4);color:var(--red)">Ask again</button>
       </div>` : ''}
-      ${s.review_note ? `<div class="sub-meta" style="margin-top:8px">Note: ${esc(s.review_note)}</div>` : ''}
+      ${g.rows.filter(r => r.review_note).map(r =>
+        `<div class="sub-meta" style="margin-top:8px">Sent back: ${esc(r.review_note)}</div>`).join('')}
     </div>`;
   }).join('');
 
   body.querySelectorAll('[data-accept]').forEach(b =>
-    b.addEventListener('click', () => acceptSubmission(b.dataset.accept)));
+    b.addEventListener('click', () => acceptFixture(b.dataset.accept)));
   body.querySelectorAll('[data-reject]').forEach(b =>
-    b.addEventListener('click', () => rejectSubmission(b.dataset.reject)));
+    b.addEventListener('click', () => rejectFixture(b.dataset.reject)));
 
-  loadShots(order);
+  loadShots();
 }
 
 /**
  * Screenshots live in a private bucket, so each needs a short-lived signed URL.
- * Fetched after the cards render rather than before, so a slow image never
- * holds up the list.
+ * Fetched after the cards render, so a slow image never holds up the list.
  */
-async function loadShots(rows) {
-  for (const s of rows) {
-    const box = document.querySelector(`[data-shots="${s.id}"]`);
-    if (!box || !(s.image_paths || []).length) { if (box) box.innerHTML = ''; continue; }
+async function loadShots() {
+  for (const box of document.querySelectorAll('[data-shots]')) {
+    const ids = box.dataset.shots.split(',');
+    const rows = submissions.filter(s => ids.includes(String(s.id)));
+    const paths = rows.flatMap(r => r.image_paths || []);
+    if (!paths.length) { box.innerHTML = ''; continue; }
     try {
-      const urls = await Promise.all(s.image_paths.map(p => DB.signedResultUrl(p, 3600)));
+      const urls = await Promise.all(paths.map(p => DB.signedResultUrl(p, 3600)));
       box.innerHTML = urls.map(u =>
         `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`
       ).join('');
     } catch (e) {
-      box.innerHTML = `<div class="sub-meta">Could not load the screenshot</div>`;
+      box.innerHTML = `<div class="sub-meta">Could not load the screenshots</div>`;
     }
   }
 }
 
-async function acceptSubmission(id) {
-  const s = submissions.find(x => String(x.id) === String(id));
-  if (!s) return;
-  const found = matchFromRef(s.match_ref);
+/** Enter the score for a fixture and close every upload attached to it. */
+async function acceptFixture(ref) {
+  const found = matchFromRef(ref);
   if (!found) { toast('That fixture no longer exists'); return; }
 
-  const home = $(`rh-${id}`).value.trim();
-  const away = $(`ra-${id}`).value.trim();
-  if (home === '' || away === '') { toast('Enter the score before accepting'); return; }
+  const home = $(`rh-${ref}`).value.trim();
+  const away = $(`ra-${ref}`).value.trim();
+  if (home === '' || away === '') { toast('Enter the score first'); return; }
 
-  // Write the score, then record the decision. If the second call fails the
-  // score still stands, which is the safer way round: a stuck "pending" is
-  // visible, a silently unapplied result is not.
-  found.match.hs = Math.max(0, Number(home));
-  found.match.as = Math.max(0, Number(away));
-  found.match.played = true;
+  applyScore(found, Math.max(0, Number(home)), Math.max(0, Number(away)));
   await save();
 
-  try {
-    await DB.reviewSubmission(id, { status: 'accepted' });
-  } catch (e) {
-    toast('Score applied, but the submission could not be marked accepted');
+  // Both players may have uploaded; one score settles all of them.
+  for (const s of submissions.filter(s => s.match_ref === ref && s.status === 'pending')) {
+    try { await DB.reviewSubmission(s.id, { status: 'accepted' }); }
+    catch (e) { toast('Score applied, but an upload could not be closed'); }
   }
 
-  renderFixtures(); renderTable(); renderPlayers();
+  refreshAfterScore();
   await loadSubmissions();
-  toast('Result applied to the table');
+  toast('Result published');
 }
 
-async function rejectSubmission(id) {
-  const note = prompt('Why is this being rejected?\n\nThe player sees this, so a short reason helps them resend correctly.');
+/** Send a fixture back so the players upload something clearer. */
+async function rejectFixture(ref) {
+  const note = prompt('What do you need from them?\n\nBoth players see this on the fixture.');
   if (note === null) return;
   try {
-    await DB.reviewSubmission(id, { status: 'rejected', review_note: note.trim() || null });
+    for (const s of submissions.filter(s => s.match_ref === ref && s.status === 'pending')) {
+      await DB.reviewSubmission(s.id, { status: 'rejected', review_note: note.trim() || null });
+    }
     await loadSubmissions();
-    toast('Rejected — the player can send a corrected result');
+    toast('Sent back - they can upload again');
   } catch (e) {
     toast(e.message);
   }
 }
+
+function applyScore(found, home, away) {
+  found.match.hs = home;
+  found.match.as = away;
+  found.match.played = true;
+}
+function refreshAfterScore() { renderFixtures(); renderTable(); renderPlayers(); }
 
 /* ── publish ────────────────────────────────────────────────────────── */
 

@@ -203,6 +203,7 @@
 <script src="js/brand.js"></script>
 <script src="js/api.js"></script>
 <script src="js/db.js"></script>
+<script src="js/dialog.js"></script>
 <script src="js/competition.js"></script>
 <script src="js/native.js"></script>
 <script>
@@ -407,10 +408,13 @@ function renderTeams() {
   if (endBtn) endBtn.addEventListener('click', endSeason);
 }
 
-function doGenerate() {
+async function doGenerate() {
   const teams = registeredTeams();
   if (state.generated &&
-      !confirm('This clears every score already entered and builds a new schedule. Continue?')) {
+      !await Dialog.confirm(
+        'Every score already entered is cleared and a new schedule is built.',
+        { title: 'Regenerate the fixtures?', confirmLabel: 'Regenerate',
+          danger: true })) {
     return;
   }
 
@@ -778,7 +782,9 @@ async function acceptFixture(ref) {
 
 /** Send a fixture back so the players upload something clearer. */
 async function rejectFixture(ref) {
-  const note = prompt('What do you need from them?\n\nBoth players see this on the fixture.');
+  const note = await Dialog.prompt('Both players see this on the fixture.',
+    { title: 'What do you need from them?',
+      placeholder: 'e.g. the full-time screen, not the highlights' });
   if (note === null) return;
   try {
     for (const s of submissions.filter(s => s.match_ref === ref && s.status === 'pending')) {
@@ -833,8 +839,10 @@ async function applyMovements(table) {
   if (up.length)   lines.push(`Up:   ${up.join(', ')}`);
   if (down.length) lines.push(`Down: ${down.join(', ')}`);
 
-  if (!confirm(`Move these teams as the season ends?\n\n${lines.join('\n')}\n\n` +
-               `They keep their accounts and history - only the division changes.`)) {
+  if (!await Dialog.confirm(
+        `${lines.join('\n')}\n\nThey keep their accounts and history - only the division changes.`,
+        { title: 'Move these teams as the season ends?',
+          confirmLabel: 'Move them' })) {
     return '';
   }
 
@@ -866,10 +874,11 @@ async function endSeason() {
       `Open the cup and use "Bring in the entrants" to enter them.`
     : '';
 
-  if (!confirm(
-      `End Season ${competition.season} and start Season ${competition.season + 1}?\n\n` +
+  if (!await Dialog.confirm(
       `This season's table and results are archived and stay readable in the app.\n` +
-      `The new season starts with no fixtures, and your teams carry over.` + cupNote)) {
+      `The new season starts with no fixtures, and your teams carry over.` + cupNote,
+      { title: `End Season ${competition.season} and start Season ${competition.season + 1}?`,
+        confirmLabel: 'End the season' })) {
     return;
   }
 

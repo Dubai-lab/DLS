@@ -10,7 +10,8 @@
     "migrate": "node scripts/migrate-to-supabase.mjs",
     "seed:admins": "node scripts/seed-admins.mjs",
     "serve": "node --watch-path=./api --watch-path=./scripts scripts/serve.mjs",
-    "assets": "node scripts/make-assets.mjs && capacitor-assets generate --android --ios --iconBackgroundColor '#0a0e14' --iconBackgroundColorDark '#0a0e14' --splashBackgroundColor '#0a0e14' --splashBackgroundColorDark '#0a0e14'"
+    "assets": "node scripts/make-assets.mjs && capacitor-assets generate --android --ios --iconBackgroundColor '#0a0e14' --iconBackgroundColorDark '#0a0e14' --splashBackgroundColor '#0a0e14' --splashBackgroundColorDark '#0a0e14'",
+    "test": "node scripts/test-competition.mjs && node scripts/test-dialog.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",

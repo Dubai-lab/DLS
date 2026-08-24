@@ -438,6 +438,7 @@
 <script src="js/brand.js"></script>
 <script src="js/api.js"></script>
 <script src="js/db.js"></script>
+<script src="js/dialog.js"></script>
 <script src="js/native.js"></script>
 <script>
 (function () {
@@ -665,14 +666,14 @@ $('btn-create-member').addEventListener('click', async () => {
       toast('Registered — email sent to ' + email);
     } else {
       toast('Registered, but the email failed to send');
-      alert([
+      await Dialog.alert([
         'The account was created, but the notification email could not be sent.',
         res.emailError || '',
         '',
         'Pass these on manually:',
         'Email: ' + email,
         res.code ? 'Access code: ' + res.code : ''
-      ].filter(Boolean).join('\n'));
+      ].filter(Boolean).join('\n'), { title: 'Email did not send' });
     }
     await loadMembers();
   } catch (e) {
@@ -970,9 +971,10 @@ $('btn-save-member').addEventListener('click', async () => {
 $('btn-reset-code').addEventListener('click', async () => {
   const m = memberCache.find(x => String(x.id) === String(editingId));
   if (!m) return;
-  if (!confirm(`Issue a new access code for ${m.team || m.email}?
-
-Their current code stops working immediately.`)) return;
+  if (!await Dialog.confirm(
+        `Their current code stops working immediately, and they will need the new one to sign in.`,
+        { title: `Issue a new code for ${m.team || m.email}?`,
+          confirmLabel: 'Issue new code' })) return;
 
   const btn = $('btn-reset-code');
   btn.disabled = true;
@@ -1027,13 +1029,16 @@ $('btn-copy-code').addEventListener('click', () => {
   const code = $('code-result-value').textContent;
   navigator.clipboard.writeText(code)
     .then(() => toast('Code copied'))
-    .catch(() => prompt('Copy this code:', code));
+    .catch(() => Dialog.prompt('Select the code and copy it.',
+      { title: 'Copy this code', value: code, confirmLabel: 'Done' }));
 });
 
 $('btn-remove-member').addEventListener('click', async () => {
   const m = memberCache.find(x => String(x.id) === String(editingId));
   if (!m) return;
-  if (!confirm(`Remove ${m.team || m.email} from this league?\n\nTheir fixtures already played stay in the records.`)) return;
+  if (!await Dialog.confirm('Their fixtures already played stay in the records.',
+        { title: `Remove ${m.team || m.email} from this league?`,
+          confirmLabel: 'Remove', danger: true })) return;
   try {
     await DB.removeMember(editingId);
     closeModal('modal-edit');
@@ -1047,7 +1052,9 @@ $('btn-remove-member').addEventListener('click', async () => {
 /* ── Sign out ───────────────────────────────────────────────────────── */
 
 $('btn-signout').addEventListener('click', async () => {
-  if (!confirm('Sign out of this device?')) return;
+  if (!await Dialog.confirm('You will need your email and access code to sign back in.',
+        { title: 'Sign out of this device?', confirmLabel: 'Sign out',
+          danger: true })) return;
   await DB.auth.signOut();
   location.href = 'login.html';
 });

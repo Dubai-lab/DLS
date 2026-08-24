@@ -24,8 +24,10 @@
   --nav-h: 62px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html { overflow-x: hidden; touch-action: manipulation; }
-button, a, .chip, .nav button, label { touch-action: manipulation; }
+/* Not on <html>: overflow or touch-action on the root makes it a scroll
+   container competing with body, which breaks wheel and trackpad scrolling.
+   Wide tables are wrapped instead - that is where the overflow came from. */
+button, a, .chip, .nav, .nav button, label { touch-action: manipulation; }
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
   background: var(--bg); color: var(--text); line-height: 1.5;

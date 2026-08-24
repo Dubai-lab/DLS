@@ -25,12 +25,15 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Double-tap on a phone zooms the page, which makes the console feel like a
-   web page rather than an app - and it fires on any dead space between
-   controls. `manipulation` drops that gesture (and the 300ms click delay it
-   exists for) while leaving pinch-zoom and scrolling untouched, so nobody who
-   needs to magnify loses the ability. */
-html { overflow-x: hidden; touch-action: manipulation; }
+/* Double-tap on a phone zooms the page, which fires on any dead space between
+   controls and makes the app feel like a web page. `manipulation` drops that
+   gesture while leaving pinch-zoom and scrolling alone.
+
+   Deliberately NOT on <html>: overflow or touch-action on the root turns it
+   into its own scroll container, and with body also scrolling the two fight
+   each other - which stopped the wheel and two-finger scrolling working at
+   all. Horizontal overflow is handled where it actually occurs, by wrapping
+   wide tables, not by clamping the root. */
 button, a, label, select, .tab, .chip, .choice, .swatch { touch-action: manipulation; }
 
 /* Scrollbars.

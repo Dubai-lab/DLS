@@ -25,6 +25,20 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Scrollbars.
+   Inside the packaged app a visible scrollbar is a tell that this is a web
+   view, so it goes. On a touch screen the OS draws its own transient
+   indicator, so ours is redundant there too. Desktop web keeps them, where
+   they are a genuinely useful affordance. */
+html.native, html.native body,
+html.native *, .native ::-webkit-scrollbar { scrollbar-width: none; }
+html.native ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+@media (pointer: coarse) {
+  html, body { scrollbar-width: none; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
+}
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
   color: var(--text);

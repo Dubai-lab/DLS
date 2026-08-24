@@ -18,6 +18,12 @@ const P = (Cap && Cap.Plugins) || {};
 
 window.DLSNative = { isNative, platform };
 
+// Lets CSS distinguish the packaged app from the website. Set before the early
+// return so it applies even if no plugin is available yet.
+if (isNative) {
+  document.documentElement.classList.add('native', 'native-' + platform);
+}
+
 if (!isNative) return;
 
 /* -------------------------------------------------------------------------

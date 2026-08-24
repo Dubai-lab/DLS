@@ -542,24 +542,18 @@ function renderHome() {
   const el = $('screen-home');
   if (!pub) { el.innerHTML = notPublished(); return; }
 
-  el.innerHTML = compSwitcherHTML() + myTeamCardHTML() + nextFixtureHTML() + recentResultsHTML();
-  wireCompSwitcher(el);
+  el.innerHTML = myTeamCardHTML() + nextFixtureHTML() + recentResultsHTML();
 }
 
-function compSwitcherHTML() {
-  if (competitions.length < 2) return '';
-  return `<div class="pill-bar">${competitions.map(c =>
-    `<button class="chip${active && c.id === active.id ? ' on' : ''}" data-comp="${esc(c.id)}">${esc(c.name)}</button>`
-  ).join('')}</div>`;
-}
-
-function wireCompSwitcher(root) {
-  root.querySelectorAll('[data-comp]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const comp = competitions.find(c => c.id === btn.dataset.comp);
-      if (comp) selectCompetition(comp);
-    });
-  });
+/**
+ * The competition one step round from the one being viewed.
+ * Switching is a single row in the profile sheet rather than a bar across
+ * Home, so a player in two competitions pays nothing for it on screen.
+ */
+function nextCompetition() {
+  if (competitions.length < 2) return null;
+  const i = competitions.findIndex(c => active && c.id === active.id);
+  return competitions[(i + 1) % competitions.length];
 }
 
 /** The player's row in whichever table applies to them. */
@@ -1203,6 +1197,7 @@ function closeSheet() { $('sheet').classList.remove('on'); }
 
 function openMenu() {
   const t = DB.tenant.get() || {};
+  const next = nextCompetition();
   $('sheet-box').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:6px">
       ${t.team ? crest(t.team, 46) : `<span class="crest">${esc(initials(t.tenant_name))}</span>`}
@@ -1212,11 +1207,17 @@ function openMenu() {
       </div>
     </div>
     <button class="sheet-row" id="row-code"><span>&#128273;</span> Change my access code</button>
-    <button class="sheet-row" id="row-switch"><span>&#128260;</span> Switch league</button>
+    ${next ? `<button class="sheet-row" id="row-comp"><span>&#128260;</span>
+        Switch to ${esc(next.name)}</button>` : ''}
     <button class="sheet-row danger" id="row-out"><span>&#8618;</span> Sign out</button>`;
 
   $('row-code').addEventListener('click', openChangeCode);
-  $('row-switch').addEventListener('click', () => { DB.tenant.clear(); location.href = 'login.html'; });
+  if (next) {
+    $('row-comp').addEventListener('click', async () => {
+      closeSheet();
+      await selectCompetition(next);
+    });
+  }
   $('row-out').addEventListener('click', async () => {
     await DB.auth.signOut();
     location.href = 'login.html';

@@ -29,7 +29,14 @@ body {
   background: var(--bg); color: var(--text); line-height: 1.5;
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;           /* nothing should ever scroll sideways */
+  overscroll-behavior-y: none;  /* no rubber-band bounce past the edges */
 }
+
+/* The WebView draws a scrollbar over the content on some Android builds; the
+   app should not look like a web page inside a frame. */
+body::-webkit-scrollbar { width: 0; height: 0; }
+body { scrollbar-width: none; }
 button, select, input { font-family: inherit; }
 
 .screen { display: none; padding: 0 16px 24px; max-width: 640px; margin: 0 auto; }

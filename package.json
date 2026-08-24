@@ -9,7 +9,8 @@
     "open:ios": "cap open ios",
     "migrate": "node scripts/migrate-to-supabase.mjs",
     "seed:admins": "node scripts/seed-admins.mjs",
-    "serve": "node --watch-path=./api --watch-path=./scripts scripts/serve.mjs"
+    "serve": "node --watch-path=./api --watch-path=./scripts scripts/serve.mjs",
+    "assets": "node scripts/make-assets.mjs && capacitor-assets generate --iconBackgroundColor '#0a0e14' --iconBackgroundColorDark '#0a0e14' --splashBackgroundColor '#0a0e14' --splashBackgroundColorDark '#0a0e14'"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
@@ -22,7 +23,9 @@
     "nodemailer": "^9.0.5"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.0.0",
+    "sharp": "^0.35.3",
     "typescript": "^5.9.3"
   }
 }

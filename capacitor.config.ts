@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
   webDir: 'www',
 
   // Matches the page background so there is no white flash before first paint.
-  backgroundColor: '#0d1117',
+  backgroundColor: '#0a0e14',
 
   android: {
     // https://localhost rather than the older http scheme, so the WebView
@@ -38,16 +38,16 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 1200,
       launchAutoHide: true,
-      backgroundColor: '#0d1117',
+      backgroundColor: '#0a0e14',
       androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
+      androidScaleType: 'FIT_CENTER',
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: false
     },
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#0d1117',
+      backgroundColor: '#0a0e14',
       overlaysWebView: false
     },
     PushNotifications: {

@@ -37,11 +37,20 @@ create index if not exists competitions_feeds_idx
 
 /**
  * Move the named teams out of one competition and into another.
- * Passing null for p_from adds without removing, which is what cup
- * qualification wants: a side keeps playing its league while in the cup.
+ *
+ * p_from null adds without removing, which is what cup qualification wants: a
+ * side keeps playing its division while in the cup.
+ *
+ * p_keep is the competition those sides must not lose. An empty
+ * competition_ids means "every competition" to the app - the default a member
+ * is registered with - so the first write to it has to make that implicit
+ * membership explicit, or entering the cup would silently drop the division
+ * the side came from.
  */
+drop function if exists public.move_members(uuid, uuid, uuid, text[]);
+
 create or replace function public.move_members(
-  p_tenant uuid, p_from uuid, p_to uuid, p_teams text[]
+  p_tenant uuid, p_from uuid, p_to uuid, p_teams text[], p_keep uuid default null
 ) returns int
   language plpgsql volatile security definer set search_path = public as $fn$
 declare moved int;
@@ -59,7 +68,11 @@ begin
            -- end up listed twice.
            array_append(
              array_remove(
-               array_remove(m.competition_ids, p_to),
+               array_remove(
+                 case when cardinality(m.competition_ids) = 0 and p_keep is not null
+                      then array[p_keep]
+                      else m.competition_ids end,
+                 p_to),
                coalesce(p_from, '00000000-0000-0000-0000-000000000000'::uuid)),
              p_to)
    where m.tenant_id = p_tenant
@@ -71,7 +84,7 @@ begin
   return moved;
 end $fn$;
 
-grant execute on function public.move_members(uuid, uuid, uuid, text[]) to authenticated;
+grant execute on function public.move_members(uuid, uuid, uuid, text[], uuid) to authenticated;
 
 -- ---------------------------------------------------------------------------
 --  Reading a finished season's final table

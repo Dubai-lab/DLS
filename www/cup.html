@@ -850,7 +850,10 @@ async function bringInQualifiers() {
         toast(`${f.name} has not published a table yet`);
         return;
       }
-      lists.push({ name: f.name, teams: table.slice(0, f.qualify_count).map(r => r.team) });
+      lists.push({
+        id: f.id, name: f.name,
+        teams: table.slice(0, f.qualify_count).map(r => r.team)
+      });
     }
 
     // A side can only be entered once, however many divisions name it.
@@ -872,9 +875,15 @@ async function bringInQualifiers() {
       return;
     }
 
-    // from: null - qualifying adds the cup, it does not move a side out of the
-    // division it came from.
-    const moved = await DB.moveMembers({ from: null, to: competition.id, teams });
+    // One call per division, so each side keeps the division it came from.
+    // from: null - qualifying adds the cup, it does not move anyone out.
+    let moved = 0;
+    for (const l of lists) {
+      if (!l.teams.length) continue;
+      moved += await DB.moveMembers({
+        from: null, to: competition.id, teams: l.teams, keep: l.id
+      });
+    }
 
     members = (await DB.members()).filter(m =>
       m.role === 'player' && m.team &&

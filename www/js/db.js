@@ -641,12 +641,16 @@ const DB = {
 
   /**
    * Move teams between competitions.
+   *
    * `from` may be null to add without removing - a side qualifying for the cup
-   * keeps playing its league.
+   * keeps playing its division. Pass that division as `keep` so a member who
+   * was registered for the whole league does not end up listed in the cup
+   * alone.
    */
-  async moveMembers({ from, to, teams }) {
+  async moveMembers({ from, to, teams, keep = null }) {
     return rpc('move_members', {
-      p_tenant: tenantId(), p_from: from || null, p_to: to, p_teams: teams
+      p_tenant: tenantId(), p_from: from || null, p_to: to,
+      p_teams: teams, p_keep: keep
     });
   },
 

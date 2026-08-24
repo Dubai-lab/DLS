@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signing out — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+</head>
+<body>
+
+<!--
+  Escape hatch.
+
+  A session lives in localStorage and keeps looking valid until it expires, even
+  if the account behind it was deleted in Supabase. That leaves someone stuck on
+  a page they cannot get past. This clears everything unconditionally, without
+  needing the server to agree, and is safe to bookmark.
+-->
+
+<div class="auth-shell">
+  <div class="auth-box" style="text-align:center">
+    <a class="brand brand-lg" href="/" style="justify-content:center;margin-bottom:22px">
+      <span class="brand-mark" id="brand-mark"></span>
+      <span id="brand-name">Football League Hub</span>
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-head" style="margin-bottom:16px">
+        <h1 id="state-title">Signing out…</h1>
+        <p id="state-note">Clearing this device.</p>
+      </div>
+      <a class="btn btn-primary btn-block" href="login.html" id="go-login">Sign in</a>
+      <a class="btn btn-ghost btn-block" href="register.html" style="margin-top:9px">Start a league</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/brand.js"></script>
+<script src="js/db.js"></script>
+<script>
+(function () {
+'use strict';
+
+(async () => {
+  // Tell the server first, so the refresh token is revoked rather than just
+  // forgotten. If that fails there is nothing to do about it - the local clear
+  // below is what actually unblocks the person.
+  try { await DB.auth.signOut(); } catch (e) { /* ignore */ }
+
+  try { DB.auth.reset(); } catch (e) { /* ignore */ }
+
+  // Belt and braces: anything else this origin stored, from any older build.
+  try {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('lh_') || k.startsWith('dls_'))
+      .forEach(k => localStorage.removeItem(k));
+  } catch (e) { /* private mode can throw on access */ }
+
+  document.getElementById('state-title').textContent = 'Signed out';
+  document.getElementById('state-note').textContent =
+    'This device is clear. You can sign in or start a new league.';
+})();
+
+})();
+</script>
+</body>
+</html>

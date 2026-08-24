@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Competition — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+<style>
+  .comp-head { padding: 20px 0 16px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+  .comp-head-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .comp-title { font-size: 1.4rem; font-weight: 900; letter-spacing: -.4px; }
+  .comp-sub { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+  .head-actions { margin-left: auto; display: flex; gap: 9px; align-items: center; }
+  .save-state { font-size: .74rem; color: var(--faint); min-width: 90px; text-align: right; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab {
+    background: var(--surface); border: 1px solid var(--line); color: var(--muted);
+    border-radius: 10px; padding: 9px 17px; font-size: .82rem; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .tab.on { background: rgba(255,215,0,.1); border-color: rgba(255,215,0,.4); color: var(--gold); }
+
+  .panel { display: none; }
+  .panel.on { display: block; }
+
+  .empty {
+    border: 1px dashed var(--line-soft); border-radius: var(--radius);
+    padding: 36px 20px; text-align: center; color: var(--muted); font-size: .88rem;
+  }
+  .empty strong { color: var(--text); display: block; margin-bottom: 6px; font-size: .95rem; }
+
+  .team-row, .match-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 11px; padding: 12px 15px; margin-bottom: 8px;
+  }
+  .team-badge {
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    display: grid; place-items: center; font-size: .72rem; font-weight: 800; color: var(--muted);
+  }
+  .team-name { font-weight: 700; font-size: .9rem; }
+  .team-meta { color: var(--faint); font-size: .74rem; margin-top: 2px; }
+
+  /* Fixtures */
+  .md-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+  .md-chip {
+    flex-shrink: 0; background: var(--surface); border: 1px solid var(--line);
+    color: var(--muted); border-radius: 9px; padding: 8px 14px;
+    font-size: .78rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+  .md-chip.on { border-color: var(--gold); color: var(--gold); }
+  .md-chip.done { color: var(--green); }
+
+  .match-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+  .side { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .side.away { flex-direction: row-reverse; text-align: right; }
+  .side span { font-size: .86rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score { display: flex; align-items: center; gap: 6px; }
+  .score input {
+    width: 46px; padding: 8px 4px; text-align: center; font-size: 1rem; font-weight: 800;
+    background: var(--surface-2); border: 1.5px solid var(--line-soft);
+    border-radius: 9px; color: var(--text); outline: none; font-family: inherit;
+  }
+  .score input:focus { border-color: var(--gold); }
+  .score em { color: var(--faint); font-style: normal; }
+  .bye-note {
+    background: rgba(255,215,0,.06); border: 1px dashed rgba(255,215,0,.3);
+    border-radius: 10px; padding: 11px 15px; font-size: .82rem; color: var(--gold);
+    text-align: center; margin-bottom: 8px;
+  }
+
+  /* Table */
+  .std { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  .std th {
+    text-align: left; font-size: .64rem; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted); font-weight: 800; padding: 0 8px 10px;
+  }
+  .std td { padding: 11px 8px; border-top: 1px solid var(--line); }
+  .std tbody tr:first-child td { border-top: none; }
+  .std .num { text-align: center; width: 38px; }
+  .std .pts { font-weight: 800; color: var(--gold); }
+  .std .pos { color: var(--faint); width: 30px; text-align: center; }
+  .form-pills { display: flex; gap: 3px; }
+  .pill {
+    width: 17px; height: 17px; border-radius: 4px; font-size: .58rem; font-weight: 800;
+    display: grid; place-items: center; color: #0d1117;
+  }
+  .pill-W { background: var(--green); }
+  .pill-D { background: #8b949e; }
+  .pill-L { background: var(--red); }
+  .table-wrap { overflow-x: auto; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--line-soft); color: var(--text);
+    border-radius: 10px; padding: 11px 20px; font-size: .85rem; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 300;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="comp-head">
+    <div class="comp-head-inner">
+      <a href="console.html" class="btn btn-ghost" style="padding:8px 14px;font-size:.78rem">&#8592; Console</a>
+      <div>
+        <div class="comp-title" id="comp-title">…</div>
+        <div class="comp-sub" id="comp-sub"></div>
+      </div>
+      <div class="head-actions">
+        <span class="save-state" id="save-state"></span>
+        <button class="btn btn-primary" id="btn-publish" style="padding:9px 18px;font-size:.8rem">Publish</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="teams">Teams</button>
+    <button class="tab" data-tab="fixtures">Fixtures</button>
+    <button class="tab" data-tab="table">Table</button>
+    <button class="tab" data-tab="players">Stats</button>
+  </div>
+
+  <!-- ───────── Teams ───────── -->
+  <section class="panel on" id="panel-teams">
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">
+      Teams come from the players you registered — one team per account. To add a
+      team, register its player in the <a href="console.html" style="color:var(--gold)">console</a>.
+    </p>
+    <div id="team-list"><div class="empty">Loading…</div></div>
+
+    <div id="generate-box" style="margin-top:22px"></div>
+  </section>
+
+  <!-- ───────── Fixtures ───────── -->
+  <section class="panel" id="panel-fixtures">
+    <div id="fixtures-body"><div class="empty">Loading…</div></div>
+  </section>
+
+  <!-- ───────── Table ───────── -->
+  <section class="panel" id="panel-table">
+    <div id="table-body"><div class="empty">Loading…</div></div>
+  </section>
+
+  <!-- ───────── Stats (derived from results) ───────── -->
+  <section class="panel" id="panel-players">
+    <div id="players-body"><div class="empty">Loading…</div></div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/brand.js"></script>
+<script src="js/api.js"></script>
+<script src="js/db.js"></script>
+<script src="js/competition.js"></script>
+<script>
+(function () {
+'use strict';
+
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const compId = params.get('c');
+
+let competition = null;   // row from the competitions table
+let members = [];         // memberships scoped to this competition
+let state = null;         // the admin document
+let docPath = '';
+
+/* ── helpers ────────────────────────────────────────────────────────── */
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function toast(text) {
+  const el = $('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function initials(name) {
+  return String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+/** Crest for a team name: uploaded image, else initials on the team colour. */
+function crest(teamName, px) {
+  const size = px || 30;
+  const m = members.find(x => x.team === teamName);
+  if (m && m.logo_url) {
+    return `<img class="team-badge" src="${esc(m.logo_url)}" alt=""
+                 style="width:${size}px;height:${size}px;object-fit:cover;background:#fff" loading="lazy">`;
+  }
+  const colour = (m && m.jersey) || '#8b949e';
+  return `<span class="team-badge" style="width:${size}px;height:${size}px;
+               background:${esc(colour)}22;border-color:${esc(colour)}66;color:${esc(colour)}">
+            ${esc(initials(teamName))}</span>`;
+}
+
+function setSaveState(text, color) {
+  const el = $('save-state');
+  el.textContent = text || '';
+  el.style.color = color || 'var(--faint)';
+}
+
+/* ── persistence ────────────────────────────────────────────────────────
+   The server is the source of truth. The previous version of this app kept
+   working state in localStorage and pushed it to the database, which meant a
+   device with empty storage could overwrite a live season with blank defaults.
+   Here the document is loaded on boot and written back after edits; nothing
+   authoritative lives in the browser.
+   -------------------------------------------------------------------- */
+
+let saveTimer = null;
+
+function scheduleSave() {
+  setSaveState('Saving…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 900);
+}
+
+async function save() {
+  try {
+    await DB.set(docPath, state);
+    setSaveState('Saved', 'var(--green)');
+  } catch (e) {
+    setSaveState('Not saved', 'var(--red)');
+    toast(e.isPermission ? 'You do not have permission to edit this competition'
+                         : 'Save failed: ' + e.message);
+  }
+}
+
+/* ── boot ───────────────────────────────────────────────────────────── */
+
+(async () => {
+  if (!(await DB.auth.isSignedIn())) { location.replace('login.html'); return; }
+  if (!DB.tenant.get())              { location.replace('login.html'); return; }
+  if (!compId) { fatal('No competition selected.'); return; }
+
+  try {
+    const rows = await DB.competitions();
+    competition = rows.find(c => c.id === compId);
+    if (!competition) { fatal('That competition does not exist, or you cannot access it.'); return; }
+
+    // A cup belongs on the other template.
+    if (competition.format === 'group_knockout') {
+      location.replace('cup.html?c=' + encodeURIComponent(compId));
+      return;
+    }
+
+    docPath = `comp/${competition.key}/admin`;
+    $('comp-title').textContent = competition.name;
+    $('comp-sub').textContent =
+      `Season ${competition.season} · ${DB.tenant.get().tenant_name}`;
+    document.title = `${competition.name} — Football League Hub`;
+
+    const [doc, allMembers] = await Promise.all([
+      DB.get(docPath).catch(() => null),
+      DB.members().catch(() => [])
+    ]);
+
+    state = doc || { teams: [], matchdays: [], generated: false, currentDay: 0 };
+    // Older documents may lack newer fields.
+    state.teams = state.teams || [];
+    state.matchdays = state.matchdays || [];
+
+    members = allMembers.filter(m =>
+      m.role === 'player' && m.team &&
+      (!m.competition_ids?.length || m.competition_ids.includes(compId)));
+
+    renderTeams();
+    renderFixtures();
+    renderTable();
+    renderPlayers();
+  } catch (e) {
+    fatal(e.message);
+  }
+})();
+
+function fatal(message) {
+  document.querySelector('.wrap').innerHTML =
+    `<div class="empty" style="margin-top:60px"><strong>Cannot open this competition</strong>${esc(message)}
+     <div style="margin-top:18px"><a class="btn btn-ghost" href="console.html">Back to console</a></div></div>`;
+}
+
+/* ── tabs ───────────────────────────────────────────────────────────── */
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+    tab.classList.add('on');
+    $('panel-' + tab.dataset.tab).classList.add('on');
+  });
+});
+
+/* ── teams ──────────────────────────────────────────────────────────── */
+
+/** Teams currently registered, from the member list. */
+function registeredTeams() {
+  return members.map(m => m.team).filter(Boolean);
+}
+
+function renderTeams() {
+  const teams = registeredTeams();
+
+  $('team-list').innerHTML = teams.length
+    ? members.map(m => `
+        <div class="team-row">
+          ${crest(m.team)}
+          <div style="flex:1;min-width:0">
+            <div class="team-name">${esc(m.team)}</div>
+            <div class="team-meta">${esc(m.display_name || m.email || '')}${
+              m.status === 'invited' ? ' · not signed in yet' : ''}</div>
+          </div>
+        </div>`).join('')
+    : `<div class="empty"><strong>No teams yet</strong>
+         Register your players in the console — each one brings their team.</div>`;
+
+  const box = $('generate-box');
+  if (teams.length < 2) { box.innerHTML = ''; return; }
+
+  box.innerHTML = `
+    <div class="card">
+      <h3 style="margin-bottom:6px">${state.generated ? 'Regenerate fixtures' : 'Generate fixtures'}</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
+        ${teams.length} teams${teams.length % 2 ? ' — odd number, so one team rests each round' : ''}.
+        ${state.generated
+          ? '<strong style="color:var(--red)">Regenerating clears every score already entered.</strong>'
+          : ''}
+      </p>
+      <label style="display:flex;align-items:center;gap:9px;font-size:.85rem;color:var(--muted);margin-bottom:14px">
+        <input type="checkbox" id="double-round" ${state.doubleRound ? 'checked' : ''}>
+        Play home and away (double round)
+      </label>
+      <button class="btn btn-primary" id="btn-generate">
+        ${state.generated ? 'Regenerate' : 'Generate'} fixtures
+      </button>
+    </div>`;
+
+  $('btn-generate').addEventListener('click', doGenerate);
+}
+
+function doGenerate() {
+  const teams = registeredTeams();
+  if (state.generated &&
+      !confirm('This clears every score already entered and builds a new schedule. Continue?')) {
+    return;
+  }
+
+  try {
+    const doubleRound = $('double-round').checked;
+    // Snapshot the team list into the document. Fixtures must stay stable even
+    // if a player is later removed from the league.
+    state.teams = teams;
+    state.matchdays = Competition.generateRoundRobin(teams, { doubleRound });
+    state.generated = true;
+    state.doubleRound = doubleRound;
+    state.currentDay = 0;
+
+    scheduleSave();
+    renderTeams(); renderFixtures(); renderTable(); renderPlayers();
+    toast(`${state.matchdays.length} matchdays generated`);
+    document.querySelector('.tab[data-tab="fixtures"]').click();
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+/* ── fixtures ───────────────────────────────────────────────────────── */
+
+function renderFixtures() {
+  const body = $('fixtures-body');
+
+  if (!state.generated || !state.matchdays.length) {
+    body.innerHTML = `<div class="empty"><strong>No fixtures yet</strong>
+      Add your teams, then generate the schedule from the Teams tab.</div>`;
+    return;
+  }
+
+  const day = Math.min(state.currentDay || 0, state.matchdays.length - 1);
+  const md = state.matchdays[day];
+
+  const chips = state.matchdays.map((m, i) => {
+    const complete = m.matches.length && m.matches.every(x => x.played);
+    return `<button class="md-chip${i === day ? ' on' : ''}${complete ? ' done' : ''}"
+                    data-day="${i}">MD ${m.day}${complete ? ' ✓' : ''}</button>`;
+  }).join('');
+
+  const matches = md.matches.map((m, i) => `
+    <div class="match-row">
+      <div class="side">
+        ${crest(m.home)}<span>${esc(m.home)}</span>
+      </div>
+      <div class="score">
+        <input type="number" min="0" max="99" value="${m.hs ?? ''}" data-match="${i}" data-field="hs" aria-label="${esc(m.home)} score">
+        <em>–</em>
+        <input type="number" min="0" max="99" value="${m.as ?? ''}" data-match="${i}" data-field="as" aria-label="${esc(m.away)} score">
+      </div>
+      <div class="side away">
+        ${crest(m.away)}<span>${esc(m.away)}</span>
+      </div>
+    </div>`).join('');
+
+  body.innerHTML = `
+    <div class="md-bar">${chips}</div>
+    ${md.byeTeam ? `<div class="bye-note">${esc(md.byeTeam)} rests this matchday</div>` : ''}
+    <div class="field" style="max-width:280px;margin-bottom:16px">
+      <label for="deadline">Deadline</label>
+      <input class="input" type="datetime-local" id="deadline" value="${esc(md.deadline || '')}">
+    </div>
+    ${matches}`;
+
+  body.querySelectorAll('.md-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      state.currentDay = Number(chip.dataset.day);
+      renderFixtures();
+    });
+  });
+
+  $('deadline').addEventListener('change', e => {
+    state.matchdays[day].deadline = e.target.value || null;
+    scheduleSave();
+  });
+
+  body.querySelectorAll('.score input').forEach(input => {
+    input.addEventListener('input', () => {
+      const match = state.matchdays[day].matches[Number(input.dataset.match)];
+      const raw = input.value.trim();
+      match[input.dataset.field] = raw === '' ? null : Math.max(0, Number(raw));
+      // A match counts only when both scores are present, so a half-typed
+      // result never lands in the table.
+      match.played = typeof match.hs === 'number' && typeof match.as === 'number';
+      scheduleSave();
+      renderTable(); renderPlayers();
+      // Refresh the matchday chip tick without stealing focus from the input.
+      const complete = state.matchdays[day].matches.every(x => x.played);
+      body.querySelector(`.md-chip[data-day="${day}"]`)
+          .classList.toggle('done', complete);
+    });
+  });
+}
+
+/* ── table ──────────────────────────────────────────────────────────── */
+
+function renderTable() {
+  const body = $('table-body');
+  const teams = state.teams.length ? state.teams : registeredTeams();
+
+  if (!teams.length) {
+    body.innerHTML = `<div class="empty"><strong>Nothing to rank yet</strong>
+      Register teams and generate fixtures first.</div>`;
+    return;
+  }
+
+  const table = Competition.buildTable(teams, state.matchdays);
+
+  body.innerHTML = `<div class="table-wrap"><table class="std">
+    <thead><tr>
+      <th class="pos">#</th><th>Team</th>
+      <th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th>
+      <th class="num">GF</th><th class="num">GA</th><th class="num">GD</th>
+      <th class="num">Pts</th><th>Form</th>
+    </tr></thead>
+    <tbody>${table.map(r => `
+      <tr>
+        <td class="pos">${r.pos}</td>
+        <td><div style="display:flex;align-items:center;gap:9px">
+          ${crest(r.team)}
+          <span style="font-weight:600">${esc(r.team)}</span></div></td>
+        <td class="num">${r.p}</td><td class="num">${r.w}</td>
+        <td class="num">${r.d}</td><td class="num">${r.l}</td>
+        <td class="num">${r.gf}</td><td class="num">${r.ga}</td>
+        <td class="num">${r.gd > 0 ? '+' : ''}${r.gd}</td>
+        <td class="num pts">${r.pts}</td>
+        <td><div class="form-pills">${
+          Competition.form(r.team, state.matchdays)
+            .map(f => `<span class="pill pill-${f}">${f}</span>`).join('')
+        }</div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ── players ────────────────────────────────────────────────────────── */
+
+/**
+ * Per-team detail, all of it derived from the scores already entered.
+ * Replaces the old goalscorer table: without per-match goal entry that table
+ * could only ever be empty, whereas everything here comes free with a result.
+ */
+function renderPlayers() {
+  const teams = state.teams.length ? state.teams : registeredTeams();
+  const body = $('players-body');
+
+  if (!teams.length) {
+    body.innerHTML = `<div class="empty"><strong>No teams yet</strong>
+      Register players in the console to see their records here.</div>`;
+    return;
+  }
+
+  const stats = Competition.teamStats(teams, state.matchdays);
+  const leaders = Competition.leagueLeaders(stats);
+
+  const superlatives = leaders ? `
+    <div class="grid grid-4" style="margin-bottom:20px">
+      ${tile('Best attack', leaders.bestAttack.team, leaders.bestAttack.gf + ' scored')}
+      ${tile('Best defence', leaders.bestDefence.team, leaders.bestDefence.ga + ' conceded')}
+      ${tile('Clean sheets', leaders.mostCleanSheets.team, leaders.mostCleanSheets.cleanSheets + ' kept')}
+      ${tile('Longest unbeaten', leaders.longestUnbeaten.team, leaders.longestUnbeaten.longestUnbeaten + ' matches')}
+    </div>` : '';
+
+  body.innerHTML = superlatives + stats.map(s => `
+    <div class="team-row" style="align-items:flex-start">
+      ${crest(s.team, 36)}
+      <div style="flex:1;min-width:0">
+        <div class="team-name">${esc(s.team)}
+          <span style="color:var(--faint);font-weight:600;font-size:.78rem">
+            &middot; ${s.p} played
+          </span>
+        </div>
+        <div class="team-meta" style="margin-top:5px;line-height:1.7">
+          ${s.p ? `
+            ${s.w}W ${s.d}D ${s.l}L &middot; ${s.gf}&ndash;${s.ga}
+            &middot; home ${s.home.w}-${s.home.d}-${s.home.l}
+            &middot; away ${s.away.w}-${s.away.d}-${s.away.l}<br>
+            ${s.cleanSheets} clean sheet${s.cleanSheets === 1 ? '' : 's'}
+            ${s.biggestWin ? ` &middot; best win ${s.biggestWin.for}&ndash;${s.biggestWin.against} v ${esc(s.biggestWin.opponent)}` : ''}
+            ${s.longestWin > 1 ? ` &middot; ${s.longestWin} in a row` : ''}
+          ` : 'No matches played yet'}
+        </div>
+      </div>
+      <div class="form-pills" style="margin-top:4px">
+        ${s.form.map(f => `<span class="pill pill-${f}">${f}</span>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function tile(label, team, detail) {
+  return `<div class="card" style="padding:14px">
+    <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:1.3px;
+                color:var(--muted);font-weight:800">${esc(label)}</div>
+    <div style="font-weight:800;margin-top:5px;font-size:.92rem">${esc(team)}</div>
+    <div style="color:var(--faint);font-size:.74rem;margin-top:2px">${esc(detail)}</div>
+  </div>`;
+}
+
+/* ── publish ────────────────────────────────────────────────────────── */
+
+$('btn-publish').addEventListener('click', async () => {
+  const btn = $('btn-publish');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Publishing…';
+
+  try {
+    // Flush any pending edit first, so what is published matches what is saved.
+    clearTimeout(saveTimer);
+    await save();
+
+    const teams = state.teams.length ? state.teams : registeredTeams();
+    await DB.set(`comp/${competition.key}/pub`, {
+      name: competition.name,
+      season: competition.season,
+      format: 'round_robin',
+      teams,
+      logos: Object.fromEntries(
+        members.filter(m => m.team)
+               .map(m => [m.team, { url: m.logo_url || null, jersey: m.jersey || '#00c853' }])),
+      table: Competition.buildTable(teams, state.matchdays),
+      players: Competition.playerStats(state.matchdays),
+      allMatchdays: state.matchdays,
+      currentMatchday: state.currentDay || 0,
+      totalMatchdays: state.matchdays.length,
+      publishedAt: Date.now()
+    });
+
+    // Contacts go in their own document, never inside the published snapshot:
+    // standings may be public, phone numbers must not be.
+    await DB.set('contacts', Object.fromEntries(
+      members.filter(m => m.team && m.phone).map(m => [m.team, m.phone])));
+
+    toast('Published — players can see the update');
+  } catch (e) {
+    toast(e.isPermission ? 'You cannot publish this competition' : 'Publish failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+});
+
+})();
+</script>
+</body>
+</html>

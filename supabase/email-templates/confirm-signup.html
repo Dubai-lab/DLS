@@ -1,0 +1,64 @@
+<!--
+  Supabase > Authentication > Emails > "Confirm signup"
+
+  Subject:  Your Football League Hub code
+  Body:     everything below this comment
+
+  {{ .Token }} is the verification code. Supabase's default template sends
+  {{ .ConfirmationURL }} instead, which does not work here for two reasons:
+  register.html asks the person to type a code, and inside the packaged mobile
+  app a link opens the phone browser and strands them outside the app.
+
+  Copy {{ .Token }} exactly, braces and spaces included. A typo ships the
+  literal text to your users and fails silently.
+
+  Table-based with inline styles throughout: Gmail and Outlook strip <style>
+  blocks and ignore most modern layout, so anything fancier degrades badly.
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#0a0e14;margin:0;padding:32px 12px;font-family:'Segoe UI',Arial,Helvetica,sans-serif">
+  <tr>
+    <td align="center">
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+             style="max-width:520px;background-color:#12171f;border:1px solid #21262d;border-radius:16px">
+        <tr>
+          <td style="padding:32px">
+
+            <!-- Wordmark. An <img> would need public hosting and is blocked by
+                 default in most clients, so the brand is set in type. -->
+            <div style="font-size:19px;font-weight:bold;color:#FFD700;padding-bottom:26px">
+              Football League Hub
+            </div>
+
+            <div style="font-size:20px;color:#e6edf3;font-weight:bold;padding-bottom:12px">
+              Confirm your email
+            </div>
+
+            <div style="color:#8b949e;font-size:14px;line-height:22px;padding-bottom:24px">
+              Enter this code in the app to finish creating your league.
+            </div>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="background-color:#161b22;border:1px solid #30363d;border-radius:12px">
+              <tr>
+                <td align="center" style="padding:22px 12px">
+                  <div style="color:#FFD700;font-size:32px;font-weight:bold;letter-spacing:8px;font-family:'Courier New',Courier,monospace">
+                    {{ .Token }}
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <div style="color:#4a5568;font-size:12px;line-height:19px;padding-top:24px">
+              The code expires in one hour. If you did not sign up, ignore this
+              email &mdash; no league is created until the code is entered.
+            </div>
+
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>

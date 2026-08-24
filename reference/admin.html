@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLS Football Hub — Admin</title>
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" type="image/png" href="site_logo.png">
+<link rel="apple-touch-icon" href="site_logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#e6edf3;min-height:100vh;
+  background:radial-gradient(1200px 600px at 50% -10%,rgba(255,215,0,.06),transparent 60%),#0a0e14}
+.wrap{width:100%;max-width:960px;margin:0 auto;padding:38px 18px 60px}
+
+/* ── Header ── */
+.hub-header{text-align:center;margin-bottom:30px;display:flex;flex-direction:column;align-items:center}
+.hub-logo{width:72px;height:72px;border-radius:20px;object-fit:cover;border:1px solid #2a2f37;box-shadow:0 8px 28px rgba(0,0,0,.5);margin-bottom:14px}
+.hub-header h1{font-size:2rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;line-height:1.1}
+.hub-header h1 span{color:#FFD700}
+.hub-header p{color:#8b949e;margin-top:8px;font-size:.84rem;letter-spacing:1px}
+.role-badge{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:.7rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:20px;padding:5px 14px}
+.role-owner{background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.4);color:#FFD700}
+.role-manager{background:rgba(79,195,247,.12);border:1px solid rgba(79,195,247,.4);color:#4fc3f7}
+.logout-link{background:none;border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.7rem;font-weight:700;padding:6px 12px;cursor:pointer;margin-left:8px}
+.logout-link:hover{border-color:#f87171;color:#f87171}
+
+.section-label{font-size:.68rem;color:#8b949e;text-transform:uppercase;letter-spacing:2.5px;font-weight:800;margin:0 0 14px 4px}
+
+/* ── App tiles ── */
+.app-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:34px}
+.app-tile{position:relative;display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;
+  background:linear-gradient(160deg,#151b24,#10141b);border:1px solid #21262d;border-radius:18px;padding:18px;transition:transform .25s,border-color .25s,box-shadow .25s}
+.app-tile:hover{transform:translateY(-4px);border-color:var(--c);box-shadow:0 16px 40px color-mix(in srgb,var(--c) 16%,transparent)}
+.app-tile.league{--c:#00c853}.app-tile.cl{--c:#FFD700}
+.app-ico{width:62px;height:62px;border-radius:16px;overflow:hidden;flex-shrink:0;border:2px solid var(--c);display:flex;align-items:center;justify-content:center;background:#0d1117;box-shadow:0 0 18px color-mix(in srgb,var(--c) 22%,transparent)}
+.app-ico img{width:100%;height:100%;object-fit:cover}
+.app-info{flex:1;min-width:0}
+.app-name{font-size:1rem;font-weight:800;letter-spacing:.3px}
+.app-sub{font-size:.74rem;color:#8b949e;margin-top:3px}
+.app-tag{display:inline-block;margin-top:8px;font-size:.6rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);border-radius:20px;padding:3px 10px}
+.app-copy{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:1px solid #30363d;border-radius:8px;color:#8b949e;font-size:.66rem;font-weight:700;padding:5px 10px;cursor:pointer;transition:all .2s}
+.app-copy:hover{border-color:var(--c);color:var(--c)}
+
+/* ── Competition cards ── */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+.cards-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.hub-card{background:#12171f;border:1px solid #21262d;border-radius:16px;padding:24px 20px;text-align:center;cursor:pointer;transition:transform .25s,border-color .25s,box-shadow .25s;text-decoration:none;color:inherit;display:block}
+.hub-card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 14px 38px color-mix(in srgb,var(--accent) 14%,transparent)}
+.hub-card .card-icon{font-size:2.4rem;margin-bottom:12px;display:block}
+.hub-card h2{font-size:1.05rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.hub-card p{color:#8b949e;font-size:.78rem;line-height:1.6}
+.hub-card .card-tag{display:inline-block;margin-top:14px;padding:4px 14px;border:1px solid var(--accent);border-radius:20px;font-size:.7rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;transition:all .3s}
+.hub-card:hover .card-tag{background:var(--accent);color:#0d1117}
+.lg1-card{--accent:#00c853}.lg2-card{--accent:#4fc3f7}.lg3-card{--accent:#ab47bc}.cl-card{--accent:#FFD700}.eu-card{--accent:#ff7043}
+.manage-card{--accent:#e6edf3}
+.divider{height:1px;background:#21262d;margin:6px 0 26px}
+.hub-foot{text-align:center;color:#4a5568;font-size:.7rem;margin-top:30px;letter-spacing:.5px}
+
+/* ── Gate ── */
+.gate{position:fixed;inset:0;background:radial-gradient(900px 500px at 50% -10%,rgba(255,215,0,.07),transparent 60%),#0a0e14;z-index:1000;display:flex;align-items:center;justify-content:center;padding:22px;overflow-y:auto}
+.gate-box{width:100%;max-width:420px;text-align:center}
+.gate-logo{width:64px;height:64px;border-radius:18px;object-fit:cover;border:1px solid #2a2f37;margin-bottom:14px}
+.gate-title{font-size:1.2rem;font-weight:900;letter-spacing:2px;text-transform:uppercase}
+.gate-title span{color:#FFD700}
+.gate-sub{font-size:.78rem;color:#8b949e;margin-top:8px;line-height:1.5}
+.gate-inp{width:100%;margin-top:20px;padding:13px 16px;background:#161b22;border:1.5px solid #30363d;border-radius:12px;color:#e6edf3;font-size:1rem;text-align:center;letter-spacing:2px;outline:none}
+.gate-inp:focus{border-color:#FFD700}
+.gate-inp.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.gate-btn{width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#FFD700,#E6AC00);border:none;border-radius:12px;color:#1a1400;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-size:.9rem}
+.gate-btn.ghost{background:none;border:1px solid #30363d;color:#8b949e}
+.gate-err{color:#f87171;font-size:.8rem;margin-top:12px;min-height:18px;font-weight:600}
+.gate-sel{display:grid;gap:10px;margin-top:18px;text-align:left}
+.gate-sel-item{display:flex;align-items:center;gap:12px;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:13px 14px;cursor:pointer;transition:all .18s}
+.gate-sel-item:hover{border-color:var(--c)}
+.gate-sel-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;border:1px solid var(--c)}
+.gate-sel-name{font-size:.92rem;font-weight:800;color:#e6edf3}
+.gate-sel-sub{font-size:.68rem;color:#8b949e;margin-top:2px}
+.gate-owner-btn{margin-top:16px;width:100%;padding:12px;background:rgba(255,215,0,.08);border:1px dashed rgba(255,215,0,.4);border-radius:12px;color:#FFD700;font-weight:800;font-size:.82rem;cursor:pointer}
+.gate-back{margin-top:14px;background:none;border:none;color:#8b949e;font-size:.8rem;cursor:pointer;text-decoration:underline}
+
+/* ── Management modal ── */
+.mng-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1100;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;backdrop-filter:blur(3px)}
+.mng-overlay.show{display:flex}
+.mng-box{background:#12171f;border:1px solid #30363d;border-radius:16px;width:100%;max-width:560px;padding:22px}
+.mng-hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.mng-hdr h2{font-size:1.1rem;font-weight:800}
+.mng-close{margin-left:auto;background:rgba(255,255,255,.06);border:1px solid #30363d;border-radius:8px;color:#8b949e;width:32px;height:32px;cursor:pointer;font-size:1rem}
+.mng-note{font-size:.74rem;color:#8b949e;margin-bottom:18px;line-height:1.5}
+.mng-sec-title{font-size:.64rem;font-weight:800;color:#8b949e;letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px}
+.mng-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.mng-row-label{font-size:.8rem;font-weight:700;flex:1;min-width:0}
+.mng-row-label small{display:block;color:#8b949e;font-weight:400;font-size:.66rem}
+.mng-inp{flex:1;max-width:200px;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-size:.82rem;padding:9px 11px;outline:none}
+.mng-inp:focus{border-color:#FFD700}
+.mng-save{width:100%;margin-top:18px;padding:12px;background:linear-gradient(135deg,#00c853,#00a844);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:.86rem;cursor:pointer;letter-spacing:.5px}
+.mng-lock-row{display:flex;align-items:center;gap:10px;background:#161b22;border:1px solid #21262d;border-radius:8px;padding:9px 12px;margin-bottom:6px}
+.mng-lock-id{flex:1;font-family:monospace;font-size:.7rem;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mng-unlock{background:rgba(0,200,83,.12);border:1px solid rgba(0,200,83,.4);border-radius:6px;color:#00c853;font-size:.7rem;font-weight:700;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.mng-empty{font-size:.76rem;color:#4a5568;font-style:italic;padding:8px 0}
+.mng-msg{font-size:.76rem;text-align:center;margin-top:10px;min-height:16px}
+
+.copy-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:#161b22;border:1px solid #FFD700;color:#e6edf3;padding:11px 20px;border-radius:12px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:2000}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+
+@media(max-width:760px){
+  .hub-header h1{font-size:1.5rem}
+  .app-row{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.cards-2{grid-template-columns:1fr}
+}
+@media(min-width:761px) and (max-width:900px){ .cards{grid-template-columns:repeat(2,1fr)} }
+</style>
+<script src="js/db.js"></script>
+<script src="js/api.js"></script>
+<script src="js/native.js"></script>
+</head>
+<body>
+
+<!-- ═══════ GATE ═══════ -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <img class="gate-logo" src="site_logo.png" alt="">
+
+    <!-- Step: password -->
+    <div id="gate-step-pw">
+      <div class="gate-title">DLS <span>Football</span> Hub</div>
+      <div class="gate-sub">Sign in with your admin account</div>
+      <input type="email" class="gate-inp" id="gate-email" placeholder="Email" autocomplete="username" inputmode="email" onkeydown="if(event.key==='Enter')document.getElementById('gate-pw').focus()">
+      <input type="password" class="gate-inp" id="gate-pw" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitGatePw()">
+      <button class="gate-btn" id="gate-btn" onclick="submitGatePw()">&#9654; Sign in</button>
+      <div class="gate-err" id="gate-pw-err"></div>
+    </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ HOME (rendered by JS per role) ═══════ -->
+<div class="wrap hidden" id="home">
+  <div class="hub-header">
+    <img class="hub-logo" src="site_logo.png" alt="DLS Football Hub">
+    <h1>DLS <span>Football</span> Hub</h1>
+    <p id="home-sub">Admin panel</p>
+    <div id="home-role"></div>
+  </div>
+  <div id="home-body"></div>
+  <div class="hub-foot">&#128274; Admin access only &middot; DLS Football Hub &middot; Season 2026</div>
+</div>
+
+<!-- ═══════ MANAGEMENT (owner only) ═══════ -->
+<div class="mng-overlay" id="mng-overlay">
+  <div class="mng-box">
+    <div class="mng-hdr">
+      <span style="font-size:1.3rem">&#9881;</span>
+      <h2>Admin Management</h2>
+      <button class="mng-close" onclick="closeManagement()">&#10005;</button>
+    </div>
+    <div class="mng-note">Admins now sign in with their own account instead of a shared code. Roles and competition access are set on the account, and enforced again by the database.</div>
+
+    <div class="mng-sec-title">&#128100; Admin Accounts</div>
+    <div id="mng-roster"></div>
+    <div class="mng-msg" id="mng-msg"></div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copy-toast"></div>
+
+<script src="js/admin-auth.js"></script>
+<script>
+// ── INIT ──
+// The old flow was: shared passcode -> pick a competition -> per-competition
+// code. All three lived in the browser and the codes were world-readable.
+// It is now a single Supabase sign-in; the account decides what is visible.
+(async()=>{
+  const profile = await aaLoadProfile();
+  if(profile){ renderHome(); return; }       // session still valid on this device
+  showGateStep('pw');
+  setTimeout(()=>{ const el=document.getElementById('gate-email'); if(el) el.focus(); },200);
+})();
+
+function showGateStep(step){
+  // Only one step remains: the sign-in form. The old passcode -> pick a
+  // competition -> per-competition code flow is gone, replaced by a single
+  // Supabase sign-in whose account decides what is visible.
+  document.getElementById("gate").classList.remove("hidden");
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("gate-step-pw").classList.remove("hidden");
+}
+
+// ── Sign in ──
+async function submitGatePw(){
+  const emailEl = document.getElementById('gate-email');
+  const inp = document.getElementById('gate-pw');
+  const err = document.getElementById('gate-pw-err');
+  const btn = document.getElementById('gate-btn');
+
+  const email = (emailEl.value||'').trim();
+  const password = inp.value||'';
+  if(!email || !password){ err.textContent='Enter your email and password.'; return; }
+
+  btn.disabled = true; err.textContent=''; err.style.color='';
+  const label = btn.innerHTML; btn.innerHTML = 'Signing in&hellip;';
+
+  try{
+    await aaSignIn(email, password);
+    inp.value='';
+    renderHome();
+  }catch(e){
+    inp.classList.add('shake'); setTimeout(()=>inp.classList.remove('shake'),400);
+    // Supabase returns the same message for a bad password and an unknown
+    // account, which is deliberate - do not narrow it here.
+    err.textContent = /not registered/i.test(e.message)
+      ? e.message
+      : 'Wrong email or password.';
+    inp.value='';
+  }finally{
+    btn.disabled = false; btn.innerHTML = label;
+  }
+}
+function renderHome(){
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('home').classList.remove('hidden');
+  const owner = aaIsOwner();
+  const mine = aaLeagues();
+
+  // role badge + logout
+  document.getElementById('home-sub').textContent = owner ? 'Owner panel — manage everything' : 'Manager panel';
+  document.getElementById('home-role').innerHTML = owner
+    ? `<span class="role-badge role-owner">&#127942; Owner — full access</span><button class="logout-link" onclick="doLogout()">Log out</button>`
+    : `<span class="role-badge role-manager">&#128100; Manager${mine[0]?' · '+aaComp(mine[0]).label:''}</span><button class="logout-link" onclick="doLogout()">Log out</button>`;
+
+  const body = document.getElementById('home-body');
+  const cardFor = (c) => `<a href="${c.page}" class="hub-card" style="--accent:${c.color}">
+      <span class="card-icon">${c.icon}</span>
+      <h2 style="color:${c.color}">${c.label}</h2>
+      <p>${c.sub}</p>
+      <span class="card-tag" style="border-color:${c.color};color:${c.color}">Manage &rarr;</span>
+    </a>`;
+
+  if(owner){
+    // player app tiles
+    let html = `<div class="section-label">&#128241; Player Apps — tap to open, copy the link to share</div>
+      <div class="app-row">
+        <a href="index.html" class="app-tile league">
+          <button class="app-copy" onclick="copyLink(event,'index.html')">&#128203; Copy</button>
+          <div class="app-ico"><img src="dls_logo.jpeg" alt=""></div>
+          <div class="app-info"><div class="app-name">DLS League App</div><div class="app-sub">Live fixtures, tables &amp; stats</div><span class="app-tag">Leagues 1 &middot; 2 &middot; 3</span></div>
+        </a>
+        <a href="cl-viewer.html" class="app-tile cl">
+          <button class="app-copy" onclick="copyLink(event,'cl-viewer.html')">&#128203; Copy</button>
+          <div class="app-ico"><img src="cl_logo.jpeg" alt=""></div>
+          <div class="app-info"><div class="app-name">DLS Champion League</div><div class="app-sub">Groups, knockouts &amp; bracket</div><span class="app-tag">Champions &middot; Europa</span></div>
+        </a>
+      </div>`;
+    html += `<div class="section-label">&#9917; League Divisions</div><div class="cards">${AA_COMPS.filter(c=>c.key.startsWith('league')).map(cardFor).join('')}</div>`;
+    html += `<div class="divider"></div><div class="section-label">&#127942; Cup Competitions</div><div class="cards-2">${AA_COMPS.filter(c=>c.key==='cl'||c.key==='europa').map(cardFor).join('')}</div>`;
+    html += `<div class="divider"></div><div class="section-label">&#9881; System</div>
+      <div class="cards-2"><a class="hub-card manage-card" style="--accent:#e6edf3" onclick="openManagement();return false" href="#">
+        <span class="card-icon">&#9881;</span><h2 style="color:#e6edf3">Management</h2>
+        <p>Set manager codes, change your owner code, and unlock browsers.</p>
+        <span class="card-tag" style="border-color:#e6edf3;color:#e6edf3">Open &rarr;</span>
+      </a></div>`;
+    body.innerHTML = html;
+  } else {
+    // manager — only their competition
+    const c = aaComp(mine[0]);
+    body.innerHTML = c
+      ? `<div class="section-label">Your Competition</div><div class="cards-2">${cardFor(c)}</div>`
+      : `<div class="mng-empty">No competition assigned. Log out and enter your code again.</div>`;
+  }
+}
+
+async function doLogout(){
+  if(!confirm('Log out of the admin panel on this device?')) return;
+  await aaLogout();
+  location.reload();
+}
+
+// ════════════════════════════════════════════
+//  MANAGEMENT (owner only)
+// ════════════════════════════════════════════
+async function openManagement(){
+  if(!aaIsOwner()) return;
+  const msg = document.getElementById('mng-msg');
+  msg.textContent = '';
+  document.getElementById('mng-roster').innerHTML =
+    '<div class="mng-empty">Loading accounts&hellip;</div>';
+  document.getElementById('mng-overlay').classList.add('show');
+  renderRoster();
+}
+function closeManagement(){ document.getElementById('mng-overlay').classList.remove('show'); }
+
+// The owner can see every admin account; RLS on admin_profiles enforces that
+// managers only ever see their own row.
+async function renderRoster(){
+  const wrap = document.getElementById('mng-roster');
+  const msg  = document.getElementById('mng-msg');
+  try{
+    const rows = await DB.listAdmins();
+    if(!rows.length){
+      wrap.innerHTML = '<div class="mng-empty">No admin accounts found.</div>';
+      return;
+    }
+    wrap.innerHTML = rows.map(r=>{
+      const comps = (r.competitions||[])
+        .map(k=>{ const c = aaComp(k); return c ? c.label : k; })
+        .join(', ') || '—';
+      const badge = r.role === 'owner' ? 'role-owner' : 'role-manager';
+      return `<div class="mng-row">
+        <div class="mng-row-label">${esc(r.display_name || '(unnamed)')}<small>${comps}</small></div>
+        <span class="role-badge ${badge}">${esc(r.role)}</span>
+      </div>`;
+    }).join('');
+    msg.style.color='#8b949e';
+    msg.innerHTML = 'To add, remove, or reset an account, run '
+      + '<code>npm run seed:admins</code> from the project.';
+  }catch(e){
+    wrap.innerHTML = '<div class="mng-empty">Could not load accounts.</div>';
+    msg.style.color='#f87171';
+    msg.textContent = e.message;
+  }
+}
+
+function esc(str){
+  return String(str==null?'':str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── share-link copy ──
+function copyLink(e, page){
+  e.preventDefault(); e.stopPropagation();
+  const url = new URL(page, location.href).href;
+  const done = ()=>showToast('&#10003; Link copied — share it with players');
+  if(navigator.clipboard){ navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Copy this link:', url)); }
+  else prompt('Copy this link:', url);
+}
+function showToast(html){
+  const t=document.getElementById('copy-toast');
+  t.innerHTML=html; t.classList.add('show');
+  clearTimeout(t._tmr); t._tmr=setTimeout(()=>t.classList.remove('show'),2400);
+}
+</script>
+</body>
+</html>

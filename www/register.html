@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create your league — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-box">
+
+    <div style="text-align:center;margin-bottom:22px">
+      <a class="brand brand-lg" href="/" style="justify-content:center">
+        <span class="brand-mark" id="brand-mark"></span>
+        <span id="brand-name">Football League Hub</span>
+      </a>
+    </div>
+
+    <div class="stepper">
+      <i id="dot-1" class="on"></i><i id="dot-2"></i><i id="dot-3"></i>
+    </div>
+
+    <div class="auth-card">
+
+      <!-- ───────── Step 1: account ───────── -->
+      <section id="step-1">
+        <div class="auth-head">
+          <h1>Create your account</h1>
+          <p>You'll be the owner of the league.</p>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" type="email" id="email" placeholder="you@example.com"
+                 autocomplete="email" inputmode="email">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input" type="password" id="password" placeholder="At least 8 characters"
+                 autocomplete="new-password">
+          <div class="hint">Use something you don't use elsewhere.</div>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-signup">Continue</button>
+        <div class="msg" id="msg-1"></div>
+      </section>
+
+      <!-- ───────── Step 2: verify ───────── -->
+      <section id="step-2" class="hidden">
+        <div class="auth-head">
+          <h1>Check your email</h1>
+          <p>We sent a code to <strong id="sent-to"></strong>.</p>
+        </div>
+
+        <div class="field">
+          <label for="code">Verification code</label>
+          <!-- Length is not hardcoded. Supabase's OTP length is a project
+               setting (this project issues 8 digits, the default is 6), and a
+               fixed maxlength silently truncates the code so every attempt is
+               rejected as invalid. -->
+          <input class="input input-code" type="text" id="code" placeholder="••••••"
+                 inputmode="numeric" autocomplete="one-time-code" maxlength="10">
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-verify">Verify</button>
+        <div class="msg" id="msg-2"></div>
+
+        <div class="auth-foot">
+          Didn't get it?
+          <button class="link-btn" id="btn-resend">Send it again</button>
+        </div>
+      </section>
+
+      <!-- ───────── Step 3: the league ───────── -->
+      <section id="step-3" class="hidden">
+        <div class="auth-head">
+          <h1>Name your league</h1>
+          <p>You can add competitions and teams next.</p>
+        </div>
+
+        <div class="field">
+          <label for="league-name">League name</label>
+          <input class="input" type="text" id="league-name"
+                 placeholder="e.g. Lagos eFootball League" maxlength="60">
+        </div>
+
+        <div class="field">
+          <label for="slug">Web address</label>
+          <input class="input" type="text" id="slug" placeholder="lagos-efootball-league">
+          <div class="hint" id="slug-hint">Used in links you share with players.</div>
+        </div>
+
+        <div class="field">
+          <label>What do you play on?</label>
+          <div class="choices" id="game-choices">
+            <button type="button" class="choice on" data-game="dls">
+              <div class="choice-ico">⚽</div><div class="choice-name">Dream League Soccer</div>
+            </button>
+            <button type="button" class="choice" data-game="efootball">
+              <div class="choice-ico">🎮</div><div class="choice-name">eFootball</div>
+            </button>
+            <button type="button" class="choice" data-game="fifa">
+              <div class="choice-ico">🕹️</div><div class="choice-name">FIFA / EA FC</div>
+            </button>
+            <button type="button" class="choice" data-game="real">
+              <div class="choice-ico">🏟️</div><div class="choice-name">Real football</div>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-create">Create league</button>
+        <div class="msg" id="msg-3"></div>
+      </section>
+
+    </div>
+
+    <div class="auth-foot">
+      Already have an account? <a href="login.html">Sign in</a>
+      &middot; <a href="logout.html">Start over</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/brand.js"></script>
+<script src="js/db.js"></script>
+<script>
+(function () {
+'use strict';
+
+let email = '';
+let gameType = 'dls';
+
+const $ = id => document.getElementById(id);
+
+function show(step) {
+  [1, 2, 3].forEach(n => {
+    $('step-' + n).classList.toggle('hidden', n !== step);
+    $('dot-' + n).classList.toggle('on', n <= step);
+  });
+}
+
+function say(n, text, kind) {
+  const el = $('msg-' + n);
+  el.textContent = text || '';
+  el.className = 'msg' + (kind ? ' msg-' + kind : '');
+}
+
+/** Runs an async action with the button disabled, so it cannot double-fire. */
+async function withButton(btn, busyLabel, fn) {
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = busyLabel;
+  try { await fn(); }
+  finally { btn.disabled = false; btn.textContent = original; }
+}
+
+/* ── Step 1 ─────────────────────────────────────────────────────────── */
+
+$('btn-signup').addEventListener('click', () => {
+  const value = $('email').value.trim();
+  const password = $('password').value;
+
+  if (!value || !value.includes('@')) return say(1, 'Enter a valid email address.', 'error');
+  if (password.length < 8) return say(1, 'Password must be at least 8 characters.', 'error');
+
+  say(1, '');
+  withButton($('btn-signup'), 'Sending code…', async () => {
+    try {
+      const body = await DB.auth.signUp(value, password);
+      email = value;
+      $('sent-to').textContent = value;
+
+      // If the project has email confirmation switched off, signup returns a
+      // session immediately and there is no code to enter.
+      if (body && body.access_token) { show(3); return; }
+
+      show(2);
+      setTimeout(() => $('code').focus(), 150);
+    } catch (e) {
+      say(1, /registered|already/i.test(e.message)
+        ? 'That email already has an account. Sign in instead.'
+        : e.message, 'error');
+    }
+  });
+});
+
+/* ── Step 2 ─────────────────────────────────────────────────────────── */
+
+$('code').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+});
+
+// Submitting on a fixed digit count would fire early on an 8-digit code, so
+// the only automatic submit is on paste - the usual way a code gets entered.
+$('code').addEventListener('paste', () => {
+  setTimeout(() => { if ($('code').value.length >= 4) $('btn-verify').click(); }, 30);
+});
+
+$('code').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('btn-verify').click();
+});
+
+$('btn-verify').addEventListener('click', () => {
+  const code = $('code').value.trim();
+  if (!/^\d{4,10}$/.test(code)) return say(2, 'Enter the code from your email.', 'error');
+
+  say(2, '');
+  withButton($('btn-verify'), 'Verifying…', async () => {
+    try {
+      await DB.auth.verifyEmail(email, code);
+      show(3);
+      setTimeout(() => $('league-name').focus(), 150);
+    } catch (e) {
+      say(2, 'That code is wrong or has expired.', 'error');
+      $('code').value = '';
+    }
+  });
+});
+
+$('btn-resend').addEventListener('click', async () => {
+  const btn = $('btn-resend');
+  btn.disabled = true;
+  try {
+    await DB.auth.resendCode(email);
+    say(2, 'Sent. It can take a minute to arrive.', 'ok');
+  } catch (e) {
+    say(2, e.message, 'error');
+  }
+  // Rate-limit the button so impatient clicking cannot trip the mail provider.
+  let left = 30;
+  const tick = setInterval(() => {
+    btn.textContent = `Send it again (${left}s)`;
+    if (--left < 0) { clearInterval(tick); btn.textContent = 'Send it again'; btn.disabled = false; }
+  }, 1000);
+});
+
+/* ── Step 3 ─────────────────────────────────────────────────────────── */
+
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+let slugEdited = false;
+$('slug').addEventListener('input', () => { slugEdited = true; });
+
+$('league-name').addEventListener('input', e => {
+  if (!slugEdited) $('slug').value = slugify(e.target.value);
+});
+
+$('game-choices').addEventListener('click', e => {
+  const choice = e.target.closest('.choice');
+  if (!choice) return;
+  document.querySelectorAll('#game-choices .choice').forEach(c => c.classList.remove('on'));
+  choice.classList.add('on');
+  gameType = choice.dataset.game;
+});
+
+$('btn-create').addEventListener('click', () => {
+  const name = $('league-name').value.trim();
+  const slug = slugify($('slug').value.trim() || name);
+
+  if (name.length < 3) return say(3, 'Give your league a name.', 'error');
+  if (!slug) return say(3, 'The web address needs letters or numbers.', 'error');
+
+  say(3, '');
+  withButton($('btn-create'), 'Creating…', async () => {
+    try {
+      const tenantId = await DB.createLeague(name, slug, gameType);
+      DB.tenant.set({ tenant_id: tenantId, tenant_name: name, tenant_slug: slug, role: 'owner' });
+      location.href = 'console.html';
+    } catch (e) {
+      say(3, /taken|23505/i.test(e.message)
+        ? 'That web address is taken. Try another.'
+        : e.message, 'error');
+    }
+  });
+});
+
+/* ── Resume a half-finished signup ──────────────────────────────────── */
+// Someone who verified their email but closed the tab before naming their
+// league should land back on step 3, not be told the email already exists.
+//
+// The session is checked against the server rather than just read from
+// localStorage. A token whose account was deleted still looks valid locally
+// until it expires, which used to drop people straight onto step 3 with no way
+// back to step 1.
+(async () => {
+  try {
+    const user = await DB.auth.currentUser();
+    if (!user) return;                      // no session, or it was rejected
+
+    const ctx = await DB.context();
+    if (ctx && ctx.memberships && ctx.memberships.length) {
+      location.href = 'console.html';
+    } else if (ctx && ctx.is_platform_admin) {
+      // Platform owners have no league by design; do not push them into
+      // creating one just because they landed here.
+      location.href = 'platform.html';
+    } else {
+      show(3);
+    }
+  } catch (e) {
+    // Anything unexpected: start clean rather than trapping them mid-flow.
+    DB.auth.reset();
+  }
+})();
+
+})();
+</script>
+</body>
+</html>

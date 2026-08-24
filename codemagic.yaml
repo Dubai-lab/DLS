@@ -1,0 +1,215 @@
+# =============================================================================
+#  Football League Hub - Codemagic build pipeline
+#
+#  android-debug   installable APK for side-loading onto any Android phone
+#  android-release signed AAB/APK for the Play Store (needs a keystore)
+#  ios-unsigned    unsigned .ipa to re-sign with Sideloadly on a free Apple ID
+#  ios-signed      TestFlight build (needs a paid Apple Developer membership)
+#
+#  Free-Apple-ID note: Codemagic cannot perform free-provisioning signing -
+#  Apple only issues those 7-day certificates through Xcode on a Mac. So the
+#  ios-unsigned workflow deliberately builds with signing disabled and hands
+#  back a raw .ipa. Sideloadly on your PC then signs it with your Apple ID and
+#  installs it. Repeat every 7 days when the profile expires.
+# =============================================================================
+
+definitions:
+  env_versions: &env_versions
+    node: 22.14.0
+    npm: 11
+
+  cache_paths: &cache_paths
+    cache_paths:
+      - $HOME/.npm
+      - $HOME/.gradle/caches
+      - $CM_BUILD_DIR/node_modules
+
+workflows:
+
+  # ---------------------------------------------------------------------------
+  #  Android - debug APK. This is the one to start with.
+  # ---------------------------------------------------------------------------
+  android-debug:
+    name: Android debug APK
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      <<: *env_versions
+      groups:
+        - firebase          # FIREBASE_GOOGLE_SERVICES_JSON (base64)
+      java: 21
+    cache: *cache_paths
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+
+      - name: Inject google-services.json
+        script: |
+          if [ -z "$FIREBASE_GOOGLE_SERVICES_JSON" ]; then
+            echo "FIREBASE_GOOGLE_SERVICES_JSON is not set."
+            echo "Push notifications will be disabled in this build."
+            # Minimal placeholder so the Gradle google-services plugin does not
+            # fail the build when FCM has not been configured yet.
+            exit 0
+          fi
+          echo "$FIREBASE_GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+          echo "google-services.json written"
+
+      - name: Sync web assets into the native project
+        script: npx cap sync android
+
+      - name: Build debug APK
+        script: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+    publishing:
+      email:
+        recipients:
+          - eg8217178@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  # ---------------------------------------------------------------------------
+  #  Android - release. Needs a keystore uploaded to Codemagic as `dls_keystore`.
+  # ---------------------------------------------------------------------------
+  android-release:
+    name: Android release (Play Store)
+    instance_type: linux_x2
+    max_build_duration: 60
+    environment:
+      <<: *env_versions
+      groups:
+        - firebase
+      java: 21
+      android_signing:
+        - dls_keystore
+    cache: *cache_paths
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+
+      - name: Inject google-services.json
+        script: |
+          echo "$FIREBASE_GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+
+      - name: Sync web assets
+        script: npx cap sync android
+
+      - name: Set build number
+        script: |
+          echo "Build number: $BUILD_NUMBER"
+
+      - name: Build signed AAB and APK
+        script: |
+          cd android
+          ./gradlew bundleRelease assembleRelease --no-daemon
+    artifacts:
+      - android/app/build/outputs/bundle/**/*.aab
+      - android/app/build/outputs/**/*.apk
+
+  # ---------------------------------------------------------------------------
+  #  iOS - unsigned .ipa for Sideloadly. Works with a free Apple ID.
+  # ---------------------------------------------------------------------------
+  ios-unsigned:
+    name: iOS unsigned IPA (sideload)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *env_versions
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $HOME/.npm
+        - $CM_BUILD_DIR/node_modules
+        - $CM_BUILD_DIR/ios/App/Pods
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+
+      - name: Sync web assets
+        script: npx cap sync ios
+
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install --repo-update
+
+      - name: Build unsigned archive
+        script: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath "$CM_BUILD_DIR/build/App.xcarchive" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            archive
+
+      - name: Package the .app into an .ipa
+        script: |
+          # An .ipa is just a zip with the .app inside a Payload/ folder.
+          # Sideloadly re-signs this with your Apple ID on install.
+          cd "$CM_BUILD_DIR/build"
+          mkdir -p Payload
+          cp -r App.xcarchive/Products/Applications/App.app Payload/
+          zip -qr FootballLeagueHub-unsigned.ipa Payload
+          echo "Built: $(ls -lh FootballLeagueHub-unsigned.ipa)"
+    artifacts:
+      - build/*.ipa
+    publishing:
+      email:
+        recipients:
+          - eg8217178@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  # ---------------------------------------------------------------------------
+  #  iOS - signed TestFlight build. Requires a paid Apple Developer membership
+  #  and an App Store Connect API key registered in Codemagic.
+  # ---------------------------------------------------------------------------
+  ios-signed:
+    name: iOS signed (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: dls_app_store_key
+    environment:
+      <<: *env_versions
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.footballleaguehub.app
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+
+      - name: Sync web assets
+        script: npx cap sync ios
+
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install --repo-update
+
+      - name: Set up signing
+        script: xcode-project use-profiles
+
+      - name: Build signed IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

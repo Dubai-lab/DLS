@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reset your password — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-box">
+
+    <div style="text-align:center;margin-bottom:22px">
+      <a class="brand brand-lg" href="/" style="justify-content:center">
+        <span class="brand-mark" id="brand-mark"></span>
+        <span id="brand-name">Football League Hub</span>
+      </a>
+    </div>
+
+    <div class="stepper">
+      <i id="dot-1" class="on"></i><i id="dot-2"></i><i id="dot-3"></i>
+    </div>
+
+    <div class="auth-card">
+
+      <!-- ───────── Step 1: which account ───────── -->
+      <section id="step-1">
+        <div class="auth-head">
+          <h1>Reset your password</h1>
+          <p>We'll email you a code. Works for players and league admins alike.</p>
+        </div>
+
+        <div class="field">
+          <label for="email">Your email</label>
+          <input class="input" type="email" id="email" placeholder="you@example.com"
+                 autocomplete="email" inputmode="email">
+          <div class="hint">The address your league is registered against.</div>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-send">Send me a code</button>
+        <div class="msg" id="msg-1"></div>
+      </section>
+
+      <!-- ───────── Step 2: the code ───────── -->
+      <section id="step-2" class="hidden">
+        <div class="auth-head">
+          <h1>Check your email</h1>
+          <p>We sent a code to <strong id="sent-to"></strong>.</p>
+        </div>
+
+        <div class="field">
+          <label for="code">Reset code</label>
+          <!-- Length is a Supabase project setting, so it is not hardcoded. -->
+          <input class="input input-code" type="text" id="code" placeholder="••••••"
+                 inputmode="numeric" autocomplete="one-time-code" maxlength="10">
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-verify">Continue</button>
+        <div class="msg" id="msg-2"></div>
+
+        <div class="auth-foot">
+          Nothing arrived? <button class="link-btn" id="btn-again">Send another</button>
+        </div>
+      </section>
+
+      <!-- ───────── Step 3: new password ───────── -->
+      <section id="step-3" class="hidden">
+        <div class="auth-head">
+          <h1>Choose a new password</h1>
+          <p>You'll use this to sign in from now on.</p>
+        </div>
+
+        <div class="field">
+          <label for="pw1">New password</label>
+          <input class="input" type="password" id="pw1" placeholder="At least 8 characters"
+                 autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label for="pw2">Repeat it</label>
+          <input class="input" type="password" id="pw2" placeholder="Same again"
+                 autocomplete="new-password">
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-save">Save and sign in</button>
+        <div class="msg" id="msg-3"></div>
+      </section>
+
+    </div>
+
+    <div class="auth-foot">
+      Remembered it? <a href="login.html">Sign in</a>
+      &middot; <a href="logout.html">Start over</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/brand.js"></script>
+<script src="js/db.js"></script>
+<script>
+(function () {
+'use strict';
+
+const $ = id => document.getElementById(id);
+let email = '';
+
+function show(step) {
+  [1, 2, 3].forEach(n => {
+    $('step-' + n).classList.toggle('hidden', n !== step);
+    $('dot-' + n).classList.toggle('on', n <= step);
+  });
+}
+function say(n, text, kind) {
+  const el = $('msg-' + n);
+  el.textContent = text || '';
+  el.className = 'msg' + (kind ? ' msg-' + kind : '');
+}
+async function withButton(btn, busy, fn) {
+  const label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = busy;
+  try { await fn(); }
+  finally { btn.disabled = false; btn.textContent = label; }
+}
+
+/* ── Step 1 ─────────────────────────────────────────────────────────── */
+
+$('btn-send').addEventListener('click', () => {
+  const value = $('email').value.trim();
+  if (!value.includes('@')) return say(1, 'Enter a valid email address.', 'error');
+
+  say(1, '');
+  withButton($('btn-send'), 'Sending…', async () => {
+    await DB.auth.requestReset(value);
+    email = value;
+    $('sent-to').textContent = value;
+    // Deliberately shown whether or not the address exists - saying "no such
+    // account" would let anyone test which emails are registered.
+    show(2);
+    setTimeout(() => $('code').focus(), 150);
+  });
+});
+
+$('email').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-send').click(); });
+
+/* ── Step 2 ─────────────────────────────────────────────────────────── */
+
+$('code').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+});
+$('code').addEventListener('paste', () => {
+  setTimeout(() => { if ($('code').value.length >= 4) $('btn-verify').click(); }, 30);
+});
+$('code').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-verify').click(); });
+
+$('btn-verify').addEventListener('click', () => {
+  const code = $('code').value.trim();
+  if (!/^\d{4,10}$/.test(code)) return say(2, 'Enter the code from your email.', 'error');
+
+  say(2, '');
+  withButton($('btn-verify'), 'Checking…', async () => {
+    try {
+      await DB.auth.verifyReset(email, code);
+      show(3);
+      setTimeout(() => $('pw1').focus(), 150);
+    } catch (e) {
+      say(2, 'That code is wrong or has expired.', 'error');
+      $('code').value = '';
+    }
+  });
+});
+
+$('btn-again').addEventListener('click', async () => {
+  const btn = $('btn-again');
+  btn.disabled = true;
+  await DB.auth.requestReset(email);
+  say(2, 'Sent. It can take a minute to arrive.', 'ok');
+
+  // Slow down repeat presses so the mail provider is not tripped.
+  let left = 30;
+  const tick = setInterval(() => {
+    btn.textContent = `Send another (${left}s)`;
+    if (--left < 0) { clearInterval(tick); btn.textContent = 'Send another'; btn.disabled = false; }
+  }, 1000);
+});
+
+/* ── Step 3 ─────────────────────────────────────────────────────────── */
+
+$('btn-save').addEventListener('click', () => {
+  const a = $('pw1').value;
+  const b = $('pw2').value;
+
+  if (a.length < 8) return say(3, 'Use at least 8 characters.', 'error');
+  if (a !== b)      return say(3, 'Those two do not match.', 'error');
+
+  say(3, '');
+  withButton($('btn-save'), 'Saving…', async () => {
+    try {
+      // verifyReset left us holding a session, so this updates our own account.
+      await DB.auth.changePassword(a);
+
+      // Route the same way a normal sign-in does.
+      const ctx = await DB.context();
+      const memberships = (ctx && ctx.memberships) || [];
+
+      if (ctx && ctx.is_platform_admin && !memberships.length) {
+        location.href = 'platform.html';
+      } else if (!memberships.length) {
+        location.href = 'register.html';
+      } else {
+        DB.tenant.set(memberships[0]);
+        location.href = memberships[0].role === 'player' ? 'app.html' : 'console.html';
+      }
+    } catch (e) {
+      say(3, e.message, 'error');
+    }
+  });
+});
+
+$('pw2').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-save').click(); });
+
+})();
+</script>
+</body>
+</html>

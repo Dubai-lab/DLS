@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>League console — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+<style>
+  .console-head { padding: 26px 0 20px; border-bottom: 1px solid var(--line); margin-bottom: 30px; }
+  .console-head-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .league-name { font-size: 1.5rem; font-weight: 900; letter-spacing: -.4px; }
+  .badge {
+    font-size: .64rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+    border-radius: 20px; padding: 4px 12px;
+    background: rgba(255,215,0,.11); border: 1px solid rgba(255,215,0,.36); color: var(--gold);
+  }
+  .badge-manager { background: rgba(79,195,247,.11); border-color: rgba(79,195,247,.4); color: #4fc3f7; }
+  .head-actions { margin-left: auto; display: flex; gap: 9px; }
+
+  .panel { margin-bottom: 34px; }
+  .panel-head { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+  .panel-head h2 { font-size: 1.02rem; font-weight: 800; }
+  .panel-head .btn { margin-left: auto; padding: 8px 15px; font-size: .78rem; }
+
+  .comp-card { display: block; border-left: 3px solid var(--accent, var(--green)); }
+  .comp-card .fmt {
+    font-size: .66rem; text-transform: uppercase; letter-spacing: 1.3px;
+    font-weight: 800; color: var(--muted);
+  }
+  .comp-card h3 { margin: 6px 0 4px; }
+  .comp-meta { color: var(--faint); font-size: .78rem; }
+
+  .row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 11px; padding: 13px 16px; margin-bottom: 8px;
+  }
+  .row-main { flex: 1; min-width: 0; }
+  .row-title { font-weight: 700; font-size: .9rem; }
+  .row-sub { color: var(--muted); font-size: .76rem; margin-top: 2px; }
+
+  .code-pill {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 1.05rem; font-weight: 800; letter-spacing: 3px; color: var(--gold);
+  }
+
+  .empty {
+    border: 1px dashed var(--line-soft); border-radius: var(--radius);
+    padding: 34px 20px; text-align: center; color: var(--muted); font-size: .88rem;
+  }
+
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,.78); backdrop-filter: blur(3px);
+    z-index: 200; display: none; align-items: flex-start; justify-content: center;
+    padding: 40px 18px; overflow-y: auto;
+  }
+  .modal.show { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--line-soft);
+    border-radius: 16px; width: 100%; max-width: 460px; padding: 24px;
+  }
+  .modal-head { display: flex; align-items: center; margin-bottom: 18px; }
+  .modal-head h2 { font-size: 1.08rem; font-weight: 800; }
+  .modal-close {
+    margin-left: auto; background: rgba(255,255,255,.06); border: 1px solid var(--line-soft);
+    border-radius: 8px; color: var(--muted); width: 32px; height: 32px; cursor: pointer;
+  }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--line-soft); color: var(--text);
+    border-radius: 10px; padding: 11px 20px; font-size: .85rem; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 300;
+  }
+  .toast.show { opacity: 1; }
+
+  /* Crest: an uploaded image, or initials on the team colour. Both share the
+     same box so rows do not shift when a logo is added. */
+  .crest {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    display: grid; place-items: center; object-fit: cover;
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    font-size: .72rem; font-weight: 800; color: var(--muted);
+  }
+  img.crest { background: #fff; }
+
+  .upload-btn {
+    display: inline-block; padding: 9px 16px; border-radius: 10px;
+    border: 1px solid var(--line-soft); background: var(--surface-2);
+    color: var(--text); font-size: .8rem; font-weight: 700; cursor: pointer;
+  }
+  .upload-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .swatch {
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; padding: 0;
+  }
+  .swatch.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg) inset; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="console-head">
+    <div class="console-head-inner">
+      <div>
+        <div class="league-name" id="league-name">…</div>
+        <div style="color:var(--muted);font-size:.8rem;margin-top:3px" id="league-meta"></div>
+      </div>
+      <span class="badge" id="role-badge">…</span>
+      <div class="head-actions">
+        <button class="btn btn-ghost" id="btn-signout" style="padding:9px 16px;font-size:.8rem">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ───────── Competitions ───────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Competitions</h2>
+      <button class="btn btn-primary" id="btn-new-comp">+ New competition</button>
+    </div>
+    <div id="comp-list"><div class="empty">Loading…</div></div>
+  </section>
+
+  <!-- ───────── Members ───────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Members</h2>
+      <button class="btn btn-primary" id="btn-add-member">+ Register member</button>
+    </div>
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:14px">
+      You register each player against their email address and set their access
+      code. They are emailed both, and sign in with them — nobody can claim a
+      team that was not assigned to them.
+    </p>
+    <div id="member-list"><div class="empty">Loading…</div></div>
+  </section>
+
+</div>
+
+<!-- ───────── New competition ───────── -->
+<div class="modal" id="modal-comp">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>New competition</h2>
+      <button class="modal-close" data-close="modal-comp">&#10005;</button>
+    </div>
+
+    <div class="field">
+      <label for="comp-name">Name</label>
+      <input class="input" id="comp-name" placeholder="e.g. Division 1" maxlength="50">
+    </div>
+
+    <div class="field">
+      <label>Format</label>
+      <div class="choices">
+        <button type="button" class="choice on" data-format="round_robin">
+          <div class="choice-ico">📋</div>
+          <div class="choice-name">League table</div>
+        </button>
+        <button type="button" class="choice" data-format="group_knockout">
+          <div class="choice-ico">🏆</div>
+          <div class="choice-name">Groups + knockout</div>
+        </button>
+      </div>
+      <div class="hint" id="format-hint">
+        Everyone plays everyone; ranked on points.
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="btn-create-comp">Create</button>
+    <div class="msg" id="msg-comp"></div>
+  </div>
+</div>
+
+<!-- ───────── Register member ───────── -->
+<div class="modal" id="modal-member">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>Register a member</h2>
+      <button type="button" class="modal-close" data-close="modal-member">&#10005;</button>
+    </div>
+
+    <div class="field">
+      <label for="m-email">Their email</label>
+      <input class="input" id="m-email" type="email" inputmode="email"
+             placeholder="player@example.com" autocomplete="off">
+      <div class="hint">They sign in with this. It is where the access code is sent.</div>
+    </div>
+
+    <div class="field">
+      <label for="m-role">Role</label>
+      <select class="input" id="m-role">
+        <option value="player">Player</option>
+        <option value="manager">Admin (manages a competition)</option>
+      </select>
+    </div>
+
+    <div class="field" id="field-team">
+      <label for="m-team">Team</label>
+      <input class="input" id="m-team" placeholder="e.g. UZIA FC" maxlength="50">
+      <div class="hint">Bound to this account — no one else can claim it.</div>
+    </div>
+
+    <div class="field">
+      <label for="m-name">Display name <span style="text-transform:none;font-weight:400">(optional)</span></label>
+      <input class="input" id="m-name" placeholder="Their name" maxlength="50">
+    </div>
+
+    <div class="field" id="field-phone">
+      <label for="m-phone">WhatsApp number</label>
+      <input class="input" id="m-phone" type="tel" inputmode="tel"
+             placeholder="+250 790 000 000" maxlength="24">
+      <div class="hint">With country code. Opponents tap their team to message them.</div>
+    </div>
+
+    <div class="field">
+      <label for="m-comp">Competition</label>
+      <select class="input" id="m-comp"></select>
+    </div>
+
+    <div class="field">
+      <label for="m-code">Access code</label>
+      <div style="display:flex;gap:8px">
+        <input class="input" id="m-code" placeholder="At least 6 characters" autocomplete="off">
+        <button type="button" class="btn btn-ghost" id="btn-gen-code"
+                style="padding:0 16px;font-size:.78rem;white-space:nowrap">Generate</button>
+      </div>
+      <div class="hint">This is their password. They can change it after signing in.</div>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-block" id="btn-create-member">Register &amp; send email</button>
+    <div class="msg" id="msg-member"></div>
+  </div>
+</div>
+
+<!-- ───────── Edit member ───────── -->
+<div class="modal" id="modal-edit">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>Edit team</h2>
+      <button type="button" class="modal-close" data-close="modal-edit">&#10005;</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+      <div id="e-preview"></div>
+      <div style="flex:1;min-width:0">
+        <label class="upload-btn" for="e-logo">Upload crest</label>
+        <input type="file" id="e-logo" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+        <div class="hint" style="margin-top:6px">PNG, JPG, WebP or SVG · up to 2 MB</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="e-team">Team name</label>
+      <input class="input" id="e-team" maxlength="50">
+    </div>
+
+    <div class="field">
+      <label for="e-name">Player name <span style="text-transform:none;font-weight:400">(optional)</span></label>
+      <input class="input" id="e-name" maxlength="50">
+    </div>
+
+    <div class="field">
+      <label for="e-phone">WhatsApp number</label>
+      <input class="input" id="e-phone" type="tel" inputmode="tel"
+             placeholder="+250 790 000 000" maxlength="24">
+      <div class="hint">Shared with other players in this league only.</div>
+    </div>
+
+    <div class="field">
+      <label>Team colour</label>
+      <div class="swatches" id="e-jersey"></div>
+      <div class="hint">Used for the crest when no image is uploaded.</div>
+    </div>
+
+    <div class="field">
+      <label>Signs in with</label>
+      <div style="color:var(--muted);font-size:.85rem" id="e-email"></div>
+      <div class="hint">Changing an email means removing and re-registering them.</div>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-block" id="btn-save-member">Save changes</button>
+    <div class="msg" id="msg-edit"></div>
+    <button type="button" class="btn btn-ghost btn-block" id="btn-reset-code" style="margin-top:10px">
+      Reset their access code
+    </button>
+    <button type="button" class="btn btn-ghost btn-block" id="btn-remove-member"
+            style="margin-top:10px;border-color:rgba(248,113,113,.4);color:var(--red)">
+      Remove from league
+    </button>
+  </div>
+</div>
+
+<!-- ───────── New access code ───────── -->
+<div class="modal" id="modal-code">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-head">
+      <h2>New access code</h2>
+      <button type="button" class="modal-close" data-close="modal-code">&#10005;</button>
+    </div>
+
+    <div style="color:var(--muted);font-size:.84rem;margin-bottom:4px" id="code-result-team"></div>
+    <div style="font-size:.78rem;margin-bottom:16px" id="code-result-mail"></div>
+
+    <div style="background:var(--surface-2);border:1px solid var(--line-soft);
+                border-radius:12px;padding:20px;text-align:center;margin-bottom:16px">
+      <div class="code-pill" style="font-size:1.5rem;letter-spacing:5px"
+           id="code-result-value"></div>
+    </div>
+
+    <a class="btn btn-primary btn-block hidden" id="code-result-wa"
+       target="_blank" rel="noopener" style="margin-bottom:9px">
+      Send on WhatsApp
+    </a>
+    <button type="button" class="btn btn-ghost btn-block" id="btn-copy-code">Copy code</button>
+
+    <div class="hint" style="margin-top:14px;text-align:center">
+      They are signed out on every device until they use this.
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/brand.js"></script>
+<script src="js/api.js"></script>
+<script src="js/db.js"></script>
+<script>
+(function () {
+'use strict';
+
+const $ = id => document.getElementById(id);
+let tenant = null;
+let competitions = [];
+let isOwner = false;      // only owners may edit or remove members
+let newCompFormat = 'round_robin';
+
+const FORMAT_LABEL = {
+  round_robin:    'League table',
+  group_knockout: 'Groups + knockout'
+};
+const FORMAT_HINT = {
+  round_robin:    'Everyone plays everyone; ranked on points.',
+  group_knockout: 'Group stage first, then a knockout bracket.'
+};
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toast(text) {
+  const el = $('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function say(id, text, kind) {
+  const el = $(id);
+  el.textContent = text || '';
+  el.className = 'msg' + (kind ? ' msg-' + kind : '');
+}
+
+function openModal(id)  { $(id).classList.add('show'); }
+function closeModal(id) { $(id).classList.remove('show'); }
+
+document.addEventListener('click', e => {
+  const close = e.target.closest('[data-close]');
+  if (close) closeModal(close.dataset.close);
+  // Clicking the backdrop dismisses too.
+  if (e.target.classList.contains('modal')) e.target.classList.remove('show');
+});
+
+/* ── Boot ───────────────────────────────────────────────────────────── */
+
+(async () => {
+  if (!(await DB.auth.isSignedIn())) { location.replace('login.html'); return; }
+
+  tenant = DB.tenant.get();
+  if (!tenant) {
+    // Signed in but no league chosen on this device - let login sort it out.
+    location.replace('login.html');
+    return;
+  }
+
+  $('league-name').textContent = tenant.tenant_name || 'Your league';
+  $('league-meta').textContent = tenant.tenant_slug ? '/' + tenant.tenant_slug : '';
+  const badge = $('role-badge');
+  badge.textContent = tenant.role || 'member';
+  isOwner = tenant.role === 'owner';
+  if (!isOwner) badge.classList.add('badge-manager');
+
+  // Only owners create competitions and register members.
+  if (!isOwner) {
+    $('btn-new-comp').classList.add('hidden');
+    $('btn-add-member').classList.add('hidden');
+  }
+
+  await Promise.all([loadCompetitions(), loadMembers()]);
+})();
+
+/* ── Competitions ───────────────────────────────────────────────────── */
+
+async function loadCompetitions() {
+  try {
+    competitions = await DB.competitions();
+  } catch (e) {
+    $('comp-list').innerHTML = `<div class="empty">Could not load competitions.<br><small>${esc(e.message)}</small></div>`;
+    return;
+  }
+
+  if (!competitions.length) {
+    $('comp-list').innerHTML =
+      '<div class="empty">No competitions yet.<br>Create one to start adding teams and fixtures.</div>';
+  } else {
+    $('comp-list').innerHTML = '<div class="grid grid-3">' + competitions.map(c => {
+      const page = c.format === 'group_knockout' ? 'cup.html' : 'league.html';
+      return `<a class="card comp-card" style="--accent:${esc(c.accent || '#00c853')}"
+                 href="${page}?c=${encodeURIComponent(c.id)}">
+        <div class="fmt">${esc(FORMAT_LABEL[c.format] || c.format)}</div>
+        <h3>${esc(c.name)}</h3>
+        <div class="comp-meta">Season ${esc(c.season)} · ${esc(c.status)}</div>
+      </a>`;
+    }).join('') + '</div>';
+  }
+
+}
+
+document.querySelectorAll('#modal-comp .choice').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#modal-comp .choice').forEach(c => c.classList.remove('on'));
+    btn.classList.add('on');
+    newCompFormat = btn.dataset.format;
+    $('format-hint').textContent = FORMAT_HINT[newCompFormat];
+  });
+});
+
+$('btn-new-comp').addEventListener('click', () => {
+  $('comp-name').value = '';
+  say('msg-comp', '');
+  openModal('modal-comp');
+  setTimeout(() => $('comp-name').focus(), 120);
+});
+
+$('btn-create-comp').addEventListener('click', async () => {
+  const name = $('comp-name').value.trim();
+  if (name.length < 2) return say('msg-comp', 'Give the competition a name.', 'error');
+
+  // A readable key, kept unique within this league.
+  let key = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (competitions.some(c => c.key === key)) key += '-' + Date.now().toString(36).slice(-4);
+
+  const btn = $('btn-create-comp');
+  btn.disabled = true;
+  say('msg-comp', 'Creating…', 'info');
+  try {
+    await DB.createCompetition({ key, name, format: newCompFormat });
+    closeModal('modal-comp');
+    toast('Competition created');
+    await loadCompetitions();
+  } catch (e) {
+    say('msg-comp', e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ── Register a member ─────────────────────────────────────────────── */
+
+// Readable, unambiguous: no O/0 or I/1 to misread when passed on verbally.
+function generateCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 8 },
+    () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+}
+
+$('btn-gen-code').addEventListener('click', () => { $('m-code').value = generateCode(); });
+
+// Admins are not tied to a team.
+$('m-role').addEventListener('change', () => {
+  const isPlayer = $('m-role').value === 'player';
+  $('field-team').classList.toggle('hidden', !isPlayer);
+  $('field-phone').classList.toggle('hidden', !isPlayer);
+});
+
+$('btn-add-member').addEventListener('click', () => {
+  ['m-email', 'm-team', 'm-name', 'm-phone'].forEach(id => { $(id).value = ''; });
+  $('m-role').value = 'player';
+  $('field-team').classList.remove('hidden');
+  $('m-code').value = generateCode();
+  $('m-comp').innerHTML = '<option value="">Whole league</option>' +
+    competitions.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+  say('msg-member', '');
+  openModal('modal-member');
+  setTimeout(() => $('m-email').focus(), 120);
+});
+
+$('btn-create-member').addEventListener('click', async () => {
+  const email = $('m-email').value.trim();
+  const role  = $('m-role').value;
+  const team  = role === 'player' ? $('m-team').value.trim() : '';
+  const code  = $('m-code').value.trim();
+  const comp  = $('m-comp').value;
+
+  if (!email.includes('@'))  return say('msg-member', 'Enter a valid email address.', 'error');
+  if (role === 'player' && !team) return say('msg-member', 'Give them a team.', 'error');
+  if (code.length < 6)       return say('msg-member', 'Access code must be at least 6 characters.', 'error');
+
+  const btn = $('btn-create-member');
+  btn.disabled = true;
+  say('msg-member', 'Registering…', 'info');
+
+  try {
+    const res = await DB.addMember({
+      email, team, displayName: $('m-name').value.trim(),
+      phone: $('m-phone').value.trim(),
+      role, accessCode: code,
+      competitionIds: comp ? [comp] : []
+    });
+
+    closeModal('modal-member');
+    // The account is created even if the mail server refuses, so say which
+    // happened rather than claiming success outright.
+    if (res.emailed) {
+      toast('Registered — email sent to ' + email);
+    } else {
+      toast('Registered, but the email failed to send');
+      alert([
+        'The account was created, but the notification email could not be sent.',
+        res.emailError || '',
+        '',
+        'Pass these on manually:',
+        'Email: ' + email,
+        res.code ? 'Access code: ' + res.code : ''
+      ].filter(Boolean).join('\n'));
+    }
+    await loadMembers();
+  } catch (e) {
+    say('msg-member', e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ── Members ────────────────────────────────────────────────────────── */
+
+let memberCache = [];
+
+/** Crest: uploaded image if there is one, otherwise initials on the team colour. */
+function crestHTML(m, size) {
+  const px = size || 34;
+  if (m.logo_url) {
+    return `<img class="crest" src="${esc(m.logo_url)}" alt=""
+                 style="width:${px}px;height:${px}px" loading="lazy">`;
+  }
+  return `<span class="crest" style="width:${px}px;height:${px}px;background:${esc(m.jersey || '#00c853')}22;
+               border-color:${esc(m.jersey || '#00c853')}66;color:${esc(m.jersey || '#00c853')}">
+            ${esc(initials(m.team || m.display_name || m.email))}
+          </span>`;
+}
+
+function initials(name) {
+  return String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+async function loadMembers() {
+  try {
+    memberCache = await DB.members();
+    if (!memberCache.length) {
+      $('member-list').innerHTML = '<div class="empty">Just you so far.</div>';
+      return;
+    }
+    $('member-list').innerHTML = memberCache.map(m => {
+      const pending = m.status === 'invited';
+      return `<div class="row">
+        ${crestHTML(m)}
+        <div class="row-main">
+          <div class="row-title">${esc(m.team || m.display_name || m.email || 'Member')}</div>
+          <div class="row-sub">
+            <span style="text-transform:capitalize">${esc(m.role)}</span>${m.display_name ? ' · ' + esc(m.display_name) : ''}${m.email ? ' · ' + esc(m.email) : ''}
+            ${m.role === 'player' && !m.phone
+              ? ' · <span style="color:var(--red)">no WhatsApp number</span>' : ''}
+          </div>
+        </div>
+        <span class="badge${pending ? '' : ' badge-manager'}"
+              style="${pending ? 'background:rgba(139,148,158,.12);border-color:#30363d;color:var(--muted)' : ''}">
+          ${pending ? 'Not signed in' : 'Active'}
+        </span>
+        ${isOwner ? `<button class="btn btn-ghost" data-edit="${esc(m.id)}"
+              style="padding:7px 13px;font-size:.74rem">Edit</button>` : ''}
+      </div>`;
+    }).join('');
+
+    $('member-list').querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => openEditMember(btn.dataset.edit));
+    });
+  } catch (e) {
+    $('member-list').innerHTML = `<div class="empty">Could not load members.<br><small>${esc(e.message)}</small></div>`;
+  }
+}
+
+/* ── edit a member ──────────────────────────────────────────────────── */
+
+const JERSEYS = ['#00c853', '#4fc3f7', '#FFD700', '#ff7043', '#ab47bc',
+                 '#f87171', '#26a69a', '#5c6bc0', '#8d6e63', '#e6edf3'];
+
+let editingId = null;
+let pendingLogo = null;      // File chosen but not yet uploaded
+
+function openEditMember(id) {
+  const m = memberCache.find(x => String(x.id) === String(id));
+  if (!m) return;
+  editingId = id;
+  pendingLogo = null;
+
+  $('e-team').value = m.team || '';
+  $('e-name').value = m.display_name || '';
+  $('e-phone').value = m.phone || '';
+  $('e-email').textContent = m.email || '(no email)';
+  $('e-jersey').innerHTML = JERSEYS.map(c =>
+    `<button type="button" class="swatch${(m.jersey || '#00c853') === c ? ' on' : ''}"
+             data-colour="${c}" style="background:${c}" aria-label="${c}"></button>`).join('');
+  $('e-preview').innerHTML = crestHTML(m, 56);
+
+  $('e-jersey').querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      $('e-jersey').querySelectorAll('.swatch').forEach(s => s.classList.remove('on'));
+      sw.classList.add('on');
+      if (!pendingLogo && !m.logo_url) {
+        $('e-preview').innerHTML = crestHTML({ ...m, jersey: sw.dataset.colour }, 56);
+      }
+    });
+  });
+
+  say('msg-edit', '');
+  openModal('modal-edit');
+}
+
+$('e-logo').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    say('msg-edit', 'That image is over 2 MB. Pick a smaller one.', 'error');
+    e.target.value = '';
+    return;
+  }
+  pendingLogo = file;
+  // Show it immediately; the upload happens on save.
+  const reader = new FileReader();
+  reader.onload = ev => {
+    $('e-preview').innerHTML =
+      `<img class="crest" src="${ev.target.result}" alt="" style="width:56px;height:56px">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+$('btn-save-member').addEventListener('click', async () => {
+  const btn = $('btn-save-member');
+  const team = $('e-team').value.trim();
+  if (!team) return say('msg-edit', 'A team needs a name.', 'error');
+
+  btn.disabled = true;
+  say('msg-edit', 'Saving…', 'info');
+  try {
+    const patch = {
+      team,
+      display_name: $('e-name').value.trim() || null,
+      phone: $('e-phone').value.trim() || null,
+      jersey: ($('e-jersey').querySelector('.swatch.on') || {}).dataset?.colour || '#00c853'
+    };
+
+    // Upload after the row is known to be valid, so a rejected name does not
+    // leave an orphaned image in storage.
+    if (pendingLogo) {
+      patch.logo_url = await DB.uploadTeamLogo(editingId, pendingLogo);
+    }
+
+    await DB.updateMember(editingId, patch);
+    closeModal('modal-edit');
+    toast('Team updated');
+    await loadMembers();
+  } catch (e) {
+    say('msg-edit', e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$('btn-reset-code').addEventListener('click', async () => {
+  const m = memberCache.find(x => String(x.id) === String(editingId));
+  if (!m) return;
+  if (!confirm(`Issue a new access code for ${m.team || m.email}?
+
+Their current code stops working immediately.`)) return;
+
+  const btn = $('btn-reset-code');
+  btn.disabled = true;
+  say('msg-edit', 'Resetting…', 'info');
+  try {
+    const res = await DB.resetMemberCode(editingId);
+    say('msg-edit', '', '');
+    showNewCode(m, res);
+  } catch (e) {
+    say('msg-edit', e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/**
+ * Show the new code so it can be handed over by whatever route suits.
+ *
+ * The member is signed out of every device the moment the code changes, so
+ * leaving the admin without a way to pass it on would strand them whenever the
+ * email is slow, wrong, or unread.
+ */
+function showNewCode(member, res) {
+  const code = res.code || '';
+  const wa = res.phone
+    ? `https://wa.me/${String(res.phone).replace(/[^\d]/g, '')}?text=` +
+      encodeURIComponent(
+        `Your access code for ${(DB.tenant.get() || {}).tenant_name || 'the league'} has been reset.\n\n` +
+        `Email: ${res.email || member.email}\nAccess code: ${code}\n\n` +
+        `Sign in at ${location.origin}/login.html`)
+    : null;
+
+  $('code-result-team').textContent = member.team || member.email || 'Member';
+  $('code-result-value').textContent = code;
+  $('code-result-mail').innerHTML = res.emailed
+    ? `<span style="color:var(--green)">&#10003; Emailed to ${esc(res.email || member.email)}</span>`
+    : `<span style="color:var(--red)">Email failed${res.emailError ? ' — ' + esc(res.emailError) : ''}. Send it yourself below.</span>`;
+
+  const waBtn = $('code-result-wa');
+  if (wa) {
+    waBtn.href = wa;
+    waBtn.classList.remove('hidden');
+  } else {
+    waBtn.classList.add('hidden');
+  }
+
+  closeModal('modal-edit');
+  openModal('modal-code');
+}
+
+$('btn-copy-code').addEventListener('click', () => {
+  const code = $('code-result-value').textContent;
+  navigator.clipboard.writeText(code)
+    .then(() => toast('Code copied'))
+    .catch(() => prompt('Copy this code:', code));
+});
+
+$('btn-remove-member').addEventListener('click', async () => {
+  const m = memberCache.find(x => String(x.id) === String(editingId));
+  if (!m) return;
+  if (!confirm(`Remove ${m.team || m.email} from this league?\n\nTheir fixtures already played stay in the records.`)) return;
+  try {
+    await DB.removeMember(editingId);
+    closeModal('modal-edit');
+    toast('Member removed');
+    await loadMembers();
+  } catch (e) {
+    say('msg-edit', e.message, 'error');
+  }
+});
+
+/* ── Sign out ───────────────────────────────────────────────────────── */
+
+$('btn-signout').addEventListener('click', async () => {
+  if (!confirm('Sign out of this device?')) return;
+  await DB.auth.signOut();
+  location.href = 'login.html';
+});
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+<style>
+  .p-head { padding: 24px 0 18px; border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+  .p-head-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .p-title { font-size: 1.45rem; font-weight: 900; letter-spacing: -.4px; }
+  .p-sub { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+  .head-actions { margin-left: auto; display: flex; gap: 9px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 30px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; padding: 16px; }
+  .tile b { display: block; font-size: 1.7rem; font-weight: 900; letter-spacing: -1px; }
+  .tile span {
+    font-size: .6rem; text-transform: uppercase; letter-spacing: 1.4px;
+    color: var(--muted); font-weight: 800;
+  }
+  .tile small { display: block; margin-top: 6px; font-size: .7rem; color: var(--faint); }
+  .tile.warn b { color: var(--red); }
+  .tile.good b { color: var(--green); }
+
+  .panel-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .panel-head h2 { font-size: 1rem; font-weight: 800; }
+  .search {
+    margin-left: auto; max-width: 240px; padding: 8px 13px; font-size: .82rem;
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    border-radius: 9px; color: var(--text); outline: none; font-family: inherit;
+  }
+  .search:focus { border-color: var(--gold); }
+
+  .lg {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 9px;
+  }
+  .lg.suspended { opacity: .6; border-style: dashed; }
+  .lg-main { flex: 1; min-width: 0; }
+  .lg-name { font-weight: 800; font-size: .95rem; }
+  .lg-meta { color: var(--muted); font-size: .76rem; margin-top: 3px; }
+  .lg-counts { display: flex; gap: 16px; flex-shrink: 0; }
+  .lg-count { text-align: center; }
+  .lg-count b { display: block; font-size: 1rem; font-weight: 800; }
+  .lg-count span { font-size: .56rem; text-transform: uppercase; letter-spacing: 1px; color: var(--faint); font-weight: 800; }
+
+  .game {
+    font-size: .58rem; text-transform: uppercase; letter-spacing: 1.1px; font-weight: 800;
+    border-radius: 20px; padding: 3px 10px; border: 1px solid var(--line-soft); color: var(--muted);
+  }
+
+  .empty {
+    border: 1px dashed var(--line-soft); border-radius: var(--radius);
+    padding: 40px 20px; text-align: center; color: var(--muted); font-size: .88rem;
+  }
+  .empty strong { display: block; color: var(--text); margin-bottom: 6px; font-size: .95rem; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--line-soft); color: var(--text);
+    border-radius: 10px; padding: 11px 20px; font-size: .85rem; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 300;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 640px) { .lg-counts { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="p-head">
+    <div class="p-head-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark" id="brand-mark"></span>
+      </a>
+      <div>
+        <div class="p-title">Platform</div>
+        <div class="p-sub" id="p-sub">…</div>
+      </div>
+      <div class="head-actions">
+        <a class="btn btn-ghost hidden" id="link-console" href="console.html"
+           style="padding:9px 16px;font-size:.8rem">My league</a>
+        <button class="btn btn-ghost" id="btn-signout" style="padding:9px 16px;font-size:.8rem">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="body">
+    <div class="empty">Loading…</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/brand.js"></script>
+<script src="js/api.js"></script>
+<script src="js/db.js"></script>
+<script>
+(function () {
+'use strict';
+
+const $ = id => document.getElementById(id);
+let data = null;
+let filter = '';
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function toast(text) {
+  const el = $('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function when(iso) {
+  if (!iso) return 'unknown';
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 30) return `${days} days ago`;
+  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const GAME = {
+  dls: 'Dream League Soccer', efootball: 'eFootball',
+  fifa: 'FIFA / EA FC', real: 'Real football', other: 'Other'
+};
+
+/* ── boot ───────────────────────────────────────────────────────────── */
+
+(async () => {
+  if (!(await DB.auth.currentUser())) { location.replace('login.html'); return; }
+
+  // Only show the league shortcut if this account actually runs one.
+  try {
+    const ctx = await DB.context();
+    if (ctx && (ctx.memberships || []).length) {
+      DB.tenant.set(DB.tenant.get() || ctx.memberships[0]);
+      $('link-console').classList.remove('hidden');
+    }
+  } catch (e) { /* the shortcut is optional */ }
+
+  await load();
+})();
+
+async function load() {
+  try {
+    const r = await fetch(apiUrl('platform-stats'), {
+      headers: { Authorization: `Bearer ${await DB.auth.accessToken()}` }
+    });
+
+    if (r.status === 403) {
+      $('body').innerHTML = `<div class="empty"><strong>Not a platform owner</strong>
+        This account can run its own league, but cannot see the platform.
+        <div style="margin-top:16px"><a class="btn btn-ghost" href="console.html">Go to my league</a></div>
+        <div style="margin-top:20px;font-size:.76rem;color:var(--faint)">
+          To grant access, run<br>
+          <code>node scripts/seed-platform-admin.mjs your@email.com</code>
+        </div></div>`;
+      return;
+    }
+    if (!r.ok) throw new Error(`Could not load platform data (${r.status})`);
+
+    data = await r.json();
+    render();
+  } catch (e) {
+    $('body').innerHTML = `<div class="empty"><strong>Could not load</strong>${esc(e.message)}</div>`;
+  }
+}
+
+/* ── render ─────────────────────────────────────────────────────────── */
+
+function render() {
+  const t = data.totals;
+  $('p-sub').textContent =
+    `${t.leagues} league${t.leagues === 1 ? '' : 's'} · ${t.accounts} account${t.accounts === 1 ? '' : 's'}`;
+
+  $('body').innerHTML = `
+    <div class="tiles">
+      <div class="tile"><b>${t.leagues}</b><span>Leagues</span>
+        <small>${t.newLeagues7d} new this week</small></div>
+      <div class="tile good"><b>${t.active}</b><span>Active</span>
+        <small>${t.suspended} suspended</small></div>
+      <div class="tile"><b>${t.competitions}</b><span>Competitions</span>
+        <small>across all leagues</small></div>
+      <div class="tile"><b>${t.members}</b><span>Members</span>
+        <small>players and admins</small></div>
+      <div class="tile"><b>${t.accounts}</b><span>Accounts</span>
+        <small>${t.newUsers7d} new this week</small></div>
+      <div class="tile ${t.neverSignedIn ? 'warn' : ''}"><b>${t.neverSignedIn}</b><span>Never signed in</span>
+        <small>registered but not collected</small></div>
+    </div>
+
+    <div class="panel-head">
+      <h2>Leagues</h2>
+      <input class="search" id="search" placeholder="Search leagues…" value="${esc(filter)}">
+    </div>
+    <div id="league-list"></div>`;
+
+  $('search').addEventListener('input', e => {
+    filter = e.target.value;
+    renderLeagues();
+    // Re-rendering the list only, so the caret stays where it is.
+  });
+
+  renderLeagues();
+}
+
+function renderLeagues() {
+  const needle = filter.trim().toLowerCase();
+  const rows = data.leagues.filter(l =>
+    !needle ||
+    (l.name || '').toLowerCase().includes(needle) ||
+    (l.slug || '').toLowerCase().includes(needle) ||
+    (l.owner_email || '').toLowerCase().includes(needle));
+
+  if (!rows.length) {
+    $('league-list').innerHTML = data.leagues.length
+      ? `<div class="empty">No league matches “${esc(filter)}”.</div>`
+      : `<div class="empty"><strong>No leagues yet</strong>
+           They appear here as people register.</div>`;
+    return;
+  }
+
+  $('league-list').innerHTML = rows.map(l => `
+    <div class="lg ${l.status === 'suspended' ? 'suspended' : ''}">
+      <div class="lg-main">
+        <div class="lg-name">${esc(l.name)}
+          <span class="game">${esc(GAME[l.game_type] || l.game_type)}</span>
+        </div>
+        <div class="lg-meta">
+          /${esc(l.slug)} · ${esc(l.owner_email || 'no owner')} · created ${esc(when(l.created_at))}
+          ${l.pending ? ` · <span style="color:var(--red)">${l.pending} not signed in</span>` : ''}
+        </div>
+      </div>
+      <div class="lg-counts">
+        <div class="lg-count"><b>${l.competitions}</b><span>Comps</span></div>
+        <div class="lg-count"><b>${l.players}</b><span>Players</span></div>
+      </div>
+      <button class="btn btn-ghost" data-toggle="${esc(l.id)}" data-status="${esc(l.status)}"
+              style="padding:7px 13px;font-size:.74rem;${
+                l.status === 'suspended' ? '' : 'border-color:rgba(248,113,113,.35);color:var(--red)'}">
+        ${l.status === 'suspended' ? 'Reinstate' : 'Suspend'}
+      </button>
+    </div>`).join('');
+
+  $('league-list').querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => toggleStatus(btn.dataset.toggle, btn.dataset.status));
+  });
+}
+
+/* ── suspend / reinstate ────────────────────────────────────────────── */
+
+async function toggleStatus(id, current) {
+  const league = data.leagues.find(l => l.id === id);
+  const next = current === 'suspended' ? 'active' : 'suspended';
+
+  if (next === 'suspended' &&
+      !confirm(`Suspend "${league.name}"?\n\nIts admins and players keep their accounts, but the league stops being usable until you reinstate it.`)) {
+    return;
+  }
+
+  try {
+    // Platform admins pass is_tenant_owner(), so the ordinary tenants policy
+    // allows this - no special endpoint needed.
+    await DB.setTenantStatus(id, next);
+    league.status = next;
+    data.totals.active = data.leagues.filter(l => l.status === 'active').length;
+    data.totals.suspended = data.leagues.filter(l => l.status === 'suspended').length;
+    render();
+    toast(next === 'suspended' ? 'League suspended' : 'League reinstated');
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+$('btn-signout').addEventListener('click', async () => {
+  await DB.auth.signOut();
+  location.href = 'login.html';
+});
+
+})();
+</script>
+</body>
+</html>

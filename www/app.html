@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<style>
+/* ============================================================================
+   Player app. Mobile-first: this is what runs inside the packaged Android and
+   iOS build, so it carries its own styling rather than the marketing sheet.
+
+   Everything here is driven by the competition's `format`, not by a hardcoded
+   list of divisions - a tenant can run any number of competitions and each one
+   renders from the same screens.
+   ========================================================================= */
+
+:root {
+  --bg: #0a0e14; --surface: #12171f; --surface-2: #161b22;
+  --line: #21262d; --line-soft: #30363d;
+  --text: #e6edf3; --muted: #8b949e; --faint: #4a5568;
+  --gold: #FFD700; --green: #00c853; --red: #f87171; --blue: #4fc3f7;
+  --nav-h: 62px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.5;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  -webkit-font-smoothing: antialiased;
+}
+button, select, input { font-family: inherit; }
+
+.screen { display: none; padding: 0 16px 24px; max-width: 640px; margin: 0 auto; }
+.screen.on { display: block; }
+
+/* Header sits below the phone status bar. */
+.top {
+  padding: calc(14px + env(safe-area-inset-top)) 16px 12px;
+  max-width: 640px; margin: 0 auto;
+}
+.top-label {
+  font-size: .64rem; text-transform: uppercase; letter-spacing: 2px;
+  color: var(--muted); font-weight: 800;
+}
+.top-title { font-size: 1.55rem; font-weight: 900; letter-spacing: -.5px; margin-top: 2px; }
+.top-row { display: flex; align-items: flex-start; gap: 12px; }
+.avatar {
+  margin-left: auto; width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), #E6AC00); color: #1a1400;
+  display: grid; place-items: center; font-weight: 900; font-size: .82rem;
+  border: none; cursor: pointer; overflow: hidden; padding: 0;
+}
+/* Once a crest is available it replaces the initials. White behind it, since
+   most club badges are drawn for a light background. */
+.avatar--img { background: #fff; border: 1.5px solid var(--line-soft); }
+.avatar--img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 14px; padding: 16px; margin-bottom: 12px;
+}
+.card-label {
+  font-size: .62rem; text-transform: uppercase; letter-spacing: 1.6px;
+  color: var(--muted); font-weight: 800; margin-bottom: 10px;
+}
+
+/* My team */
+.myteam { background: linear-gradient(150deg, #16202b, #10141b); border-color: #253041; }
+.myteam-top { display: flex; align-items: center; gap: 12px; }
+.crest {
+  width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+  background: var(--surface-2); border: 1.5px solid var(--line-soft);
+  display: grid; place-items: center; font-weight: 900; font-size: .85rem; color: var(--muted);
+}
+.myteam-name { font-size: 1.05rem; font-weight: 800; }
+.myteam-sub { font-size: .75rem; color: var(--muted); }
+.stat-row { display: flex; gap: 8px; margin-top: 14px; }
+.stat {
+  flex: 1; background: rgba(255,255,255,.03); border: 1px solid var(--line);
+  border-radius: 10px; padding: 9px 6px; text-align: center;
+}
+.stat b { display: block; font-size: 1.15rem; font-weight: 900; }
+.stat span { font-size: .58rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 700; }
+
+.form-pills { display: flex; gap: 3px; justify-content: center; }
+.pill {
+  width: 18px; height: 18px; border-radius: 5px; font-size: .58rem; font-weight: 900;
+  display: grid; place-items: center; color: #0d1117;
+}
+.pill-W { background: var(--green); } .pill-D { background: var(--muted); } .pill-L { background: var(--red); }
+
+/* Match rows */
+.match {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 13px 14px; margin-bottom: 8px;
+}
+.match.mine { border-color: rgba(255,215,0,.35); background: linear-gradient(150deg, #1a1710, #12171f); }
+.side { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.side.away { flex-direction: row-reverse; }
+.side span { font-size: .84rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini {
+  width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  display: grid; place-items: center; font-size: .58rem; font-weight: 800; color: var(--muted);
+}
+.result { font-size: 1rem; font-weight: 900; min-width: 52px; text-align: center; }
+/* A team name with a number behind it. Dotted green underline rather than a
+   button: it has to sit inside match rows, tables and brackets without
+   changing any of their layouts. */
+.team-link {
+  background: none; border: none; padding: 0; margin: 0; cursor: pointer;
+  color: inherit; font: inherit; text-align: inherit;
+  display: inline-flex; align-items: center; gap: 5px; min-width: 0;
+  text-decoration: underline; text-decoration-style: dotted;
+  text-underline-offset: 3px; text-decoration-color: #25D366;
+}
+.team-link:active { opacity: .6; }
+.wa { font-style: normal; font-size: .74rem; opacity: .8; flex-shrink: 0; }
+.side .team-link, .side span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.std-team { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.tie-side .team-link { flex: 1; }
+.result.pending { font-size: .68rem; font-weight: 700; color: var(--faint); letter-spacing: 1px; }
+
+/* Pills / tabs */
+.pill-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 0 12px; scrollbar-width: none; }
+.pill-bar::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; border: 1px solid var(--line-soft); background: transparent;
+  color: var(--muted); border-radius: 20px; padding: 7px 15px;
+  font-size: .76rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.chip.on { background: var(--text); border-color: var(--text); color: #0d1117; }
+
+/* Standings */
+.std { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.std th {
+  text-align: left; font-size: .56rem; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); font-weight: 800; padding: 0 5px 9px;
+}
+.std td { padding: 10px 5px; border-top: 1px solid var(--line); }
+.std .num { text-align: center; width: 26px; }
+.std .pos { color: var(--faint); width: 22px; text-align: center; font-size: .72rem; }
+.std .pts { font-weight: 900; color: var(--gold); }
+.std tr.me td { background: rgba(255,215,0,.06); }
+.std tr.qualifies td:first-child { box-shadow: inset 3px 0 0 var(--green); }
+
+/* Bracket */
+.round-block { margin-bottom: 18px; }
+.round-title {
+  font-size: .62rem; text-transform: uppercase; letter-spacing: 1.8px;
+  color: var(--muted); font-weight: 800; margin-bottom: 8px;
+}
+.tie { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; margin-bottom: 8px; }
+.tie-side { display: flex; align-items: center; gap: 9px; padding: 3px 0; font-size: .84rem; }
+.tie-side b { margin-left: auto; font-weight: 900; }
+.tie-side.won { color: var(--green); font-weight: 800; }
+.tie-side.tbd { color: var(--faint); font-style: italic; }
+.champ {
+  background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,215,0,.03));
+  border: 1.5px solid rgba(255,215,0,.45); border-radius: 14px;
+  padding: 20px; text-align: center; margin-bottom: 14px;
+}
+.champ .who { font-size: 1.25rem; font-weight: 900; color: var(--gold); margin-top: 4px; }
+
+/* Teams screen */
+.lead-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.lead {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 11px 13px;
+}
+.lead span {
+  display: block; font-size: .55rem; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--muted); font-weight: 800;
+}
+.lead b { display: block; font-size: .86rem; font-weight: 800; margin-top: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lead small { display: block; font-size: .68rem; color: var(--faint); margin-top: 1px; }
+
+.team-card { padding: 13px 14px; }
+.team-card.is-mine { border-color: rgba(255,215,0,.35); }
+.team-card-top { display: flex; align-items: center; gap: 11px; }
+.team-card-name { font-weight: 800; font-size: .92rem; min-width: 0; }
+.team-card-sub { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+.team-card-facts {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px;
+  padding-top: 10px; border-top: 1px solid var(--line);
+}
+.team-card-facts span {
+  font-size: .68rem; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 20px; padding: 3px 10px;
+}
+
+/* Bottom nav */
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(13,17,23,.94); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line); display: flex;
+}
+.nav button {
+  flex: 1; background: none; border: none; color: var(--faint);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; font-size: .58rem; font-weight: 700; cursor: pointer;
+  text-transform: uppercase; letter-spacing: .6px;
+}
+.nav button i { font-style: normal; font-size: 1.15rem; }
+.nav button.on { color: var(--gold); }
+
+.empty {
+  border: 1px dashed var(--line-soft); border-radius: 14px;
+  padding: 34px 18px; text-align: center; color: var(--muted); font-size: .85rem;
+}
+.empty strong { display: block; color: var(--text); margin-bottom: 5px; font-size: .92rem; }
+
+.sheet {
+  position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 100;
+  display: none; align-items: flex-end;
+}
+.sheet.on { display: flex; }
+.sheet-box {
+  background: var(--surface); border-top: 1px solid var(--line-soft);
+  border-radius: 18px 18px 0 0; width: 100%; max-height: 84vh; overflow-y: auto;
+  padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+}
+.sheet-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  background: none; border: none; border-bottom: 1px solid var(--line);
+  color: var(--text); padding: 14px 2px; font-size: .9rem; cursor: pointer; text-align: left;
+}
+.sheet-row:last-child { border-bottom: none; }
+.sheet-row.danger { color: var(--red); }
+
+.input {
+  width: 100%; padding: 12px 14px; font-size: .95rem; background: var(--surface-2);
+  border: 1.5px solid var(--line-soft); border-radius: 10px; color: var(--text); outline: none;
+}
+.input:focus { border-color: var(--gold); }
+.btn {
+  width: 100%; padding: 13px; border: none; border-radius: 11px; font-weight: 800;
+  font-size: .88rem; cursor: pointer; background: linear-gradient(135deg, var(--gold), #E6AC00); color: #1a1400;
+}
+.btn.ghost { background: none; border: 1px solid var(--line-soft); color: var(--text); }
+.msg { font-size: .8rem; margin-top: 10px; min-height: 18px; font-weight: 600; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(var(--nav-h) + 20px); transform: translateX(-50%);
+  background: var(--surface); border: 1px solid var(--line-soft); color: var(--text);
+  border-radius: 10px; padding: 10px 18px; font-size: .82rem; font-weight: 600;
+  opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 300;
+}
+.toast.on { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-row">
+    <div>
+      <div class="top-label" id="top-label">…</div>
+      <div class="top-title" id="top-title">…</div>
+    </div>
+    <button class="avatar" id="btn-menu" aria-label="Menu">…</button>
+  </div>
+</div>
+
+<main>
+  <section class="screen on" id="screen-home"></section>
+  <section class="screen" id="screen-fixtures"></section>
+  <section class="screen" id="screen-table"></section>
+  <section class="screen" id="screen-players"></section>
+</main>
+
+<nav class="nav">
+  <button class="on" data-screen="home"><i>&#127968;</i>Home</button>
+  <button data-screen="fixtures"><i>&#128197;</i>Fixtures</button>
+  <button data-screen="table"><i>&#128202;</i>Table</button>
+  <button data-screen="players"><i>&#128101;</i>Teams</button>
+</nav>
+
+<div class="sheet" id="sheet"><div class="sheet-box" id="sheet-box"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/db.js"></script>
+<script src="js/competition.js"></script>
+<script>
+(function () {
+'use strict';
+
+const $ = id => document.getElementById(id);
+
+let membership = null;     // this player's row in the current league
+let competitions = [];     // competitions in the league
+let active = null;         // the competition being viewed
+let pub = null;            // its published document
+let contacts = {};         // team -> phone, members-only document
+let mdIndex = 0;           // selected matchday / group
+let koView = false;        // cup: showing the bracket rather than groups
+
+/* ── helpers ────────────────────────────────────────────────────────── */
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function initials(name) {
+  return String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+function toast(text) {
+  const el = $('toast');
+  el.textContent = text;
+  el.classList.add('on');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('on'), 2200);
+}
+/**
+ * Team crest. Uses the logos map published alongside the competition - a player
+ * cannot read the membership table, so the crest has to arrive with the data.
+ * Falls back to initials on the team colour, then to grey.
+ */
+function crest(team, px) {
+  const size = px || 26;
+  const entry = (pub && pub.logos && pub.logos[team]) || null;
+  if (entry && entry.url) {
+    return `<img class="mini" src="${esc(entry.url)}" alt="" loading="lazy"
+                 style="width:${size}px;height:${size}px;object-fit:cover;background:#fff">`;
+  }
+  const colour = (entry && entry.jersey) || '#8b949e';
+  return `<span class="mini" style="width:${size}px;height:${size}px;
+               background:${esc(colour)}22;border-color:${esc(colour)}66;color:${esc(colour)}">
+            ${esc(initials(team))}</span>`;
+}
+
+const myTeam = () => (membership && membership.team) || null;
+
+/* ── boot ───────────────────────────────────────────────────────────── */
+
+(async () => {
+  // No team-picking screen any more. Identity comes from the account an admin
+  // registered, so an unauthenticated visitor simply has nothing to show.
+  if (!(await DB.auth.isSignedIn())) { location.replace('login.html'); return; }
+
+  let tenant = DB.tenant.get();
+  if (!tenant) {
+    const ctx = await DB.context().catch(() => null);
+    const list = (ctx && ctx.memberships) || [];
+    if (!list.length) { location.replace('login.html'); return; }
+    tenant = DB.tenant.set(list[0]);
+  }
+  membership = tenant;
+
+  $('top-label').textContent = tenant.tenant_name || '';
+  $('btn-menu').textContent = initials(tenant.team || tenant.tenant_name);
+
+  try {
+    competitions = await DB.competitions();
+  } catch (e) {
+    competitions = [];
+  }
+
+  // Show only what this player was entered into.
+  const mine = (membership.competition_ids || []);
+  if (mine.length) competitions = competitions.filter(c => mine.includes(c.id));
+
+  if (!competitions.length) {
+    $('top-title').textContent = 'No competitions';
+    $('screen-home').innerHTML =
+      `<div class="empty"><strong>Nothing here yet</strong>
+        Your league admin has not set up a competition for you.</div>`;
+    return;
+  }
+
+  await selectCompetition(competitions[0]);
+})();
+
+async function selectCompetition(comp) {
+  active = comp;
+  mdIndex = 0;
+  koView = false;
+  $('top-title').textContent = comp.name;
+
+  try {
+    pub = await DB.get(`comp/${comp.key}/pub`);
+  } catch (e) {
+    pub = null;
+  }
+
+  // Separate document, and separate permission: a public league still keeps
+  // its phone numbers to members.
+  try {
+    contacts = (await DB.get('contacts')) || {};
+  } catch (e) {
+    contacts = {};
+  }
+
+  // A cup that has reached the knockout opens on the bracket.
+  if (pub && pub.format === 'group_knockout' && pub.phase === 'knockout') koView = true;
+  // A league opens on the current matchday, not matchday one.
+  if (pub && pub.format === 'round_robin') mdIndex = pub.currentMatchday || 0;
+
+  renderAll();
+}
+
+function renderAll() { renderAvatar(); renderHome(); renderFixtures(); renderTable(); renderPlayers(); }
+
+/**
+ * The menu button carries the player's own crest.
+ * Logos arrive with the published competition, not with the session, so this
+ * runs after `pub` is loaded rather than at boot - until then it shows initials.
+ */
+function renderAvatar() {
+  const t = DB.tenant.get() || {};
+  const team = t.team;
+  const entry = (pub && pub.logos && pub.logos[team]) || null;
+  const btn = $('btn-menu');
+
+  if (entry && entry.url) {
+    btn.innerHTML = `<img src="${esc(entry.url)}" alt="">`;
+    btn.classList.add('avatar--img');
+  } else {
+    btn.textContent = initials(team || t.tenant_name);
+    btn.classList.remove('avatar--img');
+  }
+}
+
+function notPublished() {
+  return `<div class="empty"><strong>Nothing published yet</strong>
+    Your admin has not published ${esc(active ? active.name : 'this competition')} yet.
+    Check back once the fixtures are out.</div>`;
+}
+
+/* ── navigation ─────────────────────────────────────────────────────── */
+
+document.querySelectorAll('.nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+    btn.classList.add('on');
+    $('screen-' + btn.dataset.screen).classList.add('on');
+    window.scrollTo(0, 0);
+  });
+});
+
+/* ── home ───────────────────────────────────────────────────────────── */
+
+function renderHome() {
+  const el = $('screen-home');
+  if (!pub) { el.innerHTML = notPublished(); return; }
+
+  el.innerHTML = compSwitcherHTML() + myTeamCardHTML() + nextFixtureHTML() + recentResultsHTML();
+  wireCompSwitcher(el);
+}
+
+function compSwitcherHTML() {
+  if (competitions.length < 2) return '';
+  return `<div class="pill-bar">${competitions.map(c =>
+    `<button class="chip${active && c.id === active.id ? ' on' : ''}" data-comp="${esc(c.id)}">${esc(c.name)}</button>`
+  ).join('')}</div>`;
+}
+
+function wireCompSwitcher(root) {
+  root.querySelectorAll('[data-comp]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const comp = competitions.find(c => c.id === btn.dataset.comp);
+      if (comp) selectCompetition(comp);
+    });
+  });
+}
+
+/** The player's row in whichever table applies to them. */
+function myRow() {
+  const team = myTeam();
+  if (!team || !pub) return null;
+
+  if (pub.format === 'round_robin') {
+    return (pub.table || []).find(r => r.team === team) || null;
+  }
+  for (const rows of Object.values(pub.standings || {})) {
+    const hit = rows.find(r => r.team === team);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+function myTeamCardHTML() {
+  const team = myTeam();
+  if (!team) return '';
+  const row = myRow();
+  const matchdays = allMatchdays();
+  const recent = Competition.form(team, matchdays);
+
+  return `<div class="card myteam">
+    <div class="myteam-top">
+      ${crest(team, 46)}
+      <div style="min-width:0">
+        <div class="myteam-name">${esc(team)}</div>
+        <div class="myteam-sub">Your team${row ? ' · ' + ordinal(row.pos) : ''}</div>
+      </div>
+    </div>
+    ${row ? `<div class="stat-row">
+      <div class="stat"><b>${row.p}</b><span>Played</span></div>
+      <div class="stat"><b>${row.w}</b><span>Won</span></div>
+      <div class="stat"><b>${row.gd > 0 ? '+' : ''}${row.gd}</b><span>GD</span></div>
+      <div class="stat"><b style="color:var(--gold)">${row.pts}</b><span>Points</span></div>
+    </div>` : ''}
+    ${recent.length ? `<div class="stat-row"><div class="stat">
+      <div class="form-pills">${recent.map(f => `<span class="pill pill-${f}">${f}</span>`).join('')}</div>
+      <span style="margin-top:6px;display:block">Recent form</span>
+    </div></div>` : ''}
+  </div>`;
+}
+
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/** Every matchday-shaped list, whatever the format, for form and results. */
+function allMatchdays() {
+  if (!pub) return [];
+  if (pub.format === 'round_robin') return pub.allMatchdays || [];
+  const out = Object.values(pub.fixtures || {}).map(list => ({ matches: list }));
+  (pub.ko || []).forEach(r => out.push({ matches: r.matches }));
+  return out;
+}
+
+function nextFixtureHTML() {
+  const team = myTeam();
+  if (!team) return '';
+
+  for (const md of allMatchdays()) {
+    for (const m of md.matches || []) {
+      if (m.played) continue;
+      if (m.home !== team && m.away !== team) continue;
+      return `<div class="card">
+        <div class="card-label">Your next match</div>
+        ${matchHTML(m, true)}
+        ${md.deadline ? `<div style="text-align:center;color:var(--muted);font-size:.72rem;margin-top:8px">
+          Deadline ${esc(formatWhen(md.deadline))}</div>` : ''}
+      </div>`;
+    }
+  }
+  return '';
+}
+
+function formatWhen(value) {
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+function recentResultsHTML() {
+  const team = myTeam();
+  const played = [];
+  for (const md of allMatchdays()) {
+    for (const m of md.matches || []) {
+      if (m.played && (!team || m.home === team || m.away === team)) played.push(m);
+    }
+  }
+  if (!played.length) return '';
+  return `<div class="card">
+    <div class="card-label">${team ? 'Your recent results' : 'Recent results'}</div>
+    ${played.slice(-4).reverse().map(m => matchHTML(m)).join('')}
+  </div>`;
+}
+
+/* -------------------------------------------------------------------------
+   Contacting an opponent
+
+   wa.me needs a bare international number: no +, spaces or dashes. Leading
+   zeros are a local-dialling convention and wa.me rejects them, so a number
+   saved as "0790..." will not open a chat - the admin has to store it with the
+   country code.
+   ---------------------------------------------------------------------- */
+
+function whatsappLink(team) {
+  const raw = contacts[team];
+  if (!raw) return null;
+  const digits = String(raw).replace(/[^\d]/g, '');
+  if (digits.length < 8) return null;
+  const text = encodeURIComponent(
+    `Hi! I'm ${myTeam() || 'your opponent'} from ${(DB.tenant.get() || {}).tenant_name || 'the league'}. ` +
+    `When shall we play our match?`);
+  return `https://wa.me/${digits}?text=${text}`;
+}
+
+/** Open a chat with the opposing team, if we have their number. */
+function messageTeam(team) {
+  const url = whatsappLink(team);
+  if (!url) { toast('No number saved for ' + team); return; }
+  window.open(url, '_blank', 'noopener');
+}
+window.messageTeam = messageTeam;
+
+/**
+ * Can this team be messaged? Any team with a number, except your own.
+ * Everyone in the league can already read the contacts document, so limiting
+ * where the link appears would be presentation, not protection.
+ */
+function contactable(name) {
+  return !!(name && name !== myTeam() && whatsappLink(name));
+}
+
+/** The onclick attribute, with the team name safely embedded. */
+function messageAttr(name) {
+  return `onclick="messageTeam(${JSON.stringify(name).replace(/"/g, '&quot;')})"`;
+}
+
+/**
+ * A team name, tappable when there is a number behind it.
+ * `withCrest` is off in tables, where the crest is rendered in its own column.
+ */
+function teamLabel(name, withCrest) {
+  const label = esc(name || 'TBD');
+  const badge = withCrest === false ? '' : crest(name);
+
+  if (!contactable(name)) {
+    return `${badge}<span>${label}</span>`;
+  }
+  return `${badge}<button class="team-link" ${messageAttr(name)}
+            title="Message ${label} on WhatsApp">${label}<i class="wa" aria-hidden="true">&#128172;</i></button>`;
+}
+
+function matchHTML(m, plain) {
+  const team = myTeam();
+  const mine = team && (m.home === team || m.away === team);
+  const score = m.played
+    ? `<div class="result">${m.hs} – ${m.as}</div>`
+    : `<div class="result pending">VS</div>`;
+
+  return `<div class="match${mine && !plain ? ' mine' : ''}" style="${plain ? 'border:none;background:none;padding:4px 0;margin:0' : ''}">
+    <div class="side">${teamLabel(m.home)}</div>
+    ${score}
+    <div class="side away">${teamLabel(m.away)}</div>
+  </div>`;
+}
+
+/* ── fixtures ───────────────────────────────────────────────────────── */
+
+function renderFixtures() {
+  const el = $('screen-fixtures');
+  if (!pub) { el.innerHTML = notPublished(); return; }
+
+  el.innerHTML = pub.format === 'round_robin' ? leagueFixturesHTML() : cupFixturesHTML();
+
+  el.querySelectorAll('[data-md]').forEach(chip => {
+    chip.addEventListener('click', () => { mdIndex = Number(chip.dataset.md); renderFixtures(); });
+  });
+  el.querySelectorAll('[data-view]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      koView = chip.dataset.view === 'ko';
+      mdIndex = 0;
+      renderFixtures();
+    });
+  });
+}
+
+function leagueFixturesHTML() {
+  const days = pub.allMatchdays || [];
+  if (!days.length) return `<div class="empty"><strong>No fixtures yet</strong>The schedule has not been generated.</div>`;
+
+  const i = Math.min(mdIndex, days.length - 1);
+  const md = days[i];
+  return `
+    <div class="pill-bar">${days.map((d, n) =>
+      `<button class="chip${n === i ? ' on' : ''}" data-md="${n}">MD ${d.day}</button>`).join('')}</div>
+    ${md.deadline ? `<div style="color:var(--muted);font-size:.74rem;margin-bottom:10px">
+      Deadline ${esc(formatWhen(md.deadline))}</div>` : ''}
+    ${(md.matches || []).map(m => matchHTML(m)).join('')}
+    ${md.byeTeam ? `<div class="empty" style="padding:16px">${esc(md.byeTeam)} rests this matchday</div>` : ''}`;
+}
+
+function cupFixturesHTML() {
+  const groups = Object.keys(pub.groups || {});
+  const hasKO = (pub.ko || []).length > 0;
+
+  const toggle = hasKO ? `<div class="pill-bar">
+    <button class="chip${koView ? '' : ' on'}" data-view="groups">Groups</button>
+    <button class="chip${koView ? ' on' : ''}" data-view="ko">Knockout</button>
+  </div>` : '';
+
+  if (koView && hasKO) return toggle + bracketHTML();
+
+  if (!groups.length) return `<div class="empty"><strong>No fixtures yet</strong>The draw has not been made.</div>`;
+
+  const g = groups[Math.min(mdIndex, groups.length - 1)];
+  return toggle + `
+    <div class="pill-bar">${groups.map((name, n) =>
+      `<button class="chip${name === g ? ' on' : ''}" data-md="${n}">Group ${esc(name)}</button>`).join('')}</div>
+    ${(pub.fixtures[g] || []).map(m => matchHTML(m)).join('')}`;
+}
+
+function bracketHTML() {
+  return (pub.ko || []).map(round => `
+    <div class="round-block">
+      <div class="round-title">${esc(round.name)}</div>
+      ${round.matches.map(m => `
+        <div class="tie">
+          <div class="tie-side ${m.winner && m.winner === m.home ? 'won' : ''} ${m.home ? '' : 'tbd'}">
+            ${m.home ? teamLabel(m.home, false) : '<span>To be decided</span>'}${typeof m.hs === 'number' ? `<b>${m.hs}</b>` : ''}
+          </div>
+          <div class="tie-side ${m.winner && m.winner === m.away ? 'won' : ''} ${m.away ? '' : 'tbd'}">
+            ${m.away ? teamLabel(m.away, false) : '<span>To be decided</span>'}${typeof m.as === 'number' ? `<b>${m.as}</b>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ── table ──────────────────────────────────────────────────────────── */
+
+function renderTable() {
+  const el = $('screen-table');
+  if (!pub) { el.innerHTML = notPublished(); return; }
+
+  if (pub.format === 'round_robin') {
+    const rows = pub.table || [];
+    el.innerHTML = rows.length
+      ? `<div class="card" style="padding:14px 12px">${standingsHTML(rows, false)}</div>`
+      : `<div class="empty"><strong>No table yet</strong>It appears once results are in.</div>`;
+    return;
+  }
+
+  const champ = pub.champion
+    ? `<div class="champ"><div style="font-size:1.7rem">&#127942;</div>
+        <div style="color:var(--muted);font-size:.66rem;text-transform:uppercase;letter-spacing:2px">Champion</div>
+        <div class="who">${esc(pub.champion)}</div></div>` : '';
+
+  const groups = Object.entries(pub.standings || {});
+  el.innerHTML = champ + (groups.length
+    ? groups.map(([name, rows]) => `
+        <div class="card" style="padding:14px 12px">
+          <div class="card-label">Group ${esc(name)}</div>
+          ${standingsHTML(rows, true)}
+        </div>`).join('')
+    : `<div class="empty"><strong>No tables yet</strong>They appear once the draw is made.</div>`);
+}
+
+function standingsHTML(rows, markQualifiers) {
+  const team = myTeam();
+  return `<table class="std">
+    <thead><tr><th class="pos">#</th><th>Team</th>
+      <th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th>
+      <th class="num">GD</th><th class="num">Pts</th></tr></thead>
+    <tbody>${rows.map((r, i) => `
+      <tr class="${r.team === team ? 'me' : ''} ${markQualifiers && i < 2 ? 'qualifies' : ''}">
+        <td class="pos">${r.pos}</td>
+        <td><div class="std-team" style="font-weight:${r.team === team ? '800' : '600'}">
+          ${teamLabel(r.team)}</div></td>
+        <td class="num">${r.p}</td><td class="num">${r.w}</td>
+        <td class="num">${r.d}</td><td class="num">${r.l}</td>
+        <td class="num">${r.gd > 0 ? '+' : ''}${r.gd}</td>
+        <td class="num pts">${r.pts}</td>
+      </tr>`).join('')}</tbody></table>`;
+}
+
+/* ── players ────────────────────────────────────────────────────────── */
+
+/**
+ * The teams in this competition: who they are, how they are doing, and how to
+ * reach them. Everything is derived from results, so it fills up as the season
+ * is played rather than needing the admin to record anything extra.
+ */
+function renderPlayers() {
+  const el = $('screen-players');
+  if (!pub) { el.innerHTML = notPublished(); return; }
+
+  const teams = pub.teams || [];
+  if (!teams.length) {
+    el.innerHTML = `<div class="empty"><strong>No teams yet</strong>
+      They appear once your admin has registered the players.</div>`;
+    return;
+  }
+
+  const stats = Competition.teamStats(teams, allMatchdays());
+  const leaders = Competition.leagueLeaders(stats);
+  const mine = myTeam();
+
+  const strip = leaders ? `
+    <div class="lead-strip">
+      ${lead('Best attack', leaders.bestAttack.team, leaders.bestAttack.gf + ' scored')}
+      ${lead('Best defence', leaders.bestDefence.team, leaders.bestDefence.ga + ' conceded')}
+      ${lead('Clean sheets', leaders.mostCleanSheets.team, leaders.mostCleanSheets.cleanSheets)}
+      ${lead('Unbeaten run', leaders.longestUnbeaten.team, leaders.longestUnbeaten.longestUnbeaten)}
+    </div>` : '';
+
+  el.innerHTML = strip + stats.map(s => `
+    <div class="card team-card ${s.team === mine ? 'is-mine' : ''}">
+      <div class="team-card-top">
+        ${crest(s.team, 38)}
+        <div style="flex:1;min-width:0">
+          <div class="team-card-name">${teamLabel(s.team, false)}</div>
+          <div class="team-card-sub">${ordinal(s.pos)} &middot; ${s.pts} pts &middot; ${s.p} played</div>
+        </div>
+        <div class="form-pills">
+          ${s.form.map(f => `<span class="pill pill-${f}">${f}</span>`).join('')}
+        </div>
+      </div>
+      ${s.p ? `<div class="team-card-facts">
+        <span>${s.w}W ${s.d}D ${s.l}L</span>
+        <span>${s.gf}&ndash;${s.ga}</span>
+        <span>${s.cleanSheets} clean sheet${s.cleanSheets === 1 ? '' : 's'}</span>
+        ${s.biggestWin ? `<span>Best win ${s.biggestWin.for}&ndash;${s.biggestWin.against}</span>` : ''}
+        ${s.longestWin > 1 ? `<span>${s.longestWin} wins in a row</span>` : ''}
+      </div>` : ''}
+    </div>`).join('');
+}
+
+function lead(label, team, detail) {
+  return `<div class="lead">
+    <span>${esc(label)}</span>
+    <b>${esc(team)}</b>
+    <small>${esc(String(detail))}</small>
+  </div>`;
+}
+
+/* ── menu sheet ─────────────────────────────────────────────────────── */
+
+$('btn-menu').addEventListener('click', openMenu);
+$('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
+function closeSheet() { $('sheet').classList.remove('on'); }
+
+function openMenu() {
+  const t = DB.tenant.get() || {};
+  $('sheet-box').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:6px">
+      ${t.team ? crest(t.team, 46) : `<span class="crest">${esc(initials(t.tenant_name))}</span>`}
+      <div style="min-width:0">
+        <div style="font-weight:800">${esc(t.team || 'Your account')}</div>
+        <div style="font-size:.76rem;color:var(--muted)">${esc(t.tenant_name || '')}</div>
+      </div>
+    </div>
+    <button class="sheet-row" id="row-code"><span>&#128273;</span> Change my access code</button>
+    <button class="sheet-row" id="row-switch"><span>&#128260;</span> Switch league</button>
+    <button class="sheet-row danger" id="row-out"><span>&#8618;</span> Sign out</button>`;
+
+  $('row-code').addEventListener('click', openChangeCode);
+  $('row-switch').addEventListener('click', () => { DB.tenant.clear(); location.href = 'login.html'; });
+  $('row-out').addEventListener('click', async () => {
+    await DB.auth.signOut();
+    location.href = 'login.html';
+  });
+  $('sheet').classList.add('on');
+}
+
+function openChangeCode() {
+  $('sheet-box').innerHTML = `
+    <div style="font-weight:800;font-size:1.02rem;margin-bottom:4px">Change your access code</div>
+    <div style="color:var(--muted);font-size:.8rem;margin-bottom:16px">
+      Replace the code your admin gave you with something only you know.
+    </div>
+    <input class="input" type="password" id="new-code" placeholder="New code, at least 8 characters"
+           autocomplete="new-password" style="margin-bottom:10px">
+    <input class="input" type="password" id="new-code2" placeholder="Repeat it"
+           autocomplete="new-password" style="margin-bottom:14px">
+    <button class="btn" id="btn-save-code">Save</button>
+    <div class="msg" id="code-msg"></div>
+    <button class="btn ghost" id="btn-cancel" style="margin-top:8px">Cancel</button>`;
+
+  $('btn-cancel').addEventListener('click', closeSheet);
+  $('btn-save-code').addEventListener('click', async () => {
+    const a = $('new-code').value;
+    const b = $('new-code2').value;
+    const msg = $('code-msg');
+
+    if (a.length < 8) { msg.style.color = 'var(--red)'; msg.textContent = 'At least 8 characters.'; return; }
+    if (a !== b)      { msg.style.color = 'var(--red)'; msg.textContent = 'Those do not match.'; return; }
+
+    const btn = $('btn-save-code');
+    btn.disabled = true;
+    msg.style.color = 'var(--muted)';
+    msg.textContent = 'Saving…';
+    try {
+      await DB.auth.changePassword(a);
+      closeSheet();
+      toast('Access code changed');
+    } catch (e) {
+      msg.style.color = 'var(--red)';
+      msg.textContent = e.message;
+      btn.disabled = false;
+    }
+  });
+}
+
+})();
+</script>
+</body>
+</html>

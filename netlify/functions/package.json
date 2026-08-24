@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "web-push": "^3.6.7",
-    "@netlify/functions": "^2.8.2"
-  }
-}

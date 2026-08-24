@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football League Hub — Run your own football league</title>
+<meta name="description" content="Create and run a league for DLS, eFootball, FIFA or real football. Fixtures, live standings, player accounts and a mobile app — without a spreadsheet.">
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" id="brand-mark"></span>
+      <span id="brand-name">Football League Hub</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="hide-sm">Features</a>
+      <a href="#how" class="hide-sm">How it works</a>
+      <a href="login.html">Sign in</a>
+      <a href="register.html" class="btn btn-primary" style="padding:9px 18px">Start a league</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Free while in early access</span>
+    <h1>Run your football league <span>properly</span></h1>
+    <p class="hero-sub">
+      Fixtures, tables, results and player accounts for DLS, eFootball, FIFA or a
+      real Sunday league. Your players get a phone app; you get an admin panel
+      instead of a group chat and a spreadsheet.
+    </p>
+    <div class="hero-cta">
+      <a href="register.html" class="btn btn-primary btn-lg">Create your league</a>
+      <a href="login.html" class="btn btn-ghost btn-lg">Sign in</a>
+    </div>
+    <p class="hero-note">No card required · Set up in a few minutes</p>
+  </div>
+</header>
+
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <p class="label" style="text-align:center">Built for</p>
+    <div class="chips">
+      <span class="chip">⚽ Dream League Soccer</span>
+      <span class="chip">🎮 eFootball</span>
+      <span class="chip">🕹️ FIFA / EA FC</span>
+      <span class="chip">🏟️ Real-world leagues</span>
+      <span class="chip">🏆 Any cup competition</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Everything a league needs</h2>
+      <p>The parts that normally get done by hand, done for you.</p>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-ico">📅</div>
+        <h3>Fixtures that generate themselves</h3>
+        <p>Enter your teams and get a full round-robin schedule, or a group stage
+           that feeds into a knockout bracket. Deadlines per matchday included.</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">📊</div>
+        <h3>Standings that stay correct</h3>
+        <p>Enter a score and the table recalculates — points, goal difference,
+           form. No more arguing about who is actually top.</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">👤</div>
+        <h3>Every player gets an account</h3>
+        <p>You register each player against their email and set their access code.
+           Their team is bound to that account — nobody can claim someone else's.</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">📱</div>
+        <h3>A real mobile app</h3>
+        <p>Not a bookmark. Your league runs inside an installable Android and iOS
+           app, with push notifications when fixtures drop.</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">🏅</div>
+        <h3>Stats that write themselves</h3>
+        <p>Enter a score and every team gets clean sheets, biggest wins, unbeaten
+           runs and home-and-away records. No extra typing.</p>
+      </div>
+      <div class="card">
+        <div class="card-ico">🔐</div>
+        <h3>Your data stays yours</h3>
+        <p>Each league is isolated at the database level. Admins you appoint see
+           only the competitions you assign them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how" style="background:linear-gradient(180deg,transparent,rgba(255,215,0,.02),transparent)">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How it works</h2>
+      <p>From nothing to a running league in three steps.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Create your league</h3>
+          <p>Register with your email, confirm the code we email you, and name your
+             league. Pick the game you play on.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Add competitions and teams</h3>
+          <p>Set up a division, a cup, or several of each. Add your teams and let
+             the fixtures generate.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Register your players</h3>
+          <p>Add each player's email and team. They are emailed their access code
+             and sign in to see their own fixtures.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:38px">
+      <a href="register.html" class="btn btn-primary btn-lg">Start your league — it's free</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span>© <span id="year"></span> Football League Hub</span>
+    <span><a href="login.html" style="color:var(--muted)">Sign in</a> ·
+          <a href="login.html" style="color:var(--muted)">Player sign in</a></span>
+  </div>
+</footer>
+
+<script src="js/brand.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Inside the native app there is no marketing to do - the person already
+  // installed it. Send them straight to the league they belong to.
+  if (window.Capacitor && window.Capacitor.isNativePlatform &&
+      window.Capacitor.isNativePlatform()) {
+    location.replace('app.html');
+  }
+</script>
+</body>
+</html>

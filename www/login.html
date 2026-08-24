@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Football League Hub</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="stylesheet" href="css/platform.css">
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-box">
+
+    <div style="text-align:center;margin-bottom:22px">
+      <a class="brand brand-lg" href="/" style="justify-content:center">
+        <span class="brand-mark" id="brand-mark"></span>
+        <span id="brand-name">Football League Hub</span>
+      </a>
+    </div>
+
+    <div class="auth-card">
+
+      <!-- ───────── Sign in ───────── -->
+      <section id="step-login">
+        <div class="auth-head">
+          <h1>Sign in</h1>
+          <p>League owners, admins and players.</p>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" type="email" id="email" placeholder="you@example.com"
+                 autocomplete="email" inputmode="email">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input" type="password" id="password" placeholder="Your password"
+                 autocomplete="current-password">
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="btn-login">Sign in</button>
+        <div class="msg" id="msg"></div>
+
+        <div style="text-align:center;margin-top:10px">
+          <a href="reset.html" style="color:var(--muted);font-size:.83rem">Forgot your password?</a>
+        </div>
+
+        <div class="auth-foot" style="margin-top:16px">
+          Players: use the email and access code your league admin sent you.
+        </div>
+      </section>
+
+      <!-- ───────── League picker ───────── -->
+      <!-- Shown only when an account belongs to more than one league. -->
+      <section id="step-pick" class="hidden">
+        <div class="auth-head">
+          <h1>Choose a league</h1>
+          <p>You belong to more than one.</p>
+        </div>
+        <div id="league-list" style="display:grid;gap:10px"></div>
+      </section>
+
+    </div>
+
+    <div class="auth-foot">
+      No account yet? <a href="register.html">Start a league</a>
+      &middot; <a href="logout.html">Start over</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/brand.js"></script>
+<script src="js/db.js"></script>
+<script>
+(function () {
+'use strict';
+
+const $ = id => document.getElementById(id);
+
+function say(text, kind) {
+  const el = $('msg');
+  el.textContent = text || '';
+  el.className = 'msg' + (kind ? ' msg-' + kind : '');
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Owners and managers go to the console; players go to the app. */
+function landingPageFor(role) {
+  return role === 'player' ? 'app.html' : 'console.html';
+}
+
+async function enter(membership) {
+  DB.tenant.set(membership);
+  // Flips 'invited' to 'active' so the console shows who has actually
+  // collected their account. Never block the redirect on it.
+  try { await DB.touch(); } catch (e) { /* not important enough to stop for */ }
+  location.href = landingPageFor(membership.role);
+}
+
+function renderPicker(memberships) {
+  $('step-login').classList.add('hidden');
+  $('step-pick').classList.remove('hidden');
+
+  $('league-list').innerHTML = memberships.map((m, i) => `
+    <button class="choice" data-index="${i}" style="text-align:left;padding:15px">
+      <div style="font-weight:800;font-size:.95rem">${escapeHtml(m.tenant_name)}</div>
+      <div style="color:var(--muted);font-size:.78rem;margin-top:3px;text-transform:capitalize">
+        ${escapeHtml(m.role)}${m.team ? ' · ' + escapeHtml(m.team) : ''}
+      </div>
+    </button>`).join('');
+
+  $('league-list').addEventListener('click', e => {
+    const btn = e.target.closest('[data-index]');
+    if (btn) enter(memberships[Number(btn.dataset.index)]);
+  }, { once: true });
+}
+
+async function routeAfterAuth() {
+  const ctx = await DB.context();
+  const memberships = (ctx && ctx.memberships) || [];
+
+  // A platform owner deliberately belongs to no league. Send them to the
+  // platform view rather than asking them to create one.
+  if (ctx && ctx.is_platform_admin && !memberships.length) {
+    location.href = 'platform.html';
+    return;
+  }
+
+  if (!memberships.length) {
+    // Verified account with no league yet - finish what they started.
+    location.href = 'register.html';
+    return;
+  }
+  if (memberships.length === 1) { await enter(memberships[0]); return; }
+  renderPicker(memberships);
+}
+
+$('btn-login').addEventListener('click', async () => {
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  if (!email || !password) return say('Enter your email and password.', 'error');
+
+  const btn = $('btn-login');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Signing in…';
+  say('');
+
+  try {
+    await DB.auth.signIn(email, password);
+    await routeAfterAuth();
+  } catch (e) {
+    // Supabase returns the same message for a bad password and an unknown
+    // account, on purpose. Do not narrow it here.
+    say('Wrong email or password.', 'error');
+    $('password').value = '';
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+});
+
+$('password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('btn-login').click();
+});
+$('email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('password').focus();
+});
+
+// Already signed in? Skip straight through. Verified against the server, so a
+// token whose account was deleted sends them back to the form instead of
+// looping on a page they cannot leave.
+(async () => {
+  try {
+    if (await DB.auth.currentUser()) await routeAfterAuth();
+  } catch (e) { DB.auth.reset(); }
+})();
+
+})();
+</script>
+</body>
+</html>

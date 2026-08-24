@@ -379,7 +379,8 @@ function renderTeams() {
       <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
         ${teams.length} teams${teams.length % 2 ? ' — odd number, so one team rests each round' : ''}.
         ${state.generated
-          ? '<strong style="color:var(--red)">Regenerating clears every score already entered.</strong>'
+          ? '<strong style="color:var(--red)">Regenerating erases this season entirely — scores, table and history. ' +
+            'To start a new season and keep the old one, use End season below.</strong>'
           : ''}
       </p>
       <label style="display:flex;align-items:center;gap:9px;font-size:.85rem;color:var(--muted);margin-bottom:14px">
@@ -389,9 +390,21 @@ function renderTeams() {
       <button class="btn btn-primary" id="btn-generate">
         ${state.generated ? 'Regenerate' : 'Generate'} fixtures
       </button>
-    </div>`;
+    </div>
+
+    ${state.generated ? `<div class="card" style="margin-top:14px">
+      <h3 style="margin-bottom:6px">Finished Season ${competition.season}?</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
+        Ending the season archives this table so players can still look it up,
+        then starts Season ${competition.season + 1} with the same teams and no
+        fixtures. Use this rather than regenerating, which throws the season away.
+      </p>
+      <button class="btn btn-ghost" id="btn-end-season">End season</button>
+    </div>` : ''}`;
 
   $('btn-generate').addEventListener('click', doGenerate);
+  const endBtn = $('btn-end-season');
+  if (endBtn) endBtn.addEventListener('click', endSeason);
 }
 
 function doGenerate() {
@@ -784,6 +797,64 @@ function applyScore(found, home, away) {
   found.match.played = true;
 }
 function refreshAfterScore() { renderFixtures(); renderTable(); renderPlayers(); }
+
+/* ── ending a season ────────────────────────────────────────────────────
+   Regenerating fixtures destroys the season that was there. Ending one
+   archives the published snapshot first, so last season's table survives and
+   players can still look it up - the way any real league keeps its history.
+   -------------------------------------------------------------------- */
+
+async function endSeason() {
+  const finished = {
+    season: competition.season,
+    endedAt: Date.now(),
+    format: 'round_robin',
+    teams: state.teams.length ? state.teams : registeredTeams(),
+    table: Competition.buildTable(
+      state.teams.length ? state.teams : registeredTeams(), state.matchdays),
+    matchdays: state.matchdays
+  };
+
+  if (!confirm(
+      `End Season ${competition.season} and start Season ${competition.season + 1}?\n\n` +
+      `This season's table and results are archived and stay readable in the app.\n` +
+      `The new season starts with no fixtures, and your teams carry over.`)) {
+    return;
+  }
+
+  const btn = $('btn-end-season');
+  if (btn) { btn.disabled = true; btn.textContent = 'Ending season…'; }
+
+  try {
+    // Publish first: the archive stores exactly what players last saw, so the
+    // history cannot disagree with the table they remember.
+    clearTimeout(saveTimer);
+    await save();
+    await publish();
+
+    const next = await DB.rollSeason(competition.id, finished);
+
+    // Clear the working copy for the new season. Teams come from the member
+    // list, so they are not stored here and carry over on their own.
+    state.matchdays = [];
+    state.generated = false;
+    state.currentDay = 0;
+    
+    await save();
+    await publish();
+
+    competition.season = next;
+    $('comp-sub').textContent =
+      `Season ${next} · ${DB.tenant.get().tenant_name}`;
+
+    renderTeams(); renderFixtures(); renderTable(); renderPlayers();
+    toast(`Season ${next} started — last season is archived`);
+  } catch (e) {
+    toast('Could not end the season: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'End season'; }
+  }
+}
 
 /* ── publish ────────────────────────────────────────────────────────── */
 

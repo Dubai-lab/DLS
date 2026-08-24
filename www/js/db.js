@@ -629,6 +629,16 @@ const DB = {
     return rows && rows.length ? rows[0] : null;
   },
 
+  /**
+   * Finished seasons for a competition.
+   * Selected on its own because each snapshot carries a full set of fixtures -
+   * far too heavy to include in the competition list loaded on every boot.
+   */
+  async archivedSeasons(competitionId) {
+    const rows = await rest(`competitions?id=eq.${competitionId}&select=archived_seasons`);
+    return rows && rows.length ? (rows[0].archived_seasons || []) : [];
+  },
+
   /** Archive the finished season and move the competition to the next one. */
   async rollSeason(competitionId, snapshot) {
     return rpc('roll_season', { p_competition: competitionId, p_snapshot: snapshot || {} });

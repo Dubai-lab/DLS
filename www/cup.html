@@ -369,7 +369,8 @@ function renderTeams() {
       <h3 style="margin-bottom:6px">${drawn ? 'Redo the draw' : 'Make the draw'}</h3>
       <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
         ${teams.length} teams. Top two from each group reach the knockout.
-        ${drawn ? '<strong style="color:var(--red)">Redrawing clears every result entered so far.</strong>' : ''}
+        ${drawn ? '<strong style="color:var(--red)">Redrawing erases this season entirely — results, groups and bracket. ' +
+          'To start a new season and keep the old one, use End season below.</strong>' : ''}
       </p>
       <div class="field" style="max-width:220px">
         <label for="group-count">Number of groups</label>
@@ -383,6 +384,8 @@ function renderTeams() {
     </div>`;
 
   $('btn-draw').addEventListener('click', doDraw);
+  const endBtn = $('btn-end-season');
+  if (endBtn) endBtn.addEventListener('click', endSeason);
 }
 
 function doDraw() {
@@ -789,6 +792,67 @@ function applyScore(found, home, away) {
   if (found.round != null) state.ko = Competition.advanceBracket(state.ko);
 }
 function refreshAfterScore() { renderGroups(); renderKnockout(); }
+
+/* ── ending a season ────────────────────────────────────────────────────
+   Regenerating fixtures destroys the season that was there. Ending one
+   archives the published snapshot first, so last season's table survives and
+   players can still look it up - the way any real league keeps its history.
+   -------------------------------------------------------------------- */
+
+async function endSeason() {
+  const finished = {
+    season: competition.season,
+    endedAt: Date.now(),
+    format: 'group_knockout',
+    teams: state.teams,
+    groups: state.groups,
+    fixtures: state.fixtures,
+    standings: Object.fromEntries(Object.keys(state.groups).map(g =>
+      [g, Competition.groupTable(state.groups[g], state.fixtures[g])])),
+    ko: state.ko,
+    champion: Competition.champion(state.ko)
+  };
+
+  if (!confirm(
+      `End Season ${competition.season} and start Season ${competition.season + 1}?\n\n` +
+      `This season's table and results are archived and stay readable in the app.\n` +
+      `The new season starts with no fixtures, and your teams carry over.`)) {
+    return;
+  }
+
+  const btn = $('btn-end-season');
+  if (btn) { btn.disabled = true; btn.textContent = 'Ending season…'; }
+
+  try {
+    // Publish first: the archive stores exactly what players last saw, so the
+    // history cannot disagree with the table they remember.
+    clearTimeout(saveTimer);
+    await save();
+    await publish();
+
+    const next = await DB.rollSeason(competition.id, finished);
+
+    // Clear the working copy for the new season. Teams come from the member
+    // list, so they are not stored here and carry over on their own.
+    state.matchdays = [];
+    state.generated = false;
+    state.currentDay = 0;
+    state.groups = {}; state.fixtures = {}; state.ko = []; state.phase = 'setup';
+    await save();
+    await publish();
+
+    competition.season = next;
+    $('comp-sub').textContent =
+      `Season ${next} · ${DB.tenant.get().tenant_name}`;
+
+    renderTeams(); renderGroups(); renderKnockout();
+    toast(`Season ${next} started — last season is archived`);
+  } catch (e) {
+    toast('Could not end the season: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'End season'; }
+  }
+}
 
 /* ── publish ────────────────────────────────────────────────────────── */
 

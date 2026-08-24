@@ -263,6 +263,12 @@ button, select, input { font-family: inherit; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .score-side.right { text-align: right; }
 
+.season-note {
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 9px 14px; margin-bottom: 12px;
+  font-size: .74rem; color: var(--muted); text-align: center;
+}
+
 .empty {
   border: 1px dashed var(--line-soft); border-radius: 14px;
   padding: 34px 18px; text-align: center; color: var(--muted); font-size: .85rem;
@@ -355,6 +361,8 @@ let active = null;         // the competition being viewed
 let pub = null;            // its published document
 let contacts = {};         // team -> phone, members-only document
 let mySubmissions = {};    // matchRef -> this player's submission for it
+let archived = [];         // finished seasons, newest first
+let viewingSeason = null;  // null = the season being played
 let mdIndex = 0;           // selected matchday / group
 let koView = false;        // cup: showing the bracket rather than groups
 
@@ -440,12 +448,24 @@ async function selectCompetition(comp) {
   mdIndex = 0;
   koView = false;
   $('top-title').textContent = comp.name;
+  $('top-label').textContent =
+    `${(DB.tenant.get() || {}).tenant_name || ''} · Season ${comp.season}`;
 
   try {
     pub = await DB.get(`comp/${comp.key}/pub`);
   } catch (e) {
     pub = null;
   }
+
+  // Past seasons. Read separately from the competition row because each
+  // snapshot holds a full set of fixtures - too heavy to carry on every load.
+  archived = [];
+  viewingSeason = null;
+  try {
+    archived = ((await DB.archivedSeasons(comp.id)) || [])
+      .slice()
+      .sort((a, b) => (b.season || 0) - (a.season || 0));
+  } catch (e) { /* history is optional; the current season still renders */ }
 
   // Separate document, and separate permission: a public league still keeps
   // its phone numbers to members.
@@ -830,15 +850,75 @@ function bracketHTML() {
 
 /* ── table ──────────────────────────────────────────────────────────── */
 
+function seasonBarHTML() {
+  if (!archived.length) return '';
+  const current = active ? active.season : '';
+  return `<div class="pill-bar">
+    <button class="chip${viewingSeason === null ? ' on' : ''}" data-season="now">Season ${current}</button>
+    ${archived.map(a =>
+      `<button class="chip${viewingSeason === a.season ? ' on' : ''}" data-season="${a.season}">Season ${a.season}</button>`
+    ).join('')}
+  </div>`;
+}
+
+function wireSeasonBar(root) {
+  root.querySelectorAll('[data-season]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewingSeason = btn.dataset.season === 'now' ? null : Number(btn.dataset.season);
+      renderTable();
+    });
+  });
+}
+
+/** The archived season being viewed, or null while on the current one. */
+function archivedView() {
+  return viewingSeason === null
+    ? null
+    : archived.find(a => a.season === viewingSeason) || null;
+}
+
 function renderTable() {
   const el = $('screen-table');
   if (!pub) { el.innerHTML = notPublished(); return; }
 
+  // A finished season renders from its snapshot, so the table stays exactly as
+  // it was when the season ended.
+  const past = archivedView();
+  if (past) {
+    const snap = past.snapshot || {};
+    const ended = past.endedAt
+      ? new Date(past.endedAt).toLocaleDateString(undefined,
+          { day: 'numeric', month: 'long', year: 'numeric' })
+      : '';
+    const champ = snap.champion
+      ? `<div class="champ"><div style="font-size:1.7rem">&#127942;</div>
+          <div style="color:var(--muted);font-size:.66rem;text-transform:uppercase;letter-spacing:2px">Winner</div>
+          <div class="who">${esc(snap.champion)}</div></div>`
+      : '';
+
+    const tables = snap.format === 'group_knockout'
+      ? Object.entries(snap.standings || {}).map(([name, rows]) => `
+          <div class="card" style="padding:14px 12px">
+            <div class="card-label">Group ${esc(name)}</div>
+            ${standingsHTML(rows, true)}
+          </div>`).join('')
+      : (snap.table || []).length
+        ? `<div class="card" style="padding:14px 12px">${standingsHTML(snap.table, false)}</div>`
+        : `<div class="empty">No table was recorded for that season.</div>`;
+
+    el.innerHTML = seasonBarHTML() +
+      `<div class="season-note">Season ${past.season} — finished${ended ? ' ' + esc(ended) : ''}</div>` +
+      champ + tables;
+    wireSeasonBar(el);
+    return;
+  }
+
   if (pub.format === 'round_robin') {
     const rows = pub.table || [];
-    el.innerHTML = rows.length
+    el.innerHTML = seasonBarHTML() + (rows.length
       ? `<div class="card" style="padding:14px 12px">${standingsHTML(rows, false)}</div>`
-      : `<div class="empty"><strong>No table yet</strong>It appears once results are in.</div>`;
+      : `<div class="empty"><strong>No table yet</strong>It appears once results are in.</div>`);
+    wireSeasonBar(el);
     return;
   }
 
@@ -848,13 +928,14 @@ function renderTable() {
         <div class="who">${esc(pub.champion)}</div></div>` : '';
 
   const groups = Object.entries(pub.standings || {});
-  el.innerHTML = champ + (groups.length
+  el.innerHTML = seasonBarHTML() + champ + (groups.length
     ? groups.map(([name, rows]) => `
         <div class="card" style="padding:14px 12px">
           <div class="card-label">Group ${esc(name)}</div>
           ${standingsHTML(rows, true)}
         </div>`).join('')
     : `<div class="empty"><strong>No tables yet</strong>They appear once the draw is made.</div>`);
+  wireSeasonBar(el);
 }
 
 function standingsHTML(rows, markQualifiers) {

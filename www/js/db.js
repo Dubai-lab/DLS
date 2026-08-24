@@ -507,6 +507,36 @@ const DB = {
     return rows[0];
   },
 
+  /* ---- public league directory ---- */
+
+  /** Leagues that opted into the landing-page directory. Readable by anyone. */
+  async publicLeagues(limit) {
+    return rpc('list_public_leagues', { p_limit: limit || 60 });
+  },
+
+  /** Count a Join press. Best effort - never block the redirect on it. */
+  async recordJoinClick(tenantId) {
+    try { await rpc('record_join_click', { p_tenant: tenantId }); }
+    catch (e) { /* a missed count is not worth an error */ }
+  },
+
+  /** Update this league's public listing. Owner only, enforced by RLS. */
+  async updateListing(patch) {
+    const rows = await rest(`tenants?id=eq.${tenantId()}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(patch)
+    });
+    if (!rows || !rows.length) throw new Error('Not allowed to change this league');
+    return rows[0];
+  },
+
+  /** The current league's own row, including its listing settings. */
+  async myLeague() {
+    const rows = await rest(`tenants?id=eq.${tenantId()}&select=*`);
+    return rows && rows.length ? rows[0] : null;
+  },
+
   /** Archive the finished season and move the competition to the next one. */
   async rollSeason(competitionId, snapshot) {
     return rpc('roll_season', { p_competition: competitionId, p_snapshot: snapshot || {} });

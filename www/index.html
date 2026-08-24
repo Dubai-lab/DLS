@@ -8,6 +8,38 @@
 <meta name="theme-color" content="#0a0e14">
 <link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="stylesheet" href="css/platform.css">
+
+<style>
+  /* Public league directory */
+  .dir-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+  .dir-card {
+    display: flex; flex-direction: column; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .dir-top { display: flex; align-items: center; gap: 12px; }
+  .dir-crest {
+    width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0; object-fit: cover;
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    display: grid; place-items: center; font-weight: 900; font-size: .8rem; color: var(--muted);
+  }
+  .dir-name { font-weight: 800; font-size: 1rem; }
+  .dir-where { color: var(--faint); font-size: .74rem; margin-top: 2px; }
+  .dir-tag { color: var(--muted); font-size: .85rem; flex: 1; }
+  .dir-facts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dir-fact {
+    font-size: .68rem; color: var(--muted); background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px;
+  }
+  .dir-join { width: 100%; justify-content: center; }
+  /* The destination is shown so nobody is sent somewhere unannounced. */
+  .dir-dest { text-align: center; font-size: .66rem; color: var(--faint); margin-top: -4px; }
+  .empty-dir {
+    border: 1px dashed var(--line-soft); border-radius: var(--radius);
+    padding: 40px 20px; text-align: center; color: var(--muted); font-size: .88rem;
+  }
+  .empty-dir strong { display: block; color: var(--text); margin-bottom: 6px; font-size: .95rem; }
+</style>
 </head>
 <body>
 
@@ -18,6 +50,7 @@
       <span id="brand-name">Football League Hub</span>
     </a>
     <div class="nav-links">
+      <a href="#leagues" class="hide-sm">Find a league</a>
       <a href="#features" class="hide-sm">Features</a>
       <a href="#how" class="hide-sm">How it works</a>
       <a href="login.html">Sign in</a>
@@ -37,7 +70,7 @@
     </p>
     <div class="hero-cta">
       <a href="register.html" class="btn btn-primary btn-lg">Create your league</a>
-      <a href="login.html" class="btn btn-ghost btn-lg">Sign in</a>
+      <a href="#leagues" class="btn btn-ghost btn-lg">Find a league to join</a>
     </div>
     <p class="hero-note">No card required · Set up in a few minutes</p>
   </div>
@@ -104,6 +137,20 @@
   </div>
 </section>
 
+
+<section class="section" id="leagues">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Leagues looking for players</h2>
+      <p>Organisers running a league on Football League Hub who are open to new
+         teams. Tap Join and you'll be taken to their group.</p>
+    </div>
+    <div id="league-directory">
+      <div class="empty-dir">Loading leagues&hellip;</div>
+    </div>
+  </div>
+</section>
+
 <section class="section" id="how" style="background:linear-gradient(180deg,transparent,rgba(255,215,0,.02),transparent)">
   <div class="wrap">
     <div class="section-head">
@@ -150,7 +197,108 @@
 </footer>
 
 <script src="js/brand.js"></script>
+<script src="js/db.js"></script>
 <script src="js/native.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ---------------------------------------------------------------------------
+   Public league directory
+
+   Anyone can read this - no sign-in - so it works as a front door for players
+   who have never heard of the platform. Joining happens in the organiser's own
+   group; we only send them there.
+   ------------------------------------------------------------------------ */
+
+const PLATFORM = {
+  whatsapp: { label: 'WhatsApp', icon: '\u{1F4AC}' },
+  telegram: { label: 'Telegram', icon: '✈️' },
+  discord:  { label: 'Discord',  icon: '\u{1F3AE}' },
+  facebook: { label: 'Facebook', icon: '\u{1F465}' },
+  other:    { label: 'Group',    icon: '\u{1F517}' }
+};
+
+const GAME = {
+  dls: 'Dream League Soccer', efootball: 'eFootball',
+  fifa: 'FIFA / EA FC', real: 'Real football', other: 'Football'
+};
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function initials(name) {
+  return String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+/** Host of the join link, shown so nobody is forwarded somewhere unannounced. */
+function destination(url) {
+  try { return new URL(url).host.replace(/^www\./, ''); }
+  catch (e) { return ''; }
+}
+
+(async () => {
+  const box = document.getElementById('league-directory');
+  let leagues = [];
+
+  try {
+    leagues = (await DB.publicLeagues(60)) || [];
+  } catch (e) {
+    box.innerHTML = `<div class="empty-dir"><strong>Could not load leagues</strong>
+      Try again in a moment.</div>`;
+    return;
+  }
+
+  if (!leagues.length) {
+    box.innerHTML = `<div class="empty-dir"><strong>No leagues listed yet</strong>
+      Running one? Register and switch on your public listing so players can find you.
+      <div style="margin-top:16px">
+        <a class="btn btn-primary" href="register.html">Start a league</a>
+      </div></div>`;
+    return;
+  }
+
+  box.innerHTML = '<div class="dir-grid">' + leagues.map(l => {
+    const p = PLATFORM[l.join_platform] || PLATFORM.other;
+    const host = destination(l.join_url);
+    return `<div class="dir-card">
+      <div class="dir-top">
+        ${l.logo_url
+          ? `<img class="dir-crest" src="${esc(l.logo_url)}" alt="" loading="lazy">`
+          : `<span class="dir-crest">${esc(initials(l.name))}</span>`}
+        <div style="min-width:0">
+          <div class="dir-name">${esc(l.name)}</div>
+          <div class="dir-where">${esc(GAME[l.game_type] || l.game_type)}${
+            l.region ? ' &middot; ' + esc(l.region) : ''}</div>
+        </div>
+      </div>
+
+      ${l.tagline ? `<div class="dir-tag">${esc(l.tagline)}</div>` : ''}
+
+      <div class="dir-facts">
+        <span class="dir-fact">${l.players} player${l.players === 1 ? '' : 's'}</span>
+        <span class="dir-fact">${l.competitions} competition${l.competitions === 1 ? '' : 's'}</span>
+      </div>
+
+      <a class="btn btn-primary dir-join" href="${esc(l.join_url)}"
+         target="_blank" rel="noopener noreferrer nofollow" data-join="${esc(l.id)}">
+        ${p.icon} Join on ${esc(p.label)}
+      </a>
+      ${host ? `<div class="dir-dest">takes you to ${esc(host)}</div>` : ''}
+    </div>`;
+  }).join('') + '</div>';
+
+  // Count interest for the organiser. Never delay the navigation for it.
+  box.querySelectorAll('[data-join]').forEach(a => {
+    a.addEventListener('click', () => { DB.recordJoinClick(a.dataset.join); });
+  });
+})();
+
+})();
+</script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 

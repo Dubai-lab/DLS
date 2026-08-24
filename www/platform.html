@@ -132,6 +132,12 @@ function when(iso) {
   return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/** Host of a league's public join link, so it can be checked at a glance. */
+function joinHost(url) {
+  try { return new URL(url).host.replace(/^www\./, ''); }
+  catch (e) { return 'invalid link'; }
+}
+
 const GAME = {
   dls: 'Dream League Soccer', efootball: 'eFootball',
   fifa: 'FIFA / EA FC', real: 'Real football', other: 'Other'
@@ -200,6 +206,8 @@ function render() {
         <small>${t.newUsers7d} new this week</small></div>
       <div class="tile ${t.neverSignedIn ? 'warn' : ''}"><b>${t.neverSignedIn}</b><span>Never signed in</span>
         <small>registered but not collected</small></div>
+      <div class="tile"><b>${data.leagues.filter(l => l.listed).length}</b><span>Publicly listed</span>
+        <small>on the home page</small></div>
     </div>
 
     <div class="panel-head">
@@ -242,6 +250,8 @@ function renderLeagues() {
         <div class="lg-meta">
           /${esc(l.slug)} · ${esc(l.owner_email || 'no owner')} · created ${esc(when(l.created_at))}
           ${l.pending ? ` · <span style="color:var(--red)">${l.pending} not signed in</span>` : ''}
+          ${l.listed ? ` · <a href="${esc(l.join_url)}" target="_blank" rel="noopener noreferrer nofollow"
+               style="color:var(--green)">listed &rarr; ${esc(joinHost(l.join_url))}</a>` : ''}
         </div>
       </div>
       <div class="lg-counts">

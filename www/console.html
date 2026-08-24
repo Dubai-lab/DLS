@@ -126,6 +126,64 @@
     <div id="comp-list"><div class="empty">Loading…</div></div>
   </section>
 
+
+  <!-- ───────── Public listing ───────── -->
+  <section class="panel" id="listing-panel">
+    <div class="panel-head">
+      <h2>Find new players</h2>
+      <span class="badge" id="listing-state"
+            style="margin-left:auto;background:rgba(139,148,158,.12);border-color:#30363d;color:var(--muted)">Off</span>
+    </div>
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:14px">
+      List your league on the Football League Hub home page so players anywhere
+      can find it. Join takes them to your own group, where you admit them
+      however you already do.
+    </p>
+
+    <div class="card" style="padding:20px">
+      <label style="display:flex;align-items:center;gap:11px;font-size:.9rem;margin-bottom:16px;cursor:pointer">
+        <input type="checkbox" id="l-listed" style="width:18px;height:18px;cursor:pointer">
+        Show my league publicly
+      </label>
+
+      <div id="listing-fields">
+        <div class="field">
+          <label for="l-platform">Where should players join?</label>
+          <select class="input" id="l-platform">
+            <option value="whatsapp">WhatsApp group or channel</option>
+            <option value="telegram">Telegram</option>
+            <option value="discord">Discord</option>
+            <option value="facebook">Facebook</option>
+            <option value="other">Somewhere else</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="l-url">Invite link</label>
+          <input class="input" id="l-url" type="url"
+                 placeholder="https://chat.whatsapp.com/..." autocomplete="off">
+          <div class="hint">Must start with https. Players see which site it leads to.</div>
+        </div>
+
+        <div class="field">
+          <label for="l-tagline">One line about your league</label>
+          <input class="input" id="l-tagline" maxlength="120"
+                 placeholder="Weekly DLS league, 20 teams, prizes each season">
+        </div>
+
+        <div class="field">
+          <label for="l-region">Where are you based? <span style="text-transform:none;font-weight:400">(optional)</span></label>
+          <input class="input" id="l-region" maxlength="40" placeholder="Kigali, Rwanda">
+        </div>
+
+        <div style="color:var(--faint);font-size:.76rem;margin-bottom:14px" id="l-clicks"></div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-block" id="btn-save-listing">Save listing</button>
+      <div class="msg" id="msg-listing"></div>
+    </div>
+  </section>
+
   <!-- ───────── Members ───────── -->
   <section class="panel">
     <div class="panel-head">
@@ -405,7 +463,7 @@ document.addEventListener('click', e => {
     $('btn-add-member').classList.add('hidden');
   }
 
-  await Promise.all([loadCompetitions(), loadMembers()]);
+  await Promise.all([loadCompetitions(), loadMembers(), loadListing()]);
 })();
 
 /* ── Competitions ───────────────────────────────────────────────────── */
@@ -571,6 +629,87 @@ function crestHTML(m, size) {
 function initials(name) {
   return String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 }
+
+/* ── public listing ─────────────────────────────────────────────────────
+   Opting in puts the league on the landing page so players can find it.
+   Joining happens in the organiser's own group; the platform only forwards.
+   -------------------------------------------------------------------- */
+
+function syncListingFields() {
+  const on = $('l-listed').checked;
+  $('listing-fields').style.opacity = on ? '1' : '.45';
+  $('listing-fields').style.pointerEvents = on ? '' : 'none';
+
+  const badge = $('listing-state');
+  badge.textContent = on ? 'Listed' : 'Off';
+  badge.style.cssText = on
+    ? 'margin-left:auto'                       // falls back to the gold badge
+    : 'margin-left:auto;background:rgba(139,148,158,.12);border-color:#30363d;color:var(--muted)';
+}
+
+async function loadListing() {
+  // Only the owner can change this, and only they should see it.
+  if (!isOwner) { $('listing-panel').classList.add('hidden'); return; }
+
+  try {
+    const league = await DB.myLeague();
+    if (!league) return;
+
+    $('l-listed').checked   = !!league.listed;
+    $('l-platform').value   = league.join_platform || 'whatsapp';
+    $('l-url').value        = league.join_url || '';
+    $('l-tagline').value    = league.tagline || '';
+    $('l-region').value     = league.region || '';
+    $('l-clicks').textContent = league.join_clicks
+      ? `${league.join_clicks} player${league.join_clicks === 1 ? ' has' : 's have'} tapped Join.`
+      : '';
+    syncListingFields();
+  } catch (e) {
+    say('msg-listing', 'Could not load your listing: ' + e.message, 'error');
+  }
+}
+
+$('l-listed').addEventListener('change', syncListingFields);
+
+$('btn-save-listing').addEventListener('click', async () => {
+  const listed = $('l-listed').checked;
+  const url = $('l-url').value.trim();
+
+  // Checked in the browser for a clear message, and again by a CHECK
+  // constraint in Postgres so a crafted request cannot get past it.
+  if (listed) {
+    if (!/^https:\/\/.+\..+/.test(url)) {
+      return say('msg-listing', 'Enter a full https link to your group.', 'error');
+    }
+    if (!$('l-tagline').value.trim()) {
+      return say('msg-listing', 'Add one line describing your league.', 'error');
+    }
+  }
+
+  const btn = $('btn-save-listing');
+  btn.disabled = true;
+  say('msg-listing', 'Saving…', 'info');
+  try {
+    await DB.updateListing({
+      listed,
+      join_url:      url || null,
+      join_platform: $('l-platform').value,
+      tagline:       $('l-tagline').value.trim() || null,
+      region:        $('l-region').value.trim() || null,
+      listed_at:     listed ? new Date().toISOString() : null
+    });
+    say('msg-listing', listed
+      ? 'Listed. Players can find you on the home page.'
+      : 'Listing switched off.', 'ok');
+    syncListingFields();
+  } catch (e) {
+    say('msg-listing', /join_url_https/.test(e.message)
+      ? 'The link must start with https://'
+      : e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 async function loadMembers() {
   try {

@@ -42,7 +42,7 @@ function transport() {
 }
 
 export function appUrl() {
-  return (process.env.APP_URL || 'https://league-hub.vercel.app').replace(/\/+$/, '');
+  return (process.env.APP_URL || 'https://footballleaguehub.vercel.app').replace(/\/+$/, '');
 }
 
 export async function sendMail({ to, subject, html, text }) {

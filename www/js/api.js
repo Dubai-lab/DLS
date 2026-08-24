@@ -13,7 +13,7 @@
 (function () {
 'use strict';
 
-const API_ORIGIN = 'https://dls-africa-hub.vercel.app';
+const API_ORIGIN = 'https://footballleaguehub.vercel.app';
 
 const isNative = !!(window.Capacitor &&
                     window.Capacitor.isNativePlatform &&

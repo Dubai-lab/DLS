@@ -10,8 +10,8 @@
    has to happen here rather than in the browser.
    ========================================================================= */
 
-import { requireMember, getTenant, setUserPassword } from './_lib/supabase.js';
-import { sendMail, playerWelcome } from './_lib/mailer.js';
+import { requireMember, getTenant, setUserPassword } from './_lib/supabase.mjs';
+import { sendMail, playerWelcome } from './_lib/mailer.mjs';
 
 const SUPABASE = () => (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const KEY = () => process.env.SUPABASE_SERVICE_KEY;

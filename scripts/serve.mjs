@@ -106,7 +106,7 @@ function vercelResponse(res) {
 }
 
 async function runApi(req, res, name, url) {
-  const file = resolve(`api/${name}.js`);
+  const file = resolve(`api/${name}.mjs`);
   if (!/^[\w-]+$/.test(name) || !existsSync(file)) {
     return vercelResponse(res).status(404).json({ error: `No API route named "${name}"` });
   }
@@ -119,7 +119,7 @@ async function runApi(req, res, name, url) {
     const mod = await import(`${pathToFileURL(file).href}?v=${Date.now()}`);
     const handler = mod.default;
     if (typeof handler !== 'function') {
-      return vercelResponse(res).status(500).json({ error: `api/${name}.js has no default export` });
+      return vercelResponse(res).status(500).json({ error: `api/${name}.mjs has no default export` });
     }
 
     await handler(req, vercelResponse(res));

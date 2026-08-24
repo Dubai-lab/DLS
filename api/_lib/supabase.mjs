@@ -169,6 +169,18 @@ export async function pruneTokens(tokens) {
   }).catch(() => {});
 }
 
+/** Every active league. Used by the nightly reminder cron. */
+export async function listTenants() {
+  return call('/rest/v1/tenants?status=eq.active&select=id,name,slug').catch(() => []);
+}
+
+/** Competitions in a league, or across all of them when tenantId is omitted. */
+export async function listCompetitions(tenantId) {
+  const filter = tenantId ? `tenant_id=eq.${tenantId}&` : '';
+  return call(`/rest/v1/competitions?${filter}select=id,tenant_id,key,name,format,status`)
+    .catch(() => []);
+}
+
 export async function readDoc(tenantId, path) {
   const rows = await call(
     `/rest/v1/documents?tenant_id=eq.${tenantId}&path=eq.${encodeURIComponent(path)}&select=data`

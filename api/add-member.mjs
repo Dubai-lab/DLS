@@ -17,8 +17,8 @@
 import {
   requireMember, getTenant, findUserByEmail, createUser,
   findMembership, insertMembership
-} from './_lib/supabase.js';
-import { sendMail, playerWelcome } from './_lib/mailer.js';
+} from './_lib/supabase.mjs';
+import { sendMail, playerWelcome } from './_lib/mailer.mjs';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

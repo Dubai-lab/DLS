@@ -7,7 +7,7 @@
    signup counts come from here, behind a platform-admin check.
    ========================================================================= */
 
-import { requirePlatformAdmin, listAuthUsers } from './_lib/supabase.js';
+import { requirePlatformAdmin, listAuthUsers } from './_lib/supabase.mjs';
 
 const SUPABASE = () => (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const KEY = () => process.env.SUPABASE_SERVICE_KEY;

@@ -1,0 +1,28 @@
+# Vercel only needs www/ (the site), api/ (the functions) and the manifests
+# that describe them. Everything below is for building the mobile app or
+# operating the database, and would only slow the upload down.
+
+android/
+ios/
+
+# Superseded pages kept for reference while porting features across.
+reference/
+
+# Local operations: migrations are applied by hand in the SQL editor, and the
+# scripts talk to Supabase directly from a machine that holds the service key.
+scripts/
+supabase/
+backups/
+
+# Never
+.env
+.env.*
+vercel-env.txt
+ADMIN-PASSWORDS.txt
+node_modules/
+
+# Editor / OS
+.claude/
+.hintrc
+Thumbs.db
+.DS_Store

@@ -60,3 +60,5 @@ Thumbs.db
 
 # Generated for pasting into Vercel; delete once set
 vercel-env.txt
+.vercel
+.env*

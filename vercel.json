@@ -9,7 +9,7 @@
   "crons": [
     {
       "path": "/api/remind-players",
-      "schedule": "0 7,12,17 * * *"
+      "schedule": "0 15 * * *"
     }
   ],
   "headers": [

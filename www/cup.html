@@ -353,10 +353,25 @@ function renderTeams() {
          Register your players in the console — each one brings their team.</div>`;
 
   const box = $('draw-box');
+
+  // A cup fed by a league offers to pull its entrants in, however many it has.
+  const qualifyCard = competition.qualifies_from && competition.qualify_count
+    ? `<div class="card" style="margin-bottom:14px">
+         <h3 style="margin-bottom:6px">Entrants from the league</h3>
+         <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
+           Takes the top ${competition.qualify_count} from the feeding league's
+           final table and enters them here. They keep playing that league too.
+         </p>
+         <button class="btn btn-ghost" id="btn-qualify">Bring in the top ${competition.qualify_count}</button>
+       </div>`
+    : '';
+
   if (teams.length < 4) {
-    box.innerHTML = teams.length
+    box.innerHTML = qualifyCard + (teams.length
       ? `<div class="empty">A cup needs at least 4 teams. You have ${teams.length}.</div>`
-      : '';
+      : '');
+    const qb = $('btn-qualify');
+    if (qb) qb.addEventListener('click', bringInQualifiers);
     return;
   }
 
@@ -364,7 +379,7 @@ function renderTeams() {
   const options = [2, 4, 8].filter(n => teams.length >= n * 2);
   const drawn = Object.keys(state.groups).length > 0;
 
-  box.innerHTML = `
+  box.innerHTML = qualifyCard + `
     <div class="card">
       <h3 style="margin-bottom:6px">${drawn ? 'Redo the draw' : 'Make the draw'}</h3>
       <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
@@ -384,6 +399,8 @@ function renderTeams() {
     </div>`;
 
   $('btn-draw').addEventListener('click', doDraw);
+  const qb = $('btn-qualify');
+  if (qb) qb.addEventListener('click', bringInQualifiers);
   const endBtn = $('btn-end-season');
   if (endBtn) endBtn.addEventListener('click', endSeason);
 }
@@ -798,6 +815,56 @@ function refreshAfterScore() { renderGroups(); renderKnockout(); }
    archives the published snapshot first, so last season's table survives and
    players can still look it up - the way any real league keeps its history.
    -------------------------------------------------------------------- */
+
+/* ── entrants from the league ───────────────────────────────────────────
+   A cup established by a league takes the top N of its final table. The sides
+   keep playing that league; qualifying adds the cup rather than replacing it.
+   -------------------------------------------------------------------- */
+
+async function bringInQualifiers() {
+  const source = competition.qualifies_from;
+  const count = competition.qualify_count || 0;
+  if (!source || !count) {
+    toast('Set where entrants come from first, under Season rules in the console');
+    return;
+  }
+
+  const btn = $('btn-qualify');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Checking the table…';
+
+  try {
+    const table = (await DB.finalTable(source)) || [];
+    if (!table.length) {
+      toast('That league has not published a table yet');
+      return;
+    }
+
+    const teams = table.slice(0, count).map(r => r.team);
+    if (!confirm(`Enter the top ${teams.length} into ${competition.name}?\n\n` +
+                 teams.map((t, i) => `${i + 1}. ${t}`).join('\n') +
+                 `\n\nThey keep playing their league as well.`)) {
+      return;
+    }
+
+    // from: null - qualifying adds the cup, it does not move a side out of the
+    // league it came from.
+    const moved = await DB.moveMembers({ from: null, to: competition.id, teams });
+
+    members = (await DB.members()).filter(m =>
+      m.role === 'player' && m.team &&
+      (!m.competition_ids?.length || m.competition_ids.includes(competition.id)));
+
+    renderTeams();
+    toast(`${moved} team${moved === 1 ? '' : 's'} entered — now make the draw`);
+  } catch (e) {
+    toast('Could not bring in qualifiers: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
 
 async function endSeason() {
   const finished = {

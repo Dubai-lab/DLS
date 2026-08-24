@@ -629,6 +629,32 @@ const DB = {
     return rows && rows.length ? rows[0] : null;
   },
 
+  /** Update a competition's settings, including its promotion links. */
+  async updateCompetition(id, patch) {
+    const rows = await rest(`competitions?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(patch)
+    });
+    return rows && rows.length ? rows[0] : null;
+  },
+
+  /**
+   * Move teams between competitions.
+   * `from` may be null to add without removing - a side qualifying for the cup
+   * keeps playing its league.
+   */
+  async moveMembers({ from, to, teams }) {
+    return rpc('move_members', {
+      p_tenant: tenantId(), p_from: from || null, p_to: to, p_teams: teams
+    });
+  },
+
+  /** The standings a competition's published season ended on. */
+  async finalTable(competitionId) {
+    return rpc('final_table', { p_tenant: tenantId(), p_competition: competitionId });
+  },
+
   /**
    * Finished seasons for a competition.
    * Selected on its own because each snapshot carries a full set of fixtures -

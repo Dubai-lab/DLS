@@ -383,6 +383,58 @@
   </div>
 </div>
 
+
+<!-- ───────── Season rules ───────── -->
+<div class="modal" id="modal-rules">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="rules-title">Season rules</h2>
+      <button type="button" class="modal-close" data-close="modal-rules">&#10005;</button>
+    </div>
+
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:18px">
+      Applied when you end a season, so teams move between divisions without you
+      editing anyone by hand.
+    </p>
+
+    <div id="rules-league">
+      <div class="field">
+        <label for="r-promotes">Teams go up to</label>
+        <select class="input" id="r-promotes"></select>
+      </div>
+      <div class="field">
+        <label for="r-promote-n">How many go up</label>
+        <input class="input" id="r-promote-n" type="number" min="0" max="20" value="0">
+      </div>
+
+      <div class="field">
+        <label for="r-relegates">Teams go down to</label>
+        <select class="input" id="r-relegates"></select>
+      </div>
+      <div class="field">
+        <label for="r-relegate-n">How many go down</label>
+        <input class="input" id="r-relegate-n" type="number" min="0" max="20" value="0">
+      </div>
+    </div>
+
+    <div id="rules-cup">
+      <div class="field">
+        <label for="r-qualifies">Entrants come from</label>
+        <select class="input" id="r-qualifies"></select>
+        <div class="hint">The league whose final table decides who plays this cup.</div>
+      </div>
+      <div class="field">
+        <label for="r-qualify-n">How many qualify</label>
+        <input class="input" id="r-qualify-n" type="number" min="0" max="64" value="16">
+        <div class="hint">16 makes four groups of four, then quarter-finals.</div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-block" id="btn-save-rules">Save rules</button>
+    <div class="msg" id="msg-rules"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="js/brand.js"></script>
@@ -482,14 +534,26 @@ async function loadCompetitions() {
   } else {
     $('comp-list').innerHTML = '<div class="grid grid-3">' + competitions.map(c => {
       const page = c.format === 'group_knockout' ? 'cup.html' : 'league.html';
-      return `<a class="card comp-card" style="--accent:${esc(c.accent || '#00c853')}"
-                 href="${page}?c=${encodeURIComponent(c.id)}">
-        <div class="fmt">${esc(FORMAT_LABEL[c.format] || c.format)}</div>
-        <h3>${esc(c.name)}</h3>
-        <div class="comp-meta">Season ${esc(c.season)} · ${esc(c.status)}</div>
-      </a>`;
+      const links = [];
+      if (c.promotes_to && c.promote_count)   links.push(`${c.promote_count} up`);
+      if (c.relegates_to && c.relegate_count) links.push(`${c.relegate_count} down`);
+      if (c.qualifies_from && c.qualify_count) links.push(`top ${c.qualify_count} qualify in`);
+
+      return `<div class="card comp-card" style="--accent:${esc(c.accent || '#00c853')}">
+        <a href="${page}?c=${encodeURIComponent(c.id)}" style="display:block;color:inherit">
+          <div class="fmt">${esc(FORMAT_LABEL[c.format] || c.format)}</div>
+          <h3>${esc(c.name)}</h3>
+          <div class="comp-meta">Season ${esc(c.season)} · ${esc(c.status)}${
+            links.length ? ' · ' + esc(links.join(' · ')) : ''}</div>
+        </a>
+        ${isOwner ? `<button class="btn btn-ghost" data-settings="${esc(c.id)}"
+              style="margin-top:12px;padding:6px 12px;font-size:.72rem">Season rules</button>` : ''}
+      </div>`;
     }).join('') + '</div>';
   }
+
+  $('comp-list').querySelectorAll('[data-settings]').forEach(btn =>
+    btn.addEventListener('click', () => openCompSettings(btn.dataset.settings)));
 
 }
 
@@ -629,6 +693,80 @@ function crestHTML(m, size) {
 function initials(name) {
   return String(name || '?').split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 }
+
+/* ── season rules ───────────────────────────────────────────────────────
+   Which competition a team moves to when a season ends, and where a cup draws
+   its entrants from. Stored on the competition so ending a season can apply
+   them without the organiser moving anyone by hand.
+   -------------------------------------------------------------------- */
+
+let rulesFor = null;
+
+function openCompSettings(id) {
+  const c = competitions.find(x => String(x.id) === String(id));
+  if (!c) return;
+  rulesFor = c;
+
+  const others = competitions.filter(x => x.id !== c.id);
+  const options = (selected, blank) =>
+    `<option value="">${blank}</option>` +
+    others.map(o => `<option value="${esc(o.id)}" ${
+      selected === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('');
+
+  $('rules-title').textContent = c.name;
+
+  const isCup = c.format === 'group_knockout';
+  $('rules-league').classList.toggle('hidden', isCup);
+  $('rules-cup').classList.toggle('hidden', !isCup);
+
+  if (isCup) {
+    // A cup only lists leagues: qualifying out of another cup is not a thing.
+    const leagues = others.filter(o => o.format === 'round_robin');
+    $('r-qualifies').innerHTML =
+      `<option value="">Nowhere — teams are added by hand</option>` +
+      leagues.map(o => `<option value="${esc(o.id)}" ${
+        c.qualifies_from === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('');
+    $('r-qualify-n').value = c.qualify_count || 16;
+  } else {
+    $('r-promotes').innerHTML  = options(c.promotes_to,  'Nowhere — this is the top division');
+    $('r-relegates').innerHTML = options(c.relegates_to, 'Nowhere — this is the bottom division');
+    $('r-promote-n').value  = c.promote_count || 0;
+    $('r-relegate-n').value = c.relegate_count || 0;
+  }
+
+  say('msg-rules', '');
+  openModal('modal-rules');
+}
+
+$('btn-save-rules').addEventListener('click', async () => {
+  if (!rulesFor) return;
+  const btn = $('btn-save-rules');
+  btn.disabled = true;
+  say('msg-rules', 'Saving…', 'info');
+
+  try {
+    const patch = rulesFor.format === 'group_knockout'
+      ? {
+          qualifies_from: $('r-qualifies').value || null,
+          qualify_count: Number($('r-qualify-n').value) || 0
+        }
+      : {
+          promotes_to:    $('r-promotes').value || null,
+          relegates_to:   $('r-relegates').value || null,
+          promote_count:  Number($('r-promote-n').value) || 0,
+          relegate_count: Number($('r-relegate-n').value) || 0
+        };
+
+    await DB.updateCompetition(rulesFor.id, patch);
+    closeModal('modal-rules');
+    toast('Season rules saved');
+    await loadCompetitions();
+  } catch (e) {
+    say('msg-rules', e.message, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 /* ── public listing ─────────────────────────────────────────────────────
    Opting in puts the league on the landing page so players can find it.

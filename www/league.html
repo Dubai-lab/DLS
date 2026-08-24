@@ -804,6 +804,50 @@ function refreshAfterScore() { renderFixtures(); renderTable(); renderPlayers();
    players can still look it up - the way any real league keeps its history.
    -------------------------------------------------------------------- */
 
+/**
+ * Who goes up and who goes down, from the table this season ended on.
+ * Read off the final standings rather than recomputed, so the sides that move
+ * are exactly the ones players saw at the top and bottom.
+ */
+function seasonMovements(table) {
+  const up = [], down = [];
+  const promote = competition.promote_count || 0;
+  const relegate = competition.relegate_count || 0;
+
+  if (competition.promotes_to && promote > 0) {
+    up.push(...table.slice(0, promote).map(r => r.team));
+  }
+  if (competition.relegates_to && relegate > 0) {
+    down.push(...table.slice(-relegate).map(r => r.team));
+  }
+  // A side cannot be promoted and relegated in the same season; with a small
+  // league and generous counts the two slices can otherwise overlap.
+  return { up, down: down.filter(t => !up.includes(t)) };
+}
+
+async function applyMovements(table) {
+  const { up, down } = seasonMovements(table);
+  if (!up.length && !down.length) return '';
+
+  const lines = [];
+  if (up.length)   lines.push(`Up:   ${up.join(', ')}`);
+  if (down.length) lines.push(`Down: ${down.join(', ')}`);
+
+  if (!confirm(`Move these teams as the season ends?\n\n${lines.join('\n')}\n\n` +
+               `They keep their accounts and history - only the division changes.`)) {
+    return '';
+  }
+
+  let moved = 0;
+  if (up.length) {
+    moved += await DB.moveMembers({ from: competition.id, to: competition.promotes_to, teams: up });
+  }
+  if (down.length) {
+    moved += await DB.moveMembers({ from: competition.id, to: competition.relegates_to, teams: down });
+  }
+  return moved ? ` · ${moved} team${moved === 1 ? '' : 's'} moved` : '';
+}
+
 async function endSeason() {
   const finished = {
     season: competition.season,
@@ -832,6 +876,15 @@ async function endSeason() {
     await save();
     await publish();
 
+    // Promotion and relegation read the table this season finished on, so they
+    // have to run before the fixtures are cleared.
+    let movedNote = '';
+    try {
+      movedNote = await applyMovements(finished.table || []);
+    } catch (e) {
+      toast('Season ended, but teams could not be moved: ' + e.message);
+    }
+
     const next = await DB.rollSeason(competition.id, finished);
 
     // Clear the working copy for the new season. Teams come from the member
@@ -848,7 +901,7 @@ async function endSeason() {
       `Season ${next} · ${DB.tenant.get().tenant_name}`;
 
     renderTeams(); renderFixtures(); renderTable(); renderPlayers();
-    toast(`Season ${next} started — last season is archived`);
+    toast(`Season ${next} started — last season is archived${movedNote}`);
   } catch (e) {
     toast('Could not end the season: ' + e.message);
   } finally {

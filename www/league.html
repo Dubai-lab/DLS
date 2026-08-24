@@ -859,10 +859,17 @@ async function endSeason() {
     matchdays: state.matchdays
   };
 
+  // A division that feeds a cup should say so here: the cup is filled from its
+  // own page, and the organiser will not think of it otherwise.
+  const cupNote = competition.qualifies_to && competition.qualify_count
+    ? `\n\nThe top ${competition.qualify_count} qualify for the cup. ` +
+      `Open the cup and use "Bring in the entrants" to enter them.`
+    : '';
+
   if (!confirm(
       `End Season ${competition.season} and start Season ${competition.season + 1}?\n\n` +
       `This season's table and results are archived and stay readable in the app.\n` +
-      `The new season starts with no fixtures, and your teams carry over.`)) {
+      `The new season starts with no fixtures, and your teams carry over.` + cupNote)) {
     return;
   }
 

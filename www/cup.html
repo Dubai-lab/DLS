@@ -217,6 +217,7 @@ const $ = id => document.getElementById(id);
 const compId = new URLSearchParams(location.search).get('c');
 
 let competition = null;
+let feeders = [];          // divisions that send teams to this cup
 let members = [];
 let state = null;
 let docPath = '';
@@ -296,10 +297,12 @@ async function save() {
     $('comp-sub').textContent = `Season ${competition.season} · ${DB.tenant.get().tenant_name}`;
     document.title = `${competition.name} — Football League Hub`;
 
-    const [doc, allMembers] = await Promise.all([
+    const [doc, allMembers, feeds] = await Promise.all([
       DB.get(docPath).catch(() => null),
-      DB.members().catch(() => [])
+      DB.members().catch(() => []),
+      DB.cupFeeders(compId).catch(() => [])
     ]);
+    feeders = feeds;
 
     state = doc || { phase: 'setup', teams: [], groups: {}, fixtures: {}, ko: [] };
     state.teams = state.teams || [];
@@ -354,15 +357,18 @@ function renderTeams() {
 
   const box = $('draw-box');
 
-  // A cup fed by a league offers to pull its entrants in, however many it has.
-  const qualifyCard = competition.qualifies_from && competition.qualify_count
+  // Whoever feeds this cup set the rule on their own division, so the card
+  // just reports what those divisions add up to.
+  const totalQualifying = feeders.reduce((n, f) => n + (f.qualify_count || 0), 0);
+  const qualifyCard = totalQualifying
     ? `<div class="card" style="margin-bottom:14px">
-         <h3 style="margin-bottom:6px">Entrants from the league</h3>
+         <h3 style="margin-bottom:6px">Entrants from the divisions</h3>
          <p style="color:var(--muted);font-size:.85rem;margin-bottom:14px">
-           Takes the top ${competition.qualify_count} from the feeding league's
-           final table and enters them here. They keep playing that league too.
+           ${feeders.map(f => `${f.qualify_count} from ${esc(f.name)}`).join(' · ')}.
+           Taken from each division's final table. They keep playing their
+           division as well.
          </p>
-         <button class="btn btn-ghost" id="btn-qualify">Bring in the top ${competition.qualify_count}</button>
+         <button class="btn btn-ghost" id="btn-qualify">Bring in the entrants (${totalQualifying})</button>
        </div>`
     : '';
 
@@ -816,40 +822,58 @@ function refreshAfterScore() { renderGroups(); renderKnockout(); }
    players can still look it up - the way any real league keeps its history.
    -------------------------------------------------------------------- */
 
-/* ── entrants from the league ───────────────────────────────────────────
-   A cup established by a league takes the top N of its final table. The sides
-   keep playing that league; qualifying adds the cup rather than replacing it.
+/* ── entrants from the divisions ─────────────────────────────────
+   Each division decides how many of its sides come here, so a cup can draw
+   8 from Division 1, 4 from Division 2 and 4 from Division 3 without knowing
+   anything about them itself. Qualifying adds the cup; a side keeps playing
+   the division it came from.
    -------------------------------------------------------------------- */
 
 async function bringInQualifiers() {
-  const source = competition.qualifies_from;
-  const count = competition.qualify_count || 0;
-  if (!source || !count) {
-    toast('Set where entrants come from first, under Season rules in the console');
+  if (!feeders.length) {
+    toast('No division sends teams here yet — set that under Season rules on the division');
     return;
   }
 
   const btn = $('btn-qualify');
   btn.disabled = true;
   const label = btn.textContent;
-  btn.textContent = 'Checking the table…';
+  btn.textContent = 'Checking the tables…';
 
   try {
-    const table = (await DB.finalTable(source)) || [];
-    if (!table.length) {
-      toast('That league has not published a table yet');
-      return;
+    // One list per division, in the order the divisions are ranked, so the
+    // confirmation reads the way the organiser thinks about it.
+    const lists = [];
+    for (const f of feeders) {
+      const table = (await DB.finalTable(f.id).catch(() => null)) || [];
+      if (!table.length) {
+        toast(`${f.name} has not published a table yet`);
+        return;
+      }
+      lists.push({ name: f.name, teams: table.slice(0, f.qualify_count).map(r => r.team) });
     }
 
-    const teams = table.slice(0, count).map(r => r.team);
-    if (!confirm(`Enter the top ${teams.length} into ${competition.name}?\n\n` +
-                 teams.map((t, i) => `${i + 1}. ${t}`).join('\n') +
-                 `\n\nThey keep playing their league as well.`)) {
+    // A side can only be entered once, however many divisions name it.
+    const seen = new Set();
+    const teams = [];
+    lists.forEach(l => l.teams.forEach(t => {
+      const k = (t || '').toLowerCase();
+      if (t && !seen.has(k)) { seen.add(k); teams.push(t); }
+    }));
+
+    if (!teams.length) { toast('Those divisions have no teams to send'); return; }
+
+    const summary = lists.map(l =>
+      `${l.name}\n` + l.teams.map((t, i) => `  ${i + 1}. ${t}`).join('\n')
+    ).join('\n\n');
+
+    if (!confirm(`Enter ${teams.length} teams into ${competition.name}?\n\n` +
+                 summary + `\n\nThey keep playing their divisions as well.`)) {
       return;
     }
 
     // from: null - qualifying adds the cup, it does not move a side out of the
-    // league it came from.
+    // division it came from.
     const moved = await DB.moveMembers({ from: null, to: competition.id, teams });
 
     members = (await DB.members()).filter(m =>

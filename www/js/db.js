@@ -650,6 +650,15 @@ const DB = {
     });
   },
 
+  /**
+   * The divisions that send teams to this cup, and how many each sends.
+   * The rule lives on each division, so a cup can be fed by several at once -
+   * 8 from Division 1, 4 from Division 2 - without restating anything here.
+   */
+  async cupFeeders(cupId) {
+    return (await rpc('cup_feeders', { p_tenant: tenantId(), p_cup: cupId })) || [];
+  },
+
   /** The standings a competition's published season ended on. */
   async finalTable(competitionId) {
     return rpc('final_table', { p_tenant: tenantId(), p_competition: competitionId });

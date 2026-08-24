@@ -397,7 +397,7 @@
       editing anyone by hand.
     </p>
 
-    <div id="rules-league">
+    <div>
       <div class="field">
         <label for="r-promotes">Teams go up to</label>
         <select class="input" id="r-promotes"></select>
@@ -415,18 +415,16 @@
         <label for="r-relegate-n">How many go down</label>
         <input class="input" id="r-relegate-n" type="number" min="0" max="20" value="0">
       </div>
-    </div>
 
-    <div id="rules-cup">
       <div class="field">
-        <label for="r-qualifies">Entrants come from</label>
+        <label for="r-qualifies">Teams qualify for</label>
         <select class="input" id="r-qualifies"></select>
-        <div class="hint">The league whose final table decides who plays this cup.</div>
+        <div class="hint">A cup this division sends teams to at the end of a season.</div>
       </div>
       <div class="field">
         <label for="r-qualify-n">How many qualify</label>
-        <input class="input" id="r-qualify-n" type="number" min="0" max="64" value="16">
-        <div class="hint">16 makes four groups of four, then quarter-finals.</div>
+        <input class="input" id="r-qualify-n" type="number" min="0" max="64" value="0">
+        <div class="hint">Several divisions can feed the same cup — 8 from one, 4 from another.</div>
       </div>
     </div>
 
@@ -537,7 +535,18 @@ async function loadCompetitions() {
       const links = [];
       if (c.promotes_to && c.promote_count)   links.push(`${c.promote_count} up`);
       if (c.relegates_to && c.relegate_count) links.push(`${c.relegate_count} down`);
-      if (c.qualifies_from && c.qualify_count) links.push(`top ${c.qualify_count} qualify in`);
+      if (c.qualifies_to && c.qualify_count) {
+        const cup = competitions.find(x => x.id === c.qualifies_to);
+        links.push(`${c.qualify_count} to ${cup ? cup.name : 'the cup'}`);
+      }
+      // A cup has no rules of its own; it shows who feeds it.
+      if (c.format === 'group_knockout') {
+        const feeders = competitions.filter(x => x.qualifies_to === c.id && x.qualify_count);
+        const total = feeders.reduce((n, f) => n + f.qualify_count, 0);
+        if (feeders.length) {
+          links.push(`${total} from ${feeders.map(f => f.name).join(', ')}`);
+        }
+      }
 
       return `<div class="card comp-card" style="--accent:${esc(c.accent || '#00c853')}">
         <a href="${page}?c=${encodeURIComponent(c.id)}" style="display:block;color:inherit">
@@ -546,7 +555,7 @@ async function loadCompetitions() {
           <div class="comp-meta">Season ${esc(c.season)} · ${esc(c.status)}${
             links.length ? ' · ' + esc(links.join(' · ')) : ''}</div>
         </a>
-        ${isOwner ? `<button class="btn btn-ghost" data-settings="${esc(c.id)}"
+        ${isOwner && c.format === 'round_robin' ? `<button class="btn btn-ghost" data-settings="${esc(c.id)}"
               style="margin-top:12px;padding:6px 12px;font-size:.72rem">Season rules</button>` : ''}
       </div>`;
     }).join('') + '</div>';
@@ -707,32 +716,23 @@ function openCompSettings(id) {
   if (!c) return;
   rulesFor = c;
 
-  const others = competitions.filter(x => x.id !== c.id);
-  const options = (selected, blank) =>
+  const divisions = competitions.filter(x => x.id !== c.id && x.format === 'round_robin');
+  const cups      = competitions.filter(x => x.id !== c.id && x.format === 'group_knockout');
+
+  const options = (list, selected, blank) =>
     `<option value="">${blank}</option>` +
-    others.map(o => `<option value="${esc(o.id)}" ${
+    list.map(o => `<option value="${esc(o.id)}" ${
       selected === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('');
 
   $('rules-title').textContent = c.name;
 
-  const isCup = c.format === 'group_knockout';
-  $('rules-league').classList.toggle('hidden', isCup);
-  $('rules-cup').classList.toggle('hidden', !isCup);
+  $('r-promotes').innerHTML  = options(divisions, c.promotes_to,  'Nowhere — this is the top division');
+  $('r-relegates').innerHTML = options(divisions, c.relegates_to, 'Nowhere — this is the bottom division');
+  $('r-qualifies').innerHTML = options(cups,      c.qualifies_to, 'Nowhere — no cup');
 
-  if (isCup) {
-    // A cup only lists leagues: qualifying out of another cup is not a thing.
-    const leagues = others.filter(o => o.format === 'round_robin');
-    $('r-qualifies').innerHTML =
-      `<option value="">Nowhere — teams are added by hand</option>` +
-      leagues.map(o => `<option value="${esc(o.id)}" ${
-        c.qualifies_from === o.id ? 'selected' : ''}>${esc(o.name)}</option>`).join('');
-    $('r-qualify-n').value = c.qualify_count || 16;
-  } else {
-    $('r-promotes').innerHTML  = options(c.promotes_to,  'Nowhere — this is the top division');
-    $('r-relegates').innerHTML = options(c.relegates_to, 'Nowhere — this is the bottom division');
-    $('r-promote-n').value  = c.promote_count || 0;
-    $('r-relegate-n').value = c.relegate_count || 0;
-  }
+  $('r-promote-n').value  = c.promote_count || 0;
+  $('r-relegate-n').value = c.relegate_count || 0;
+  $('r-qualify-n').value  = c.qualify_count || 0;
 
   say('msg-rules', '');
   openModal('modal-rules');
@@ -745,19 +745,14 @@ $('btn-save-rules').addEventListener('click', async () => {
   say('msg-rules', 'Saving…', 'info');
 
   try {
-    const patch = rulesFor.format === 'group_knockout'
-      ? {
-          qualifies_from: $('r-qualifies').value || null,
-          qualify_count: Number($('r-qualify-n').value) || 0
-        }
-      : {
-          promotes_to:    $('r-promotes').value || null,
-          relegates_to:   $('r-relegates').value || null,
-          promote_count:  Number($('r-promote-n').value) || 0,
-          relegate_count: Number($('r-relegate-n').value) || 0
-        };
-
-    await DB.updateCompetition(rulesFor.id, patch);
+    await DB.updateCompetition(rulesFor.id, {
+      promotes_to:    $('r-promotes').value || null,
+      relegates_to:   $('r-relegates').value || null,
+      promote_count:  Number($('r-promote-n').value) || 0,
+      relegate_count: Number($('r-relegate-n').value) || 0,
+      qualifies_to:   $('r-qualifies').value || null,
+      qualify_count:  Number($('r-qualify-n').value) || 0
+    });
     closeModal('modal-rules');
     toast('Season rules saved');
     await loadCompetitions();

@@ -24,6 +24,8 @@
   --nav-h: 62px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { overflow-x: hidden; touch-action: manipulation; }
+button, a, .chip, .nav button, label { touch-action: manipulation; }
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
   background: var(--bg); color: var(--text); line-height: 1.5;
@@ -144,7 +146,12 @@ button, select, input { font-family: inherit; }
 .chip.on { background: var(--text); border-color: var(--text); color: #0d1117; }
 
 /* Standings */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+.table-wrap::-webkit-scrollbar { height: 0; }
 .std { width: 100%; border-collapse: collapse; font-size: .8rem; }
+/* Long club names must not be able to force the table wider than the screen. */
+.std td:nth-child(2) { max-width: 45vw; }
+.std-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .std th {
   text-align: left; font-size: .56rem; text-transform: uppercase; letter-spacing: 1px;
   color: var(--muted); font-weight: 800; padding: 0 5px 9px;
@@ -756,7 +763,7 @@ function renderTable() {
 
 function standingsHTML(rows, markQualifiers) {
   const team = myTeam();
-  return `<table class="std">
+  return `<div class="table-wrap"><table class="std">
     <thead><tr><th class="pos">#</th><th>Team</th>
       <th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th>
       <th class="num">GD</th><th class="num">Pts</th></tr></thead>
@@ -769,7 +776,7 @@ function standingsHTML(rows, markQualifiers) {
         <td class="num">${r.d}</td><td class="num">${r.l}</td>
         <td class="num">${r.gd > 0 ? '+' : ''}${r.gd}</td>
         <td class="num pts">${r.pts}</td>
-      </tr>`).join('')}</tbody></table>`;
+      </tr>`).join('')}</tbody></table></div>`;
 }
 
 /* ── players ────────────────────────────────────────────────────────── */

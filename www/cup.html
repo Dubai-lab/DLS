@@ -44,12 +44,14 @@
   .team-meta { color: var(--faint); font-size: .74rem; margin-top: 2px; }
 
   /* Groups */
-  .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+  .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 18px; }
   .group-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
   .group-card h3 {
     font-size: .8rem; text-transform: uppercase; letter-spacing: 2px;
     color: var(--gold); font-weight: 800; margin-bottom: 12px;
   }
+  .gstd-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .gstd-wrap::-webkit-scrollbar { height: 0; }
   .gstd { width: 100%; border-collapse: collapse; font-size: .8rem; margin-bottom: 14px; }
   .gstd th {
     text-align: left; font-size: .6rem; text-transform: uppercase; letter-spacing: 1px;
@@ -378,7 +380,7 @@ function renderGroups() {
     const table = Competition.groupTable(state.groups[g], state.fixtures[g]);
     return `<div class="group-card">
       <h3>Group ${esc(g)}</h3>
-      <table class="gstd">
+      <div class="gstd-wrap"><table class="gstd">
         <thead><tr><th>Team</th><th class="num">P</th><th class="num">W</th>
           <th class="num">D</th><th class="num">L</th><th class="num">GD</th><th class="num">Pts</th></tr></thead>
         <tbody>${table.map((r, i) => `
@@ -389,7 +391,7 @@ function renderGroups() {
             <td class="num">${r.gd > 0 ? '+' : ''}${r.gd}</td>
             <td class="num pts">${r.pts}</td>
           </tr>`).join('')}</tbody>
-      </table>
+      </table></div>
       ${(state.fixtures[g] || []).map((m, i) => `
         <div class="gmatch">
           <span>${esc(m.home)}</span>

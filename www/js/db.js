@@ -507,6 +507,98 @@ const DB = {
     return rows[0];
   },
 
+  /* ---- result submissions ----
+     A player uploads a screenshot against a specific fixture; an organiser
+     checks it and enters the score. The claim is never applied on its own. */
+
+  /**
+   * Upload screenshots and file a submission.
+   * Images go up first: a submission row pointing at files that failed to
+   * upload is worse than an upload with no row, which is just an orphan.
+   */
+  async submitResult({ competitionId, matchRef, team, claimedHome, claimedAway, note, files }) {
+    const t = await token();
+    const tenant = tenantId();
+    const paths = [];
+
+    for (const file of files || []) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const path = `${tenant}/${competitionId}/${pushKey()}.${ext}`;
+      const r = await fetch(`${SUPABASE_URL}/storage/v1/object/match-results/${path}`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${t}`,
+          'Content-Type': file.type || 'image/jpeg'
+        },
+        body: file
+      });
+      if (!r.ok) {
+        const detail = await r.text().catch(() => '');
+        throw new Error(`Upload failed (${r.status}): ${detail.slice(0, 140)}`);
+      }
+      paths.push(path);
+    }
+
+    const rows = await rest('result_submissions', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({
+        tenant_id: tenant,
+        competition_id: competitionId,
+        match_ref: matchRef,
+        submitted_by: userId(),
+        team: team || null,
+        claimed_home: typeof claimedHome === 'number' ? claimedHome : null,
+        claimed_away: typeof claimedAway === 'number' ? claimedAway : null,
+        note: note || null,
+        image_paths: paths
+      })
+    });
+    return rows && rows.length ? rows[0] : null;
+  },
+
+  /** Submissions for a competition. Players see their own; reviewers see all. */
+  async submissions(competitionId, status) {
+    const filter = status ? `&status=eq.${status}` : '';
+    return rest(`result_submissions?competition_id=eq.${competitionId}${filter}` +
+                `&select=*&order=created_at.desc`);
+  },
+
+  async pendingCount() {
+    return rpc('pending_result_count', { p_tenant: tenantId() });
+  },
+
+  async reviewSubmission(id, patch) {
+    const rows = await rest(`result_submissions?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ ...patch, reviewed_by: userId(), reviewed_at: new Date().toISOString() })
+    });
+    return rows && rows.length ? rows[0] : null;
+  },
+
+  /**
+   * A time-limited URL for a screenshot.
+   * The bucket is private, and an <img> cannot send an Authorization header,
+   * so viewing needs a signed link rather than the plain object path.
+   */
+  async signedResultUrl(path, seconds) {
+    const t = await token();
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/match-results/${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${t}`
+      },
+      body: JSON.stringify({ expiresIn: seconds || 3600 })
+    });
+    if (!r.ok) throw new Error('Could not open that image');
+    const body = await r.json();
+    return `${SUPABASE_URL}/storage/v1${body.signedURL || body.signedUrl}`;
+  },
+
   /* ---- public league directory ---- */
 
   /** Leagues that opted into the landing-page directory. Readable by anyone. */

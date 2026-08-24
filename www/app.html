@@ -229,6 +229,40 @@ button, select, input { font-family: inherit; }
 .nav button i { font-style: normal; font-size: 1.15rem; }
 .nav button.on { color: var(--gold); }
 
+/* Result submission */
+.sub-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  margin: -4px 0 10px; padding: 9px 14px;
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  border-radius: 0 0 12px 12px; border-top: none;
+  color: var(--gold); font-size: .76rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; text-align: left;
+}
+.sub-row.waiting { color: var(--muted); cursor: default; }
+.sub-row.rejected { color: var(--red); }
+.shot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.shot {
+  position: relative; aspect-ratio: 3/4; border-radius: 10px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+}
+.shot img { width: 100%; height: 100%; object-fit: cover; }
+.shot button {
+  position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,.7);
+  color: #fff; font-size: .7rem; cursor: pointer;
+}
+.score-entry { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+.score-entry input {
+  width: 58px; padding: 12px 6px; text-align: center; font-size: 1.3rem; font-weight: 900;
+  background: var(--surface-2); border: 1.5px solid var(--line-soft);
+  border-radius: 11px; color: var(--text); outline: none;
+}
+.score-entry input:focus { border-color: var(--gold); }
+.score-entry em { color: var(--faint); font-style: normal; font-size: 1.1rem; }
+.score-side { flex: 1; font-size: .78rem; color: var(--muted); min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score-side.right { text-align: right; }
+
 .empty {
   border: 1px dashed var(--line-soft); border-radius: 14px;
   padding: 34px 18px; text-align: center; color: var(--muted); font-size: .85rem;
@@ -320,6 +354,7 @@ let competitions = [];     // competitions in the league
 let active = null;         // the competition being viewed
 let pub = null;            // its published document
 let contacts = {};         // team -> phone, members-only document
+let mySubmissions = {};    // matchRef -> this player's submission for it
 let mdIndex = 0;           // selected matchday / group
 let koView = false;        // cup: showing the bracket rather than groups
 
@@ -419,6 +454,19 @@ async function selectCompetition(comp) {
   } catch (e) {
     contacts = {};
   }
+
+  // RLS returns only this player's own rows, so no filtering is needed here.
+  mySubmissions = {};
+  try {
+    for (const row of (await DB.submissions(comp.id)) || []) {
+      const prev = mySubmissions[row.match_ref];
+      // Newest wins: a rejected submission followed by a fresh one should show
+      // as pending, not as the old rejection.
+      if (!prev || new Date(row.created_at) > new Date(prev.created_at)) {
+        mySubmissions[row.match_ref] = row;
+      }
+    }
+  } catch (e) { /* uploads are optional; never block the fixtures on them */ }
 
   // A cup that has reached the knockout opens on the bracket.
   if (pub && pub.format === 'group_knockout' && pub.phase === 'knockout') koView = true;
@@ -649,18 +697,59 @@ function teamLabel(name, withCrest) {
             title="Message ${label} on WhatsApp">${label}<i class="wa" aria-hidden="true">&#128172;</i></button>`;
 }
 
-function matchHTML(m, plain) {
+/**
+ * Where a fixture lives inside the competition document.
+ * Fixtures are JSONB, not rows, so a submission has to point at one by
+ * position: 'md:3/m:12' for a league matchday, 'grp:A/m:4' or 'ko:1/m:0' for
+ * a cup. Built here so the player app and the review screen agree.
+ */
+function matchRef(m, ctx) {
+  if (ctx && ctx.group != null) return `grp:${ctx.group}/m:${m.id}`;
+  if (ctx && ctx.round != null) return `ko:${ctx.round}/m:${ctx.index}`;
+  return `md:${ctx && ctx.day != null ? ctx.day : 0}/m:${m.id}`;
+}
+
+function matchHTML(m, plain, ctx) {
   const team = myTeam();
   const mine = team && (m.home === team || m.away === team);
   const score = m.played
     ? `<div class="result">${m.hs} – ${m.as}</div>`
     : `<div class="result pending">VS</div>`;
 
+  // Only my own match, only once it has been played in real life, and only
+  // while the organiser has not entered a score yet.
+  const canUpload = mine && !m.played && !plain && m.home && m.away;
+  const ref = canUpload ? matchRef(m, ctx) : null;
+  const existing = ref ? mySubmissions[ref] : null;
+
   return `<div class="match${mine && !plain ? ' mine' : ''}" style="${plain ? 'border:none;background:none;padding:4px 0;margin:0' : ''}">
     <div class="side">${teamLabel(m.home)}</div>
     ${score}
     <div class="side away">${teamLabel(m.away)}</div>
-  </div>`;
+  </div>
+  ${canUpload ? submitRowHTML(ref, m, existing) : ''}`;
+}
+
+/** The strip under a fixture: upload, or the state of what was already sent. */
+function submitRowHTML(ref, m, existing) {
+  if (existing && existing.status === 'pending') {
+    return `<div class="sub-row waiting">
+      <span>&#9203;</span> Result sent${
+        existing.claimed_home != null
+          ? ` &middot; ${existing.claimed_home}–${existing.claimed_away}` : ''
+      } &middot; waiting for the admin
+    </div>`;
+  }
+  if (existing && existing.status === 'rejected') {
+    return `<button class="sub-row rejected" data-upload="${esc(ref)}">
+      <span>&#10007;</span> Not accepted${
+        existing.review_note ? ' &middot; ' + esc(existing.review_note) : ''
+      } &middot; tap to send again
+    </button>`;
+  }
+  return `<button class="sub-row" data-upload="${esc(ref)}">
+    <span>&#128248;</span> Upload your result
+  </button>`;
 }
 
 /* ── fixtures ───────────────────────────────────────────────────────── */
@@ -694,7 +783,7 @@ function leagueFixturesHTML() {
       `<button class="chip${n === i ? ' on' : ''}" data-md="${n}">MD ${d.day}</button>`).join('')}</div>
     ${md.deadline ? `<div style="color:var(--muted);font-size:.74rem;margin-bottom:10px">
       Deadline ${esc(formatWhen(md.deadline))}</div>` : ''}
-    ${(md.matches || []).map(m => matchHTML(m)).join('')}
+    ${(md.matches || []).map(m => matchHTML(m, false, { day: i })).join('')}
     ${md.byeTeam ? `<div class="empty" style="padding:16px">${esc(md.byeTeam)} rests this matchday</div>` : ''}`;
 }
 
@@ -715,7 +804,7 @@ function cupFixturesHTML() {
   return toggle + `
     <div class="pill-bar">${groups.map((name, n) =>
       `<button class="chip${name === g ? ' on' : ''}" data-md="${n}">Group ${esc(name)}</button>`).join('')}</div>
-    ${(pub.fixtures[g] || []).map(m => matchHTML(m)).join('')}`;
+    ${(pub.fixtures[g] || []).map(m => matchHTML(m, false, { group: g })).join('')}`;
 }
 
 function bracketHTML() {
@@ -839,6 +928,146 @@ function lead(label, team, detail) {
     <b>${esc(team)}</b>
     <small>${esc(String(detail))}</small>
   </div>`;
+}
+
+/* ── uploading a result ─────────────────────────────────────────────────
+   The player sends a screenshot and the score they believe it was. Nothing is
+   applied until an organiser confirms it - the claim is evidence, not a result.
+   -------------------------------------------------------------------- */
+
+let pendingShots = [];      // Files chosen but not yet uploaded
+let uploadRef = null;       // which fixture is being submitted
+
+// Delegated: fixture rows are re-rendered constantly, so per-button listeners
+// would be rebound on every paint.
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-upload]');
+  if (btn) openUpload(btn.dataset.upload);
+});
+
+/** Find a fixture from its reference, so the sheet can name both teams. */
+function matchFromRef(ref) {
+  if (!pub) return null;
+  const [head, tail] = String(ref).split('/');
+  const id = Number((tail || '').replace('m:', ''));
+
+  if (head.startsWith('md:')) {
+    const md = (pub.allMatchdays || [])[Number(head.slice(3))];
+    return (md && (md.matches || []).find(m => m.id === id)) || null;
+  }
+  if (head.startsWith('grp:')) {
+    const list = (pub.fixtures || {})[head.slice(4)] || [];
+    return list.find(m => m.id === id) || null;
+  }
+  if (head.startsWith('ko:')) {
+    const round = (pub.ko || [])[Number(head.slice(3))];
+    return (round && round.matches[id]) || null;
+  }
+  return null;
+}
+
+function openUpload(ref) {
+  const m = matchFromRef(ref);
+  if (!m) { toast('Could not find that fixture'); return; }
+
+  uploadRef = ref;
+  pendingShots = [];
+
+  $('sheet-box').innerHTML = `
+    <div style="font-weight:800;font-size:1.02rem;margin-bottom:4px">Upload your result</div>
+    <div style="color:var(--muted);font-size:.8rem;margin-bottom:16px">
+      Your admin checks the screenshot before the table changes.
+    </div>
+
+    <div class="score-entry">
+      <span class="score-side">${esc(m.home)}</span>
+      <input type="number" min="0" max="99" id="u-home" inputmode="numeric" aria-label="${esc(m.home)} score">
+      <em>–</em>
+      <input type="number" min="0" max="99" id="u-away" inputmode="numeric" aria-label="${esc(m.away)} score">
+      <span class="score-side right">${esc(m.away)}</span>
+    </div>
+
+    <div class="shot-grid" id="shot-grid"></div>
+
+    <label class="btn ghost" for="u-files" style="display:block;text-align:center;margin-bottom:10px">
+      &#128248; Add screenshot
+    </label>
+    <input type="file" id="u-files" accept="image/png,image/jpeg,image/webp" multiple hidden>
+
+    <button class="btn" id="u-send">Send to admin</button>
+    <div class="msg" id="u-msg"></div>
+    <button class="btn ghost" id="u-cancel" style="margin-top:8px">Cancel</button>`;
+
+  $('u-files').addEventListener('change', addShots);
+  $('u-cancel').addEventListener('click', closeSheet);
+  $('u-send').addEventListener('click', () => sendResult(m));
+  $('sheet').classList.add('on');
+}
+
+function addShots(e) {
+  for (const file of e.target.files) {
+    if (file.size > 5 * 1024 * 1024) { toast(file.name + ' is over 5 MB'); continue; }
+    if (pendingShots.length >= 3) { toast('Three screenshots is plenty'); break; }
+    pendingShots.push(file);
+  }
+  e.target.value = '';
+  renderShots();
+}
+
+function renderShots() {
+  const grid = $('shot-grid');
+  if (!grid) return;
+  grid.innerHTML = pendingShots.map((f, i) =>
+    `<div class="shot"><img src="${URL.createObjectURL(f)}" alt="">
+      <button data-drop="${i}" aria-label="Remove">&#10005;</button></div>`).join('');
+  grid.querySelectorAll('[data-drop]').forEach(b => {
+    b.addEventListener('click', () => {
+      pendingShots.splice(Number(b.dataset.drop), 1);
+      renderShots();
+    });
+  });
+}
+
+async function sendResult(m) {
+  const home = $('u-home').value.trim();
+  const away = $('u-away').value.trim();
+  const msg = $('u-msg');
+
+  if (!pendingShots.length) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Add at least one screenshot.';
+    return;
+  }
+  if (home === '' || away === '') {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Enter the score you are reporting.';
+    return;
+  }
+
+  const btn = $('u-send');
+  btn.disabled = true;
+  msg.style.color = 'var(--muted)';
+  msg.textContent = 'Uploading…';
+
+  try {
+    await DB.submitResult({
+      competitionId: active.id,
+      matchRef: uploadRef,
+      team: myTeam(),
+      claimedHome: Number(home),
+      claimedAway: Number(away),
+      files: pendingShots
+    });
+    closeSheet();
+    toast('Sent to your admin');
+    await selectCompetition(active);       // reloads submissions and repaints
+  } catch (e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = /duplicate|one_pending/i.test(e.message)
+      ? 'You have already sent a result for this match.'
+      : e.message;
+    btn.disabled = false;
+  }
 }
 
 /* ── menu sheet ─────────────────────────────────────────────────────── */

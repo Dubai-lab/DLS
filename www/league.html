@@ -101,6 +101,34 @@
     opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 300;
   }
   .toast.show { opacity: 1; }
+
+  /* Submitted results */
+  #pending-dot:not(:empty) {
+    display: inline-grid; place-items: center; min-width: 18px; height: 18px;
+    margin-left: 6px; padding: 0 5px; border-radius: 9px;
+    background: var(--red); color: #fff; font-size: .62rem; font-weight: 900;
+  }
+  .sub {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .sub.done { opacity: .55; }
+  .sub-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .sub-fixture { font-weight: 800; font-size: .92rem; }
+  .sub-meta { color: var(--faint); font-size: .74rem; }
+  .sub-claim {
+    margin-left: auto; font-size: .74rem; color: var(--muted);
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 20px; padding: 4px 12px; white-space: nowrap;
+  }
+  .sub-shots { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .sub-shots a {
+    display: block; width: 96px; height: 128px; border-radius: 10px; overflow: hidden;
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+  }
+  .sub-shots img { width: 100%; height: 100%; object-fit: cover; }
+  .sub-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .sub-actions .score { margin-right: auto; }
 </style>
 </head>
 <body>
@@ -125,6 +153,7 @@
     <button class="tab on" data-tab="teams">Teams</button>
     <button class="tab" data-tab="fixtures">Fixtures</button>
     <button class="tab" data-tab="table">Table</button>
+    <button class="tab" data-tab="results">Results <span id="pending-dot"></span></button>
     <button class="tab" data-tab="players">Stats</button>
   </div>
 
@@ -147,6 +176,15 @@
   <!-- ───────── Table ───────── -->
   <section class="panel" id="panel-table">
     <div id="table-body"><div class="empty">Loading…</div></div>
+  </section>
+
+  <!-- ───────── Submitted results ───────── -->
+  <section class="panel" id="panel-results">
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">
+      Screenshots players sent from the app. Check the image, confirm or correct
+      the score, and accept — that is what writes it into the table.
+    </p>
+    <div id="results-body"><div class="empty">Loading…</div></div>
   </section>
 
   <!-- ───────── Stats (derived from results) ───────── -->
@@ -282,6 +320,7 @@ async function save() {
     renderFixtures();
     renderTable();
     renderPlayers();
+    loadSubmissions();
   } catch (e) {
     fatal(e.message);
   }
@@ -551,6 +590,159 @@ function tile(label, team, detail) {
     <div style="font-weight:800;margin-top:5px;font-size:.92rem">${esc(team)}</div>
     <div style="color:var(--faint);font-size:.74rem;margin-top:2px">${esc(detail)}</div>
   </div>`;
+}
+
+/* ── submitted results ──────────────────────────────────────────────────
+   Players upload a screenshot and the score they believe it was. Accepting is
+   what writes that score into the competition - the claim on its own changes
+   nothing, which is the point of reviewing it.
+   -------------------------------------------------------------------- */
+
+let submissions = [];
+
+/** Locate a fixture from the reference the app recorded: 'md:3/m:12'. */
+function matchFromRef(ref) {
+  const [head, tail] = String(ref).split('/');
+  if (!head.startsWith('md:')) return null;
+  const day = Number(head.slice(3));
+  const id = Number((tail || '').replace('m:', ''));
+  const md = state.matchdays[day];
+  if (!md) return null;
+  const match = (md.matches || []).find(m => m.id === id);
+  return match ? { match, day } : null;
+}
+
+async function loadSubmissions() {
+  try {
+    submissions = (await DB.submissions(competition.id)) || [];
+  } catch (e) {
+    submissions = [];
+  }
+  const pending = submissions.filter(s => s.status === 'pending').length;
+  $('pending-dot').textContent = pending || '';
+  renderSubmissions();
+}
+
+function renderSubmissions() {
+  const body = $('results-body');
+  if (!submissions.length) {
+    body.innerHTML = `<div class="empty"><strong>Nothing submitted yet</strong>
+      Results players upload from the app appear here.</div>`;
+    return;
+  }
+
+  // Pending first: those are the ones needing a decision.
+  const order = [...submissions].sort((a, b) =>
+    (a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1));
+
+  body.innerHTML = order.map(s => {
+    const found = matchFromRef(s.match_ref);
+    const label = found
+      ? `${esc(found.match.home)} v ${esc(found.match.away)}`
+      : `<span style="color:var(--red)">fixture no longer exists</span>`;
+    const when = new Date(s.created_at).toLocaleString(undefined,
+      { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const claim = (s.claimed_home != null)
+      ? `reported ${s.claimed_home}&ndash;${s.claimed_away}` : 'no score given';
+    const pending = s.status === 'pending';
+
+    return `<div class="sub ${pending ? '' : 'done'}">
+      <div class="sub-head">
+        <div>
+          <div class="sub-fixture">${label}</div>
+          <div class="sub-meta">${esc(s.team || 'unknown team')} &middot; ${esc(when)}${
+            pending ? '' : ' &middot; ' + esc(s.status)}</div>
+        </div>
+        <span class="sub-claim">${claim}</span>
+      </div>
+
+      <div class="sub-shots" data-shots="${esc(s.id)}">
+        ${(s.image_paths || []).map(() =>
+          `<a><div class="empty" style="padding:0;border:none;font-size:.68rem">…</div></a>`).join('')}
+      </div>
+
+      ${pending && found ? `<div class="sub-actions">
+        <div class="score">
+          <input type="number" min="0" max="99" id="rh-${esc(s.id)}" value="${s.claimed_home ?? ''}">
+          <em>–</em>
+          <input type="number" min="0" max="99" id="ra-${esc(s.id)}" value="${s.claimed_away ?? ''}">
+        </div>
+        <button class="btn btn-primary" data-accept="${esc(s.id)}"
+                style="padding:9px 18px;font-size:.8rem">Accept &amp; apply</button>
+        <button class="btn btn-ghost" data-reject="${esc(s.id)}"
+                style="padding:9px 16px;font-size:.8rem;border-color:rgba(248,113,113,.4);color:var(--red)">Reject</button>
+      </div>` : ''}
+      ${s.review_note ? `<div class="sub-meta" style="margin-top:8px">Note: ${esc(s.review_note)}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  body.querySelectorAll('[data-accept]').forEach(b =>
+    b.addEventListener('click', () => acceptSubmission(b.dataset.accept)));
+  body.querySelectorAll('[data-reject]').forEach(b =>
+    b.addEventListener('click', () => rejectSubmission(b.dataset.reject)));
+
+  loadShots(order);
+}
+
+/**
+ * Screenshots live in a private bucket, so each needs a short-lived signed URL.
+ * Fetched after the cards render rather than before, so a slow image never
+ * holds up the list.
+ */
+async function loadShots(rows) {
+  for (const s of rows) {
+    const box = document.querySelector(`[data-shots="${s.id}"]`);
+    if (!box || !(s.image_paths || []).length) { if (box) box.innerHTML = ''; continue; }
+    try {
+      const urls = await Promise.all(s.image_paths.map(p => DB.signedResultUrl(p, 3600)));
+      box.innerHTML = urls.map(u =>
+        `<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`
+      ).join('');
+    } catch (e) {
+      box.innerHTML = `<div class="sub-meta">Could not load the screenshot</div>`;
+    }
+  }
+}
+
+async function acceptSubmission(id) {
+  const s = submissions.find(x => String(x.id) === String(id));
+  if (!s) return;
+  const found = matchFromRef(s.match_ref);
+  if (!found) { toast('That fixture no longer exists'); return; }
+
+  const home = $(`rh-${id}`).value.trim();
+  const away = $(`ra-${id}`).value.trim();
+  if (home === '' || away === '') { toast('Enter the score before accepting'); return; }
+
+  // Write the score, then record the decision. If the second call fails the
+  // score still stands, which is the safer way round: a stuck "pending" is
+  // visible, a silently unapplied result is not.
+  found.match.hs = Math.max(0, Number(home));
+  found.match.as = Math.max(0, Number(away));
+  found.match.played = true;
+  await save();
+
+  try {
+    await DB.reviewSubmission(id, { status: 'accepted' });
+  } catch (e) {
+    toast('Score applied, but the submission could not be marked accepted');
+  }
+
+  renderFixtures(); renderTable(); renderPlayers();
+  await loadSubmissions();
+  toast('Result applied to the table');
+}
+
+async function rejectSubmission(id) {
+  const note = prompt('Why is this being rejected?\n\nThe player sees this, so a short reason helps them resend correctly.');
+  if (note === null) return;
+  try {
+    await DB.reviewSubmission(id, { status: 'rejected', review_note: note.trim() || null });
+    await loadSubmissions();
+    toast('Rejected — the player can send a corrected result');
+  } catch (e) {
+    toast(e.message);
+  }
 }
 
 /* ── publish ────────────────────────────────────────────────────────── */

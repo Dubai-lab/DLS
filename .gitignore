@@ -57,3 +57,6 @@ DerivedData/
 # OS / editor
 Thumbs.db
 .DS_Store
+
+# Generated for pasting into Vercel; delete once set
+vercel-env.txt

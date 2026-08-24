@@ -753,9 +753,17 @@ async function acceptFixture(ref) {
     catch (e) { toast('Score applied, but an upload could not be closed'); }
   }
 
+  // Saving alone only updates the admin copy. Publish too, or the score
+  // never reaches the players - which is what the button promises.
+  try {
+    await publish();
+  } catch (e) {
+    toast('Score saved, but publishing failed: ' + e.message);
+  }
+
   refreshAfterScore();
   await loadSubmissions();
-  toast('Result published');
+  toast('Result published to the app');
 }
 
 /** Send a fixture back so the players upload something clearer. */
@@ -784,13 +792,15 @@ function refreshAfterScore() { renderGroups(); renderKnockout(); }
 
 /* ── publish ────────────────────────────────────────────────────────── */
 
-$('btn-publish').addEventListener('click', async () => {
-  const btn = $('btn-publish');
-  btn.disabled = true;
-  const label = btn.textContent;
-  btn.textContent = 'Publishing…';
+/**
+ * Write the published snapshot players read.
+ *
+ * Called by the Publish button and by accepting a result. Saving only
+ * updates the admin document; until this runs, the app shows the old
+ * table - which is why accepting used to appear to do nothing.
+ */
+async function publish() {
 
-  try {
     clearTimeout(saveTimer);
     await save();
 
@@ -826,6 +836,16 @@ $('btn-publish').addEventListener('click', async () => {
       members.filter(m => m.team && m.phone).map(m => [m.team, m.phone])));
 
     toast('Published — players can see the update');
+}
+
+$('btn-publish').addEventListener('click', async () => {
+  const btn = $('btn-publish');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Publishing\u2026';
+  try {
+    await publish();
+    toast('Published \u2014 players can see the update');
   } catch (e) {
     toast(e.isPermission ? 'You cannot publish this competition' : 'Publish failed: ' + e.message);
   } finally {

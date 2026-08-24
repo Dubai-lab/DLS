@@ -935,6 +935,42 @@ function lead(label, team, detail) {
   </div>`;
 }
 
+/* ── staying current ─────────────────────────────────────────────────────
+   The published document was read once at boot and never again, so a score
+   entered by the organiser only appeared after force-quitting the app.
+
+   Refreshed when the app comes back to the foreground rather than on a timer:
+   that is exactly when someone looks at it, and it costs nothing while the
+   phone is in a pocket.
+   -------------------------------------------------------------------- */
+
+let refreshing = false;
+
+async function refreshCurrent() {
+  if (refreshing || !active || document.hidden) return;
+  refreshing = true;
+  try { await selectCompetition(active); }
+  catch (e) { /* offline: keep showing what we have */ }
+  finally { refreshing = false; }
+}
+
+// Web and packaged app report a return to the foreground differently.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshCurrent();
+});
+window.addEventListener('focus', refreshCurrent);
+
+if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+  window.Capacitor.Plugins.App.addListener('appStateChange', ({ isActive }) => {
+    if (isActive) refreshCurrent();
+  });
+}
+
+// A slow poll while the screen is actually being looked at. refreshCurrent()
+// returns immediately when the document is hidden, so a backgrounded app costs
+// nothing.
+setInterval(refreshCurrent, 60000);
+
 /* ── uploading a result ─────────────────────────────────────────────────
    The player sends a screenshot and the score they believe it was. Nothing is
    applied until an organiser confirms it - the claim is evidence, not a result.
